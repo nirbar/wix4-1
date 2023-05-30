@@ -21,7 +21,7 @@
     <PackageReference Include="Microsoft.Win32.Registry" />
     <PackageReference Include="System.Security.Principal.Windows" />
     <PackageReference Include="WixInternal.TestSupport" />
-    <PackageReference Include="WixToolset.Data" />
-    <PackageReference Include="WixToolset.BootstrapperApplicationApi" />
+    <PackageReference Include="PanelSwWix4.Data" />
+    <PackageReference Include="PanelSwWix4.BootstrapperApplicationApi" />
   </ItemGroup>
 </Project>

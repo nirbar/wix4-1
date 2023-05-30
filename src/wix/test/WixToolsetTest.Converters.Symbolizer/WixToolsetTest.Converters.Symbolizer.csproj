@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="WixToolset.Data" />
+    <PackageReference Include="PanelSwWix4.Data" />
     <PackageReference Include="WixInternal.TestSupport" />
   </ItemGroup>
 

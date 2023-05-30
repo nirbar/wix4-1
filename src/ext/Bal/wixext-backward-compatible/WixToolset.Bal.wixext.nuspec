@@ -16,7 +16,7 @@
 
   <files>
     <file src="$projectFolder$\..\..\..\internal\images\wix.png" />
-    <file src="$projectFolder$\WixToolset.Bal.wixext.targets"  target="build" />
+    <file src="$projectFolder$\$wixid$.targets"  target="build\$id$.targets" />
     <file src="WixToolset.BootstrapperApplications.wixext.dll" target="$wixExtensionPackageFolder$" />
   </files>
 </package>

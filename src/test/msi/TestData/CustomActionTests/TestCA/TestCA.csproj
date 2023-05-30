@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="WixToolset.Dtf.CustomAction" />
-    <PackageReference Include="WixToolset.Dtf.WindowsInstaller" />
+    <PackageReference Include="PanelSwWix4.Dtf.CustomAction" />
+    <PackageReference Include="PanelSwWix4.Dtf.WindowsInstaller" />
   </ItemGroup>
 </Project>

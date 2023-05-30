@@ -13,12 +13,12 @@
     <projectUrl>$projectUrl$</projectUrl>
     <repository type="$repositorytype$" url="$repositoryurl$" commit="$repositorycommit$" />
     <dependencies>
-        <dependency id="WixToolset.DUtil" version="[$version$,6)" />
+        <dependency id="PanelSwWix4.DUtil" version="[$version$,6)" />
     </dependencies>
   </metadata>
 
   <files>
-    <file src="$projectFolder$\build\$id$.props" target="build\" />
+    <file src="$projectFolder$\build\$wixid$.props" target="build\$id$.props" />
     <file src="$projectFolder$\..\..\..\internal\images\wix.png" />
     <file src="$projectFolder$\inc\*" target="build\native\include" />
     <file src="..\..\v141\x64\wcautil.lib" target="build\native\v14\x64" />

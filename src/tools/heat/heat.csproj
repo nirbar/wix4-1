@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="WixToolset.Core" />
+    <PackageReference Include="PanelSwWix4.Core" />
   </ItemGroup>
 
   <ItemGroup>

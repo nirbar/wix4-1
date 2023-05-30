@@ -38,8 +38,8 @@ msbuild -t:Pack WixToolset.Heat -p:Configuration=%_C% -p:NoBuild=true -tl -nolog
 
 :clean
 @rd /s/q "..\..\build\tools" 2> nul
-@del "..\..\build\artifacts\WixToolset.Heat.*.nupkg" 2> nul
-@rd /s/q "%USERPROFILE%\.nuget\packages\wixtoolset.heat" 2> nul
+@del "..\..\build\artifacts\PanelSwWix4.Heat.*.nupkg" 2> nul
+@rd /s/q "%USERPROFILE%\.nuget\packages\panelswwix4.heat" 2> nul
 @exit /b
 
 :end

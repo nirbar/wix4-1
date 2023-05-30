@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="WixToolset.Data" />
-    <PackageReference Include="WixToolset.Extensibility" />
+    <PackageReference Include="PanelSwWix4.Data" />
+    <PackageReference Include="PanelSwWix4.Extensibility" />
   </ItemGroup>
 </Project>

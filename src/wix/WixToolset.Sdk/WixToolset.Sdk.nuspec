@@ -19,7 +19,7 @@
 
   <files>
     <file src="$projectFolder$\..\..\internal\images\wix.png" />
-    <file src="build\**\*" target="build" />
+    <file src="build\$wixid$.targets" target="build\$id$.targets" />
     <file src="Sdk\**\*" target="Sdk" />
     <file src="tools\**\*" target="tools" exclude="**\*.xml;**\WixToolset.Core.Native.targets" />
   </files>

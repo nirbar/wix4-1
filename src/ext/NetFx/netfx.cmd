@@ -37,10 +37,10 @@ msbuild -t:Pack -p:Configuration=%_C% -tl -nologo -warnaserror -p:NoBuild=true w
 
 :clean
 @rd /s/q "..\..\build\NetFx.wixext" 2> nul
-@del "..\..\build\artifacts\WixToolset.NetFx.wixext.*.nupkg" 2> nul
+@del "..\..\build\artifacts\PanelSwWix4.NetFx.wixext.*.nupkg" 2> nul
 @del "%_L%\ext_netfx_build.binlog" 2> nul
 @del "%_L%\TestResults\netfx.wixext.trx" 2> nul
-@rd /s/q "%USERPROFILE%\.nuget\packages\wixtoolset.netfx.wixext" 2> nul
+@rd /s/q "%USERPROFILE%\.nuget\packages\panelswwix4.netfx.wixext" 2> nul
 @exit /b
 
 :end

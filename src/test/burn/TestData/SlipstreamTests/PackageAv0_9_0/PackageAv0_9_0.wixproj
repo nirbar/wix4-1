@@ -1,5 +1,5 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
-<Project Sdk="WixToolset.Sdk">
+<Project Sdk="PanelSwWix4.Sdk">
   <Import Project="..\PackageAv1\PackageA.props" />
   <PropertyGroup>
     <Version>0.9.0.0</Version>

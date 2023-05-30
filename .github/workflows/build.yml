@@ -1,18 +1,13 @@
 name: Build WiX Toolset v5
 
 on:
-  push:
-    branches:
-      - master
-      - develop
-  pull_request:
-    branches:
-      - master
-      - develop
   workflow_dispatch:
     inputs:
-      tags:
-        manual: true
+      publish_nuget:
+        description: 'Publish nuget package?'
+        required: true
+        default: false
+        type: boolean
 
 env:
   DOTNET_NOLOGO: true
@@ -62,6 +57,9 @@ jobs:
           client-id: ${{ secrets.WIX_SIGNING_CLIENTID }}
           tenant-id: ${{ secrets.WIX_SIGNING_TENANTID }}
 
+      - name: Decrypt snk
+        run: gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.GPG_PASSPHRASE }}" --output "${{ github.workspace }}\src\psw-wix.snk" "${{ github.workspace }}\src\psw-wix.snk.gpg"
+
       - name: Build wix5
         shell: cmd
         run: ./src/build_official.cmd
@@ -72,12 +70,23 @@ jobs:
           SigningClientId:  ${{ github.ref == 'refs/heads/master' && secrets.WIX_SIGNING_CLIENTID || '' }}
           SigningClientSecret:  ${{ github.ref == 'refs/heads/master' && secrets.WIX_SIGNING_SECRET || '' }}
           SigningCertName:  ${{ github.ref == 'refs/heads/master' && secrets.WIX_SIGNING_CERTNAME || '' }}
+          BuildRunNumber:  ${{ github.run_number }}
+
+      - name: Resolve build version
+        if: always()
+        run: |
+          $xmlDoc = New-Object System.Xml.XmlDocument
+          $file = [System.IO.Path]::Combine("${{ github.workspace }}", "Directory.Packages.props")
+          [xml]$xmlDoc = Get-Content $file
+          $node = $xmlDoc.SelectSingleNode('//PackageVersion[@Include="PanelSwWix4.Dtf.Compression"]/@Version')
+          Add-Content -Path ${{ github.env }} -Value ("WIX_VERSION=" + $node.Value)
 
       - name: Validate test results
         shell: cmd
         run: 7z a build\testresults.zip @src\testresultfilelist.txt
 
       - name: Save build
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: artifacts
@@ -106,6 +115,11 @@ jobs:
           name: logs_${{ github.run_id }}
           path: build/logs/
 
-      - name: Push to GitHub Packages
-        if: github.event_name == 'push' && github.repository_owner == 'wixtoolset' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
-        run: dotnet nuget push "build/artifacts/**/*.nupkg" --source https://nuget.pkg.github.com/wixtoolset/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+      - name: Publish nuget packages to github
+        if: ${{ github.event.inputs.publish_nuget == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_PAT }}
+        run: |
+          dotnet nuget push build/artifacts/**/*.${{ env.WIX_VERSION }}.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source github
+          git tag v${{ env.WIX_VERSION }}
+          git push --tags

@@ -38,16 +38,16 @@ dotnet test ^
 
 :clean
 @rd /s/q "..\..\..\build\Bal.wixext" 2> nul
-@del "..\..\..\build\artifacts\WixToolset.Bal.wixext.*.nupkg" 2> nul
-@del "..\..\..\build\artifacts\WixToolset.BootstrapperApplications.wixext.*.nupkg" 2> nul
-@del "..\..\..\build\artifacts\WixToolset.WixStandardBootstrapperApplicationFunctionApi.*.nupkg" 2> nul
+@del "..\..\..\build\artifacts\PanelSwWix4.Bal.wixext.*.nupkg" 2> nul
+@del "..\..\..\build\artifacts\PanelSwWix4.BootstrapperApplications.wixext.*.nupkg" 2> nul
+@del "..\..\..\build\artifacts\PanelSwWix4.WixStandardBootstrapperApplicationFunctionApi.*.nupkg" 2> nul
 @del "%_L%\ext_bal_build.binlog" 2> nul
 @del "%_L%\bal_fnsapi_build.binlog" 2> nul
 @del "%_L%\bal_examples_build.binlog" 2> nul
 @del "%_L%\TestResults\bal.wixext.trx" 2> nul
-@rd /s/q "%USERPROFILE%\.nuget\packages\wixtoolset.bal.wixext" 2> nul
-@rd /s/q "%USERPROFILE%\.nuget\packages\wixtoolset.bootstrapperapplications.wixext" 2> nul
-@rd /s/q "%USERPROFILE%\.nuget\packages\wixtoolset.wixstandardbootstrapperapplicationfunctionapi" 2> nul
+@rd /s/q "%USERPROFILE%\.nuget\packages\panelswwix4.bal.wixext" 2> nul
+@rd /s/q "%USERPROFILE%\.nuget\packages\panelswwix4.bootstrapperapplications.wixext" 2> nul
+@rd /s/q "%USERPROFILE%\.nuget\packages\panelswwix4.wixstandardbootstrapperapplicationfunctionapi" 2> nul
 @exit /b
 
 :end

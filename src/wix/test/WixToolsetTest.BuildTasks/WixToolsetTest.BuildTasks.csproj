@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
-    <PackageReference Include="WixToolset.Data" />
+    <PackageReference Include="PanelSwWix4.Data" />
     <PackageReference Include="WixInternal.TestSupport" />
   </ItemGroup>
 </Project>

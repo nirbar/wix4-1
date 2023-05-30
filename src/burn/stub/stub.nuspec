@@ -14,7 +14,7 @@
   </metadata>
 
   <files>
-    <file src="$projectFolder$\$id$.props" target="buildTransitive" />
+    <file src="$projectFolder$\$wixid$.props" target="buildTransitive\$id$.props" />
     <file src="..\x86\burn.exe" target="tools\x86" />
     <file src="..\x64\burn.exe" target="tools\x64" />
     <file src="..\arm64\burn.exe" target="tools\arm64" />

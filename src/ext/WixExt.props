@@ -7,12 +7,13 @@
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <NoWarn>NU5100</NoWarn>
     <WixExtensionPackageFolder>wixext5</WixExtensionPackageFolder>
+    <IsWixExtension>true</IsWixExtension>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Include="$(MSBuildProjectName).targets" PackagePath="build" />
     <Content Include="$(TargetPath)" PackagePath="$(WixExtensionPackageFolder)" />
 
-    <PackageReference Include="WixToolset.Extensibility" PrivateAssets="all" />
+    <PackageReference Include="PanelSwWix4.Extensibility" PrivateAssets="all" />
   </ItemGroup>
 </Project>
