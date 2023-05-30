@@ -19,7 +19,7 @@
 
   <files>
     <file src="$projectFolder$\..\..\..\internal\images\wix.png" />
-    <file src="net20\$id$.config" target="samples" />
-    <file src="net20\$id$.dll" target="lib\net20" />
+    <file src="net20\$wixid$.config" target="samples" />
+    <file src="net20\$wixid$.dll" target="lib\net20" />
   </files>
 </package>

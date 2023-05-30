@@ -3,9 +3,9 @@
 
 <Project>
   <ItemGroup>
-    <WixExtension Include="$(MSBuildThisFileDirectory)..\$(WixToolsetExtensionPackageFolder)\$(MSBuildThisFileName).dll"
-       Condition=" Exists('$(MSBuildThisFileDirectory)..\$(WixToolsetExtensionPackageFolder)\$(MSBuildThisFileName).dll') " />
-    <UnsupportedWixExtension Include="$(MSBuildThisFileName)"
-      Condition=" !Exists('$(MSBuildThisFileDirectory)..\$(WixToolsetExtensionPackageFolder)\$(MSBuildThisFileName).dll') " />
+    <WixExtension Include="$(MSBuildThisFileDirectory)..\$(WixToolsetExtensionPackageFolder)\WixToolset.ComPlus.wixext.dll"
+       Condition=" Exists('$(MSBuildThisFileDirectory)..\$(WixToolsetExtensionPackageFolder)\WixToolset.ComPlus.wixext.dll') " />
+    <UnsupportedWixExtension Include="WixToolset.ComPlus.wixext"
+      Condition=" !Exists('$(MSBuildThisFileDirectory)..\$(WixToolsetExtensionPackageFolder)\WixToolset.ComPlus.wixext.dll') " />
   </ItemGroup>
 </Project>

@@ -19,10 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="WixToolset.Mba.Core" />
+    <PackageReference Include="PanelSwWix4.Mba.Core" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)'!='.NETFramework' ">
-    <PackageReference Include="WixToolset.Dnc.HostGenerator" />
+    <PackageReference Include="PanelSwWix4.Dnc.HostGenerator" />
   </ItemGroup>
 </Project>

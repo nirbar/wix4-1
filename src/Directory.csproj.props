@@ -4,7 +4,7 @@
   <PropertyGroup>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)wix.snk))</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)psw-wix.snk))</AssemblyOriginatorKeyFile>
     <CreateDocumentation Condition=" '$(CreateDocumentationFile)'!='true' ">false</CreateDocumentation>
     <DocumentationFile Condition=" '$(CreateDocumentationFile)'=='true' ">$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
     <DebugType Condition=" '$(DebugType)'=='' ">embedded</DebugType>

@@ -19,6 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="WixToolset.Extensibility" />
+    <PackageReference Include="PanelSwWix4.Extensibility" />
   </ItemGroup>
 </Project>

@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="WixInternal.TestSupport" />
-    <PackageReference Include="WixToolset.Mba.Core" />
+    <PackageReference Include="PanelSwWix4.Mba.Core" />
   </ItemGroup>
 
   <ItemGroup>

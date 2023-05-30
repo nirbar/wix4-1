@@ -16,9 +16,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
-    <PackageReference Include="WixToolset.Dtf.WindowsInstaller" />
-    <PackageReference Include="WixToolset.Dtf.Compression" />
-    <PackageReference Include="WixToolset.Dtf.Compression.Cab" />
+    <PackageReference Include="PanelSwWix4.Dtf.WindowsInstaller" />
+    <PackageReference Include="PanelSwWix4.Dtf.Compression" />
+    <PackageReference Include="PanelSwWix4.Dtf.Compression.Cab" />
   </ItemGroup>
 
   <ItemGroup>

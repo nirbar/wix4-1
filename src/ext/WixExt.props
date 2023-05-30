@@ -6,12 +6,6 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <NoWarn>NU5100</NoWarn>
+    <IsWixExtension>true</IsWixExtension>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Include="$(MSBuildProjectName).targets" PackagePath="build" />
-    <Content Include="$(TargetPath)" PackagePath="wixext4" />
-
-    <PackageReference Include="WixToolset.Extensibility" PrivateAssets="all" />
-  </ItemGroup>
 </Project>
