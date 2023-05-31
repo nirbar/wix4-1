@@ -9,3 +9,5 @@
 This repository contains the PanelSwWix4: A custom WiX Toolset codebase
 
 # Customizations:
+
+- [Fix MultiSzInsertString](https://github.com/wixtoolset/issues/issues/7311) to create a double-null terminated buffer
