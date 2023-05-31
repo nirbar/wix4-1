@@ -135,6 +135,7 @@ namespace WixToolset.Core
             string logVariablePrefixAndExtension;
             string iconSourceFile = null;
             string splashScreenSourceFile = null;
+            bool? runAsAdmin = null;
 
             // Process only standard attributes until the active section is initialized.
             foreach (var attrib in node.Attributes())
@@ -202,6 +203,9 @@ namespace WixToolset.Core
                             break;
                         case "ProviderKey":
                             // This can't be processed until we create the section.
+                            break;
+                        case "RunAsAdmin":
+                            runAsAdmin = YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
                         case "SplashScreenSourceFile":
                             splashScreenSourceFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
@@ -415,6 +419,7 @@ namespace WixToolset.Core
                     Compressed = YesNoDefaultType.Yes == compressed ? true : YesNoDefaultType.No == compressed ? (bool?)false : null,
                     IconSourceFile = new IntermediateFieldPathValue { Path = iconSourceFile },
                     SplashScreenSourceFile = new IntermediateFieldPathValue { Path = splashScreenSourceFile },
+                    RunAsAdmin = runAsAdmin,
                     Condition = condition,
                     Tag = tag,
                     Platform = this.CurrentPlatform,

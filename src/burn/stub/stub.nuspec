@@ -18,5 +18,9 @@
     <file src="..\x86\burn.exe" target="tools\x86" />
     <file src="..\x64\burn.exe" target="tools\x64" />
     <file src="..\arm64\burn.exe" target="tools\arm64" />
+
+    <file src="..\x86\burn-admin.exe" target="tools\x86" />
+    <file src="..\x64\burn-admin.exe" target="tools\x64" />
+    <file src="..\arm64\burn-admin.exe" target="tools\arm64" />
   </files>
 </package>

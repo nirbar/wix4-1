@@ -33,7 +33,8 @@
     <ProjectGuid>{C38373AA-882F-4F55-B03F-2AAB4BFBE3F1}</ProjectGuid>
     <ConfigurationType>Application</ConfigurationType>
     <ProjectSubSystem>Windows</ProjectSubSystem>
-    <TargetName>burn</TargetName>
+    <TargetName Condition=" '$(RunAsAdmin)'=='true' ">burn-admin</TargetName>
+    <TargetName Condition=" '$(TargetName)'=='' ">burn</TargetName>
     <CharacterSet>Unicode</CharacterSet>
     <GenerateManifest>false</GenerateManifest>
     <Description>Native component of WixToolset.Burn</Description>
@@ -63,8 +64,12 @@
       <SwapRunFromCD>true</SwapRunFromCD>
       <SwapRunFromNET>true</SwapRunFromNET>
       <DelayLoadDLLs>cabinet.dll;crypt32.dll;msi.dll;shlwapi.dll;userenv.dll;version.dll;wininet.dll;wintrust.dll</DelayLoadDLLs>
+      <UACExecutionLevel Condition=" '$(RunAsAdmin)'=='true' ">RequireAdministrator</UACExecutionLevel>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup Condition=" '$(RunAsAdmin)'=='true' ">
+    <Manifest Include="stub-admin.manifest"/>
+  </ItemGroup>
 
   <ItemGroup>
     <ClInclude Include="precomp.h" />
