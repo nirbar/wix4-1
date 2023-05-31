@@ -33,8 +33,7 @@
     <ProjectGuid>{C38373AA-882F-4F55-B03F-2AAB4BFBE3F1}</ProjectGuid>
     <ConfigurationType>Application</ConfigurationType>
     <ProjectSubSystem>Windows</ProjectSubSystem>
-    <TargetName Condition=" '$(RunAsAdmin)'=='true' ">burn-admin</TargetName>
-    <TargetName Condition=" '$(TargetName)'=='' ">burn</TargetName>
+    <TargetName>burn</TargetName>
     <CharacterSet>Unicode</CharacterSet>
     <GenerateManifest>false</GenerateManifest>
     <Description>Native component of WixToolset.Burn</Description>
@@ -43,6 +42,11 @@
     <AssemblyProduct>Burn</AssemblyProduct>
     <PackageId>WixToolset.Burn</PackageId>
     <SignOutput>false</SignOutput>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Globals as admin" Condition=" '$(RunAsAdmin)'=='true' ">
+    <TargetName>burn-admin</TargetName>
+    <GenerateManifest>true</GenerateManifest>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
