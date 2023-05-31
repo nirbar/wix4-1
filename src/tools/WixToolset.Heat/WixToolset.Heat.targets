@@ -242,6 +242,10 @@
     %(HeatProjects.AdditionalOptions)
         - Any additional harvesting command line options
 
+    %(HarvestProject.AdditionalOptions)
+    %(HeatProjects.AdditionalOptions)
+        - Any additional harvesting command line options
+
     [OUT]
     %(HeatOutput)
         - The generated .wxs files which are added to the @(Compile) item list.

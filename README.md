@@ -10,4 +10,5 @@ This repository contains the PanelSwWix4: A custom WiX Toolset codebase
 
 # Customizations:
 
+- [Harvest AdditionalOptions](https://github.com/wixtoolset/issues/issues/7427): Allow customized AdditionalOptions for all HarvestX MSBuild ItemGroups
 - [Fix MultiSzInsertString](https://github.com/wixtoolset/issues/issues/7311) to create a double-null terminated buffer
