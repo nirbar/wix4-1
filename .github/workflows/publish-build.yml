@@ -1,0 +1,43 @@
+name: Publish a Build of WiX Toolset v5
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Build ID'
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Publish
+    runs-on: windows-2022
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Download build artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: | 
+          gh run download "${{ github.event.inputs.run_id }}" --name artifacts
+
+      - name: Resolve build version
+        run: |
+          $sdkFileName = Get-Childitem –Path "PanelSwWix4.Sdk.*.nupkg" -Name
+          $sdkFileName = $sdkFileName.Replace("PanelSwWix4.Sdk.", "");
+          $sdkFileName = $sdkFileName.Replace(".nupkg", "");
+          Add-Content -Path ${{ github.env }} -Value ("WIX_VERSION=" + $sdkFileName)
+
+      - name: Publish nuget packages to github
+        if: ${{ env.WIX_VERSION != '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_PAT }}
+        run: |
+          dotnet nuget add source --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+          dotnet nuget push "PanelSwWix4.*.${{ env.WIX_VERSION }}.nupkg" --api-key ${{ secrets.GITHUB_TOKEN }} --source github
+          dotnet nuget push "PanelSwWix4.*.${{ env.WIX_VERSION }}.nupkg" --api-key ${{ secrets.NUGET_TOKEN }} --source https://api.nuget.org/v3/index.json
+          git tag v${{ env.WIX_VERSION }}
+          git push --tags
