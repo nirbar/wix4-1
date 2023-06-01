@@ -10,5 +10,6 @@ This repository contains the PanelSwWix4: A custom WiX Toolset codebase
 
 # Customizations:
 
-- [Harvest AdditionalOptions](https://github.com/wixtoolset/issues/issues/7427): Allow customized AdditionalOptions for all HarvestX MSBuild ItemGroups
+- [Bundle/@RunAsAdmin](https://github.com/wixtoolset/issues/issues/5309): Support starting the bootstrapper elevated
+- [Harvest AdditionalOptions](https://github.com/wixtoolset/issues/issues/7427): Allow customized AdditionalOptions for each HarvestX MSBuild Item
 - [Fix MultiSzInsertString](https://github.com/wixtoolset/issues/issues/7311) to create a double-null terminated buffer

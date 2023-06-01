@@ -180,7 +180,7 @@ namespace WixToolset.Core.Burn.Bundles
                 writer.WriteStartElement("security");
                 writer.WriteStartElement("requestedPrivileges");
                 writer.WriteStartElement("requestedExecutionLevel");
-                writer.WriteAttributeString("level", "asInvoker");
+                writer.WriteAttributeString("level", true == bundleSymbol.RunAsAdmin ? "requireAdministrator" : "asInvoker");
                 writer.WriteAttributeString("uiAccess", "false");
                 writer.WriteEndElement(); // </requestedExecutionLevel>
                 writer.WriteEndElement(); // </requestedPrivileges>

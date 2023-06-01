@@ -34,6 +34,7 @@ namespace WixToolset.Data
                 new IntermediateFieldDefinition(nameof(WixBundleSymbolFields.ProviderKey), IntermediateFieldType.String),
                 new IntermediateFieldDefinition(nameof(WixBundleSymbolFields.InProgressName), IntermediateFieldType.String),
                 new IntermediateFieldDefinition(nameof(WixBundleSymbolFields.DisableModify), IntermediateFieldType.String),
+                new IntermediateFieldDefinition(nameof(WixBundleSymbolFields.RunAsAdmin), IntermediateFieldType.Bool),
             },
             typeof(WixBundleSymbol));
     }
@@ -69,6 +70,7 @@ namespace WixToolset.Data.Symbols
         ProviderKey,
         InProgressName,
         DisableModify,
+        RunAsAdmin,
     }
 
     [Flags]
@@ -248,6 +250,12 @@ namespace WixToolset.Data.Symbols
                 return WixBundleModifyType.Allowed;
             }
             set => this.Set((int)WixBundleSymbolFields.DisableModify, value.ToString().ToLowerInvariant());
+        }
+
+        public bool? RunAsAdmin
+        {
+            get => (bool?)this.Fields[(int)WixBundleSymbolFields.RunAsAdmin];
+            set => this.Set((int)WixBundleSymbolFields.RunAsAdmin, value);
         }
 
         public PackagingType DefaultPackagingType => (this.Compressed.HasValue && !this.Compressed.Value) ? PackagingType.External : PackagingType.Embedded;
