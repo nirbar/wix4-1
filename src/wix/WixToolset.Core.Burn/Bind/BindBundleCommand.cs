@@ -570,16 +570,40 @@ namespace WixToolset.Core.Burn
             variableCache.Add(String.Concat("packageDescription.", id), package.Description ?? String.Empty);
             variableCache.Add(String.Concat("packageName.", id), package.DisplayName ?? String.Empty);
             variableCache.Add(String.Concat("packageVersion.", id), package.Version);
+            if (Version.TryParse(package.Version, out Version version))
+            {
+                variableCache.Add(String.Concat("packageVersion.Major.", id), version.Major.ToString());
+                variableCache.Add(String.Concat("packageVersion.Minor.", id), version.Minor.ToString());
+                variableCache.Add(String.Concat("packageVersion.Build.", id), version.Build.ToString());
+                variableCache.Add(String.Concat("packageVersion.Revision.", id), version.Revision.ToString());
+            }
 
             if (facade.SpecificPackageSymbol is WixBundleMsiPackageSymbol msiPackage)
             {
                 variableCache.Add(String.Concat("packageLanguage.", id), msiPackage.ProductLanguage.ToString());
                 variableCache.Add(String.Concat("packageManufacturer.", id), msiPackage.Manufacturer ?? String.Empty);
+
+                if (!string.IsNullOrEmpty(msiPackage.ProductCode))
+                {
+                    variableCache.Add(String.Concat("productCode.", id), msiPackage.ProductCode);
+                }
+                if (!string.IsNullOrEmpty(msiPackage.UpgradeCode))
+                {
+                    variableCache.Add(String.Concat("upgradeCode.", id), msiPackage.UpgradeCode);
+                }
             }
             else
             {
                 variableCache.Add(String.Concat("packageLanguage.", id), String.Empty);
                 variableCache.Add(String.Concat("packageManufacturer.", id), String.Empty);
+            }
+
+            if (facade.SpecificPackageSymbol is WixBundleBundlePackageSymbol bundlePackage)
+            {
+                if (!string.IsNullOrEmpty(bundlePackage.BundleId))
+                {
+                    variableCache.Add(String.Concat("bundleId.", id), bundlePackage.BundleId);
+                }
             }
         }
 
