@@ -45,7 +45,7 @@ DAPI_(LPWSTR) PathFile(
     LPWSTR wzFile = const_cast<LPWSTR>(wzPath);
     for (LPWSTR wz = wzFile; *wz; ++wz)
     {
-        // valid delineators 
+        // valid delineators
         //     \ => Windows path
         //     / => unix and URL path
         //     : => relative path from mapped root
@@ -657,7 +657,7 @@ DAPI_(HRESULT) PathCreateTempFile(
             {
                 // if the file already exists, just try again
                 hr = HRESULT_FROM_WIN32(::GetLastError());
-                if (HRESULT_FROM_WIN32(ERROR_FILE_EXISTS) == hr)
+                if ((HRESULT_FROM_WIN32(ERROR_FILE_EXISTS) == hr) || (HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED) == hr))
                 {
                     hr = S_OK;
                 }
