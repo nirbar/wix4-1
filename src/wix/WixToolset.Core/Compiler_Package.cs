@@ -1392,6 +1392,7 @@ namespace WixToolset.Core
             var secure = false;
             var suppressModularization = YesNoType.NotSet;
             string value = null;
+            var hasExtensionChild = false;
 
             foreach (var attrib in node.Attributes())
             {
@@ -1427,6 +1428,7 @@ namespace WixToolset.Core
                 }
                 else
                 {
+                    hasExtensionChild = true;
                     this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
@@ -1467,6 +1469,10 @@ namespace WixToolset.Core
                         }
                     }
                 }
+                else
+                {
+                    hasExtensionChild = true;
+                }
             }
 
             this.Core.InnerTextDisallowed(node, "Value");
@@ -1499,7 +1505,7 @@ namespace WixToolset.Core
             {
                 // If the property value is empty and none of the flags are set, print out a warning that we're ignoring
                 // the element.
-                if (String.IsNullOrEmpty(value) && !admin && !secure && !hidden)
+                if (String.IsNullOrEmpty(value) && !admin && !secure && !hidden && !hasExtensionChild)
                 {
                     this.Core.Write(WarningMessages.PropertyUseless(sourceLineNumbers, id.Id));
                 }
