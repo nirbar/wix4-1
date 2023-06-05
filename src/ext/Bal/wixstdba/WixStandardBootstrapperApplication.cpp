@@ -1174,7 +1174,7 @@ public: // IBootstrapperApplication
         __inout int* pResult
         )
     {
-     
+
         if (!m_fShowingInternalUiThisPackage && wzPackageId && *wzPackageId)
         {
             BalLog(BOOTSTRAPPER_LOG_LEVEL_VERBOSE, "Package %ls has %d applications holding files in use.", wzPackageId, cFiles);
@@ -1319,6 +1319,10 @@ public: // IBootstrapperApplication
 
         // Automatically restart if we're not displaying a UI or the command line said to always allow restarts.
         m_fAllowRestart = m_fShouldRestart && (BOOTSTRAPPER_DISPLAY_FULL > m_command.display || BAL_INFO_RESTART_PROMPT < m_BalInfoCommand.restart);
+        if ((*pAction == BOOTSTRAPPER_APPLYCOMPLETE_ACTION_RESTART) && !m_fAllowRestart)
+        {
+            *pAction = BOOTSTRAPPER_APPLYCOMPLETE_ACTION_NONE;
+        }
 
         if (m_fPrereq)
         {
@@ -1333,8 +1337,6 @@ public: // IBootstrapperApplication
 
         SetState(WIXSTDBA_STATE_APPLIED, hrStatus);
         SetTaskbarButtonProgress(100); // show full progress bar, green, yellow, or red
-
-        *pAction = BOOTSTRAPPER_APPLYCOMPLETE_ACTION_NONE;
 
         return hr;
     }
@@ -2404,7 +2406,7 @@ private: // privates
         }
         else
         {
-            // Silent UI level installations always shut down applications and services, 
+            // Silent UI level installations always shut down applications and services,
             // and on Windows Vista and later, use Restart Manager unless disabled.
             nResult = IDOK;
         }
