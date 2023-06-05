@@ -614,6 +614,9 @@ extern "C" HRESULT ExeEngineExecutePackage(
 
         hr = CoreAppendFileHandleSelfToCommandLine(sczExecutablePath, &hExecutableFile, &sczBaseCommand, NULL);
         ExitOnFailure(hr, "Failed to append %ls", BURN_COMMANDLINE_SWITCH_FILEHANDLE_SELF);
+
+        // Append logging to command line if it doesn't contain '-log'
+        CoreAppendLogToCommandLine(&sczBaseCommand, &sczCommandObfuscated, fRollback, pVariables, pPackage);
     }
 
     // build user args
