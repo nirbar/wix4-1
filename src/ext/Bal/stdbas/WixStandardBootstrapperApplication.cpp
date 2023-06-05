@@ -1376,6 +1376,10 @@ public: // IBootstrapperApplication
 
         // Automatically restart if we're not displaying a UI or the command line said to always allow restarts.
         m_fAllowRestart = m_fShouldRestart && (BOOTSTRAPPER_DISPLAY_FULL > m_commandDisplay || BAL_INFO_RESTART_PROMPT < m_BalInfoCommand.restart);
+        if ((*pAction == BOOTSTRAPPER_APPLYCOMPLETE_ACTION_RESTART) && !m_fAllowRestart)
+        {
+            *pAction = BOOTSTRAPPER_APPLYCOMPLETE_ACTION_NONE;
+        }
 
         if (m_fPrereq)
         {
@@ -1390,8 +1394,6 @@ public: // IBootstrapperApplication
 
         SetState(WIXSTDBA_STATE_APPLIED, hrStatus);
         SetTaskbarButtonProgress(100); // show full progress bar, green, yellow, or red
-
-        *pAction = BOOTSTRAPPER_APPLYCOMPLETE_ACTION_NONE;
 
         return hr;
     }
