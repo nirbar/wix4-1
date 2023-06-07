@@ -326,7 +326,7 @@ extern "C" HRESULT LoggingSetPackageVariable(
     }
 
     // For burn packages we'll add logging even it it wasn't explictly specified
-    if (pPackage->type == BURN_PACKAGE_TYPE::BURN_PACKAGE_TYPE_BUNDLE || (pPackage->type == BURN_PACKAGE_TYPE::BURN_PACKAGE_TYPE_EXE && pPackage->Exe.protocol == BURN_EXE_PROTOCOL_TYPE::BURN_EXE_PROTOCOL_TYPE_BURN))
+    if (BURN_PACKAGE_TYPE_BUNDLE == pPackage->type || (BURN_PACKAGE_TYPE_EXE == pPackage->type && BURN_EXE_PROTOCOL_TYPE_BURN == pPackage->Exe.protocol))
     {
         if (!fRollback && (!pPackage->sczLogPathVariable || !*pPackage->sczLogPathVariable))
         {
