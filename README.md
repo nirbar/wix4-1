@@ -12,3 +12,4 @@ This repository contains the PanelSwWix4: A custom WiX Toolset codebase
 
 - [Harvest AdditionalOptions](https://github.com/wixtoolset/issues/issues/7427): Allow customized AdditionalOptions for all HarvestX MSBuild ItemGroups
 - [Fix MultiSzInsertString](https://github.com/wixtoolset/issues/issues/7311) to create a double-null terminated buffer
+- [6298](https://github.com/wixtoolset/issues/issues/6298): Extract detached containers with "wix burn extract"
