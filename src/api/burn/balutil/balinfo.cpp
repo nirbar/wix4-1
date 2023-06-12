@@ -57,6 +57,13 @@ DAPI_(HRESULT) BalInfoParseCommandLine(
                     pCommand->restart = BAL_INFO_RESTART_ALWAYS;
                 }
             }
+            else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, &argv[i][1], -1, L"autorestart", -1))
+            {
+                if (BAL_INFO_RESTART_UNKNOWN == pCommand->restart)
+                {
+                    pCommand->restart = BOOTSTRAPPER_DISPLAY_FULL > pBootstrapperCommand->display ? BAL_INFO_RESTART_AUTOMATIC : BAL_INFO_RESTART_PROMPT;
+                }
+            }
             else
             {
                 fUnknownArg = TRUE;

@@ -71,6 +71,13 @@ void BundlePackageEngineUpdateInstallRegistrationState(
     __in BURN_EXECUTE_ACTION* pAction,
     __in HRESULT hrExecute
     );
+HRESULT BundleEnsureBasicCommandLine(
+    __deref_inout_z LPWSTR* psczCommandLine,
+    __deref_inout_z_opt LPWSTR* psczObfuscatedCommandLine,
+    __in BOOL fRollback,
+    __in BURN_VARIABLES* pVariables,
+    __in BURN_PACKAGE *pPackage
+    );
 
 
 #if defined(__cplusplus)

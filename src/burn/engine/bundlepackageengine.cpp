@@ -1000,8 +1000,8 @@ static HRESULT ExecuteBundle(
         ExitOnFailure(hr, "Failed to allocate obfuscated bundle command.");
     }
 
-    // Append logging to command line if it doesn't contain '-log'
-    CoreAppendLogToCommandLine(&sczBaseCommand, &sczCommandObfuscated, fRollback, pVariables, pPackage);
+    // Ensure basic command line args (/log, /norestart)
+    BundleEnsureBasicCommandLine(&sczBaseCommand, &sczCommandObfuscated, fRollback, pVariables, pPackage);
 
     // Log obfuscated command, which won't include raw hidden variable values or protocol specific arguments to avoid exposing secrets.
     LogId(REPORT_STANDARD, MSG_APPLYING_PACKAGE, LoggingRollbackOrExecute(fRollback), pPackage->sczId, LoggingActionStateToString(action), sczExecutablePath, sczCommandObfuscated ? sczCommandObfuscated : sczBaseCommand);
@@ -1108,4 +1108,84 @@ static BOOTSTRAPPER_RELATION_TYPE ConvertRelationType(
         AssertSz(BOOTSTRAPPER_RELATED_BUNDLE_PLAN_TYPE_NONE == relationType, "Unknown BUNDLE_RELATION_TYPE");
         return BOOTSTRAPPER_RELATION_NONE;
     }
+}
+
+HRESULT BundleEnsureBasicCommandLine(
+    __deref_inout_z LPWSTR* psczCommandLine,
+    __deref_inout_z_opt LPWSTR* psczObfuscatedCommandLine,
+    __in BOOL fRollback,
+    __in BURN_VARIABLES* pVariables,
+    __in BURN_PACKAGE *pPackage
+    )
+{
+    HRESULT hr = S_OK;
+    INT ccArgs = 0;
+    LPWSTR* rgszArgs = nullptr;
+    LPWSTR szLogArg = nullptr;
+    LPWSTR szLogArgFormatted = nullptr;
+    LPCWSTR szLogVar = fRollback ? pPackage->sczRollbackLogPathVariable : pPackage->sczLogPathVariable;
+    BOOL fAddLogging = TRUE;
+    BOOL fAddNoRestart = TRUE;
+
+    if (!szLogVar || !*szLogVar)
+    {
+        fAddLogging = FALSE;
+    }
+
+    hr = AppParseCommandLine(*psczCommandLine, &ccArgs, &rgszArgs);
+    ExitOnFailure(hr, "Failed parsing command line");
+
+    // Log flag already present?
+    for (INT i = 0; i < ccArgs; ++i)
+    {
+        if (rgszArgs[i][0] == L'-' || rgszArgs[i][0] == L'/')
+        {
+            // Now looking for 'log' or 'l'
+            if ((CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, &rgszArgs[i][1], -1, L"log", -1))
+                || (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, &rgszArgs[i][1], -1, L"l", -1)))
+            {
+                fAddLogging = FALSE;
+            }
+            else if ((CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, &rgszArgs[i][1], -1, L"norestart", -1))
+                || (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, &rgszArgs[i][1], -1, L"autorestart", -1))
+                || (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, &rgszArgs[i][1], -1, L"forcerestart", -1)))
+            {
+                fAddNoRestart = FALSE;
+            }
+        }
+    }
+
+    if (fAddLogging)
+    {
+        hr = StrAllocFormatted(&szLogArg, L" -log \"[%ls]\"", szLogVar);
+        ExitOnFailure(hr, "Failed creating log argument");
+
+        hr = VariableFormatString(pVariables, szLogArg, &szLogArgFormatted, NULL);
+        ExitOnFailure(hr, "Failed to format argument string.");
+
+        hr = StrAllocConcat(psczCommandLine, szLogArgFormatted, 0);
+        ExitOnFailure(hr, "Failed concatenating '-log' to command line");
+
+        hr = StrAllocConcat(psczObfuscatedCommandLine, szLogArgFormatted, 0);
+        ExitOnFailure(hr, "Failed concatenating '-log' to obfuscated command line");
+    }
+
+    if (fAddNoRestart)
+    {
+        hr = StrAllocConcat(psczCommandLine, L" -norestart", 0);
+        ExitOnFailure(hr, "Failed concatenating '-norestart' to command line");
+
+        hr = StrAllocConcat(psczObfuscatedCommandLine, L" -norestart", 0);
+        ExitOnFailure(hr, "Failed concatenating '-norestart' to obfuscated command line");
+    }
+
+LExit:
+    if (rgszArgs)
+    {
+        AppFreeCommandLineArgs(rgszArgs);
+    }
+    ReleaseStr(szLogArg);
+    ReleaseStr(szLogArgFormatted);
+
+    return hr;
 }

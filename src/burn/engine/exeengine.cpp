@@ -616,10 +616,10 @@ extern "C" HRESULT ExeEngineExecutePackage(
         ExitOnFailure(hr, "Failed to append %ls", BURN_COMMANDLINE_SWITCH_FILEHANDLE_SELF);
     }
 
-    // For bundles, append logging to command line if it doesn't contain '-log'
+    // For bundles, append logging and norestart to command line
     if (pPackage->Exe.fBundle || BURN_EXE_PROTOCOL_TYPE_BURN == pPackage->Exe.protocol)
     {
-        CoreAppendLogToCommandLine(&sczBaseCommand, &sczCommandObfuscated, fRollback, pVariables, pPackage);
+        BundleEnsureBasicCommandLine(&sczBaseCommand, &sczCommandObfuscated, fRollback, pVariables, pPackage);
     }
 
     // build user args
