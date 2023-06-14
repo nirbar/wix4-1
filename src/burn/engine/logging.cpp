@@ -112,6 +112,10 @@ extern "C" HRESULT LoggingOpen(
             }
         }
     }
+    if (pLog->dwAttributes & BURN_LOGGING_ATTRIBUTE_CONSOLE)
+    {
+        LogEnableConsole(TRUE);
+    }
 
     // Open the log approriately.
     if (pLog->sczPath && *pLog->sczPath)

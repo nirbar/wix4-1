@@ -15,3 +15,5 @@ This repository contains the PanelSwWix4: A custom WiX Toolset codebase
 - [Fix MultiSzInsertString](https://github.com/wixtoolset/issues/issues/7311) to create a double-null terminated buffer
 - [5220](https://github.com/wixtoolset/issues/issues/5220): Automatically add logging flag for any burn ExePackage, BundlePackage, and related bundles
 - [6298](https://github.com/wixtoolset/issues/issues/6298): Extract detached containers with "wix burn extract"
+- [6252](https://github.com/wixtoolset/issues/issues/6252): Automatically add -norestart flag for any burn ExePackage, BundlePackage, and related bundles
+- [7552](https://github.com/wixtoolset/issues/issues/7552): Add burn command line argument to log to console: /clog or /conlog
