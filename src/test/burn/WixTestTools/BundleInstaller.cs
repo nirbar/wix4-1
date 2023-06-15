@@ -192,9 +192,9 @@ namespace WixTestTools
             TestTool bundle = new TestTool(bundlePath ?? this.Bundle);
             var sb = new StringBuilder();
 
-            // Be sure to run silent.
-            sb.Append(" -quiet");
-            
+            // Be sure to run silent and log to console
+            sb.Append(" -quiet -conlog");
+
             // Generate the log file name.
             string logFile = Path.Combine(this.LogDirectory ?? Path.GetTempPath(), String.Format("{0}_{1}_{2:yyyyMMddhhmmss}_{4}_{3}.log", this.TestGroupName, this.TestName, DateTime.UtcNow, Path.GetFileNameWithoutExtension(this.Bundle), mode));
             sb.AppendFormat(" -log \"{0}\"", logFile);

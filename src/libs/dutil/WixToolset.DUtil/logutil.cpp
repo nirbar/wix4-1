@@ -21,7 +21,8 @@
 static HMODULE LogUtil_hModule = NULL;
 static BOOL LogUtil_fDisabled = FALSE;
 static HANDLE LogUtil_hLog = INVALID_HANDLE_VALUE;
-static HANDLE LogUtil_hConOut = INVALID_HANDLE_VALUE;
+static HANDLE LogUtil_hStdOut = INVALID_HANDLE_VALUE;
+static HANDLE LogUtil_hStdErr = INVALID_HANDLE_VALUE;
 static LPWSTR LogUtil_sczLogPath = NULL;
 static LPSTR LogUtil_sczPreInitBuffer = NULL;
 static REPORT_LEVEL LogUtil_rlCurrent = REPORT_STANDARD;
@@ -62,6 +63,11 @@ static HRESULT LogStringWork(
     __in DWORD dwLogId,
     __in_z LPCWSTR sczString,
     __in BOOL fLOGUTIL_NEWLINE
+    );
+static void LogStringToConsole(
+    __in BOOL fIsError,
+    __in BOOL fIsWarning,
+    __in_z LPCSTR sczMultiByte
     );
 
 // Hook to allow redirecting LogStringWorkRaw function calls
@@ -191,7 +197,8 @@ void DAPI LogDisable()
     LogUtil_fDisabled = TRUE;
 
     ReleaseFileHandle(LogUtil_hLog);
-    ReleaseFileHandle(LogUtil_hConOut);
+    ReleaseFileHandle(LogUtil_hStdOut);
+    ReleaseFileHandle(LogUtil_hStdErr);
     ReleaseNullStr(LogUtil_sczLogPath);
     ReleaseNullStr(LogUtil_sczPreInitBuffer);
 
@@ -205,21 +212,38 @@ void DAPI LogEnableConsole(
 {
     if (fLogToConsole)
     {
-        if ((LogUtil_hConOut == INVALID_HANDLE_VALUE) && (::AttachConsole(ATTACH_PARENT_PROCESS) || ::AllocConsole()))
+        if (LogUtil_hStdOut == INVALID_HANDLE_VALUE)
         {
-            SECURITY_ATTRIBUTES sa;
-            
-            ::ZeroMemory(&sa, sizeof(SECURITY_ATTRIBUTES));
-            sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-            sa.bInheritHandle = TRUE;
-            sa.lpSecurityDescriptor = nullptr;
-            
-            LogUtil_hConOut = ::CreateFileA("CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, &sa, OPEN_EXISTING, 0, NULL);
+            // Attempt to attach to parent console
+            if (!::AttachConsole(ATTACH_PARENT_PROCESS))
+            {
+                LogErrorString(HRESULT_FROM_WIN32(::GetLastError()), "Failed to attach parent console");
+            }
+
+            LogUtil_hStdErr = ::GetStdHandle(STD_ERROR_HANDLE);
+            LogUtil_hStdOut = ::GetStdHandle(STD_OUTPUT_HANDLE);
+            if (LogUtil_hStdOut == INVALID_HANDLE_VALUE)
+            {
+                LogErrorString(HRESULT_FROM_WIN32(::GetLastError()), "Failed to get stdout handle. Attempting to use 'CONOUT$'");
+                SECURITY_ATTRIBUTES sa;
+
+                ::ZeroMemory(&sa, sizeof(SECURITY_ATTRIBUTES));
+                sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+                sa.bInheritHandle = TRUE;
+                sa.lpSecurityDescriptor = nullptr;
+
+                LogUtil_hStdOut = ::CreateFileA("CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, &sa, OPEN_EXISTING, 0, NULL);
+                if (LogUtil_hStdOut == INVALID_HANDLE_VALUE)
+                {
+                    LogErrorString(HRESULT_FROM_WIN32(::GetLastError()), "Failed to get console or stdout handle");
+                }
+            }
         }
     }
     else
     {
-        ReleaseFileHandle(LogUtil_hConOut);
+        ReleaseFileHandle(LogUtil_hStdOut);
+        ReleaseFileHandle(LogUtil_hStdErr);
     }
 }
 
@@ -308,7 +332,8 @@ extern "C" void DAPI LogClose(
     }
 
     ReleaseFileHandle(LogUtil_hLog);
-    ReleaseFileHandle(LogUtil_hConOut);
+    ReleaseFileHandle(LogUtil_hStdOut);
+    ReleaseFileHandle(LogUtil_hStdErr);
     ReleaseNullStr(LogUtil_sczLogPath);
     ReleaseNullStr(LogUtil_sczPreInitBuffer);
 }
@@ -879,23 +904,9 @@ static HRESULT LogStringWork(
     }
     else
     {
-        if (LogUtil_hConOut != INVALID_HANDLE_VALUE)
+        if (LogUtil_hStdOut != INVALID_HANDLE_VALUE)
         {
-            DWORD cbLogData = lstrlenA(sczMultiByte);
-            DWORD cbTotal = 0;
-            
-            ::SetConsoleTextAttribute(LogUtil_hConOut, fIsError ? FOREGROUND_RED : fIsWarning ? FOREGROUND_RED | FOREGROUND_GREEN : FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
-            while (cbTotal < cbLogData)
-            {
-                DWORD cbWrote = 0;
-                
-                if (!::WriteFile(LogUtil_hConOut, sczMultiByte + cbTotal, cbLogData - cbTotal, &cbWrote, NULL))
-                {
-                    break;
-                }
-
-                cbTotal += cbWrote;
-            }            
+            LogStringToConsole(fIsError, fIsWarning, sczMultiByte);
         }
 
         hr = LogStringWorkRaw(sczMultiByte);
@@ -912,4 +923,39 @@ LExit:
     ReleaseStr(sczMultiByte);
 
     return hr;
+}
+
+static void LogStringToConsole(
+    __in BOOL fIsError,
+    __in BOOL fIsWarning,
+    __in_z LPCSTR sczMultiByte
+    )
+{
+    DWORD cbLogData = lstrlenA(sczMultiByte);
+    DWORD cbTotal = 0;
+    HANDLE hStd = LogUtil_hStdOut;
+
+    if (fIsError || fIsWarning)
+    {
+        if (LogUtil_hStdErr != INVALID_HANDLE_VALUE)
+        {
+            hStd = LogUtil_hStdErr;
+        }
+        ::SetConsoleTextAttribute(hStd, fIsError ? FOREGROUND_RED : FOREGROUND_RED | FOREGROUND_GREEN);
+    }
+    while (cbTotal < cbLogData)
+    {
+        DWORD cbWrote = 0;
+
+        if (!::WriteFile(hStd, sczMultiByte + cbTotal, cbLogData - cbTotal, &cbWrote, NULL))
+        {
+            break;
+        }
+
+        cbTotal += cbWrote;
+    }
+    if (fIsError || fIsWarning)
+    {
+        ::SetConsoleTextAttribute(hStd, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+    }
 }
