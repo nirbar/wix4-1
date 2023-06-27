@@ -236,7 +236,11 @@
 
     %(HarvestProject.ProjectOutputGroups)
     %(HeatProjects.ProjectOutputGroups)
-        - The project output groups to harvest 
+        - The project output groups to harvest
+
+    %(HarvestProject.AdditionalOptions)
+    %(HeatProjects.AdditionalOptions)
+        - Any additional harvesting command line options
 
     %(HarvestProject.AdditionalOptions)
     %(HeatProjects.AdditionalOptions)
