@@ -39,16 +39,18 @@ namespace WixToolset.Core.WindowsInstaller
                 context.SymbolDefinitionCreator = this.ServiceProvider.GetService<ISymbolDefinitionCreator>();
             }
 
+            var decompilerHelper = context.ServiceProvider.GetService<IWindowsInstallerDecompilerHelper>();
+
             // Pre-decompile.
             //
             foreach (var extension in context.Extensions)
             {
-                extension.PreDecompile(context);
+                extension.PreDecompile(context, decompilerHelper);
             }
 
             // Decompile.
             //
-            var result = this.Execute(context);
+            var result = this.Execute(context, decompilerHelper);
 
             if (result != null)
             {
@@ -63,7 +65,7 @@ namespace WixToolset.Core.WindowsInstaller
             return result;
         }
 
-        private IWindowsInstallerDecompileResult Execute(IWindowsInstallerDecompileContext context)
+        private IWindowsInstallerDecompileResult Execute(IWindowsInstallerDecompileContext context, IWindowsInstallerDecompilerHelper decompilerHelper)
         {
             // Delete the directory and its files to prevent cab extraction failure due to an existing file.
             if (!String.IsNullOrEmpty(context.ExtractFolder) && Directory.Exists(context.ExtractFolder))
@@ -83,21 +85,29 @@ namespace WixToolset.Core.WindowsInstaller
             }
             else
             {
-                return this.DecompileDatabase(context, backendHelper, fileSystem, pathResolver);
+                return this.DecompileDatabase(context, decompilerHelper, backendHelper, fileSystem, pathResolver);
             }
         }
 
-        private IWindowsInstallerDecompileResult DecompileDatabase(IWindowsInstallerDecompileContext context, IWindowsInstallerBackendHelper backendHelper, IFileSystem fileSystem, IPathResolver pathResolver)
+        private IWindowsInstallerDecompileResult DecompileDatabase(IWindowsInstallerDecompileContext context, IWindowsInstallerDecompilerHelper decompilerHelper, IWindowsInstallerBackendHelper backendHelper, IFileSystem fileSystem, IPathResolver pathResolver)
         {
             var extractFilesFolder = context.SuppressExtractCabinets || (String.IsNullOrEmpty(context.CabinetExtractFolder) && String.IsNullOrEmpty(context.ExtractFolder)) ? null :
                 String.IsNullOrEmpty(context.CabinetExtractFolder) ? Path.Combine(context.ExtractFolder, "File") : context.CabinetExtractFolder;
 
-            var outputType = context.TreatProductAsModule ? OutputType.Module : context.DecompileType;
-            var unbindCommand = new UnbindDatabaseCommand(this.Messaging, backendHelper, fileSystem, pathResolver, context.DecompilePath, null, outputType, context.ExtractFolder, extractFilesFolder, context.IntermediateFolder, enableDemodularization: true, skipSummaryInfo: false);
+            // IWindowsInstallerDecompileContext.TreatProductAsModule is broken. So broken, in fact,
+            // that it's been broken since WiX v3.0 in 2008. It was introduced (according to lore)
+            // to support Melt, which decompiles merge modules into fragments so you can consume
+            // merge modules without actually going through the black box that is mergemod.dll. But
+            // the name is wrong: It's not TreatProductAsModule; if anything it should instead be
+            // TreatModuleAsProduct, though even that's wrong (because you want a fragment, not a
+            // product/package). In WiX v5, rename to `KeepModularizeIds` (or something better) to
+            // reflect the functionality.
+            var demodularize = !context.TreatProductAsModule;
+            var sectionType = context.DecompileType;
+            var unbindCommand = new UnbindDatabaseCommand(this.Messaging, backendHelper, fileSystem, pathResolver, context.DecompilePath, null, sectionType, context.ExtractFolder, extractFilesFolder, context.IntermediateFolder, demodularize, skipSummaryInfo: false);
             var output = unbindCommand.Execute();
             var extractedFilePaths = unbindCommand.ExportedFiles;
 
-            var decompilerHelper = context.ServiceProvider.GetService<IWindowsInstallerDecompilerHelper>();
             var decompiler = new Decompiler(this.Messaging, backendHelper, decompilerHelper, context.Extensions, context.ExtensionData, context.SymbolDefinitionCreator, context.BaseSourcePath, context.SuppressCustomTables, context.SuppressDroppingEmptyTables, context.SuppressRelativeActionSequencing, context.SuppressUI, context.TreatProductAsModule);
             var document = decompiler.Decompile(output);
 

@@ -152,7 +152,7 @@ namespace WixToolsetTest.CoreIntegration
                                 WixAssert.StringEqual("http://wixtoolset.org/schemas/v4/2008/Burn", attribute.Value);
                                 break;
                             default:
-                                Assert.False(true, $"Attribute: '{attribute.LocalName}', Value: '{attribute.Value}'");
+                                Assert.Fail($"Attribute: '{attribute.LocalName}', Value: '{attribute.Value}'");
                                 break;
                         }
                     }
@@ -264,7 +264,7 @@ namespace WixToolsetTest.CoreIntegration
                             WixAssert.StringEqual("http://wixtoolset.org/schemas/v4/2008/Burn", attribute.Value);
                             break;
                         default:
-                            Assert.False(true, $"Attribute: '{attribute.LocalName}', Value: '{attribute.Value}'");
+                            Assert.Fail($"Attribute: '{attribute.LocalName}', Value: '{attribute.Value}'");
                             break;
                     }
                 }
@@ -611,7 +611,7 @@ namespace WixToolsetTest.CoreIntegration
                                                                .ToArray();
                 WixAssert.CompareLineByLine(new string[]
                 {
-                    "The Payload 'Auto2' has a duplicate Name 'burn.exe' in the attached container. When extracting the bundle with dark.exe, the file will get overwritten.",
+                    "The Payload 'Auto2' has a duplicate Name 'burn.exe' in the attached container. When extracting the bundle with `wix burn extract`, the file will get overwritten.",
                 }, attachedContainerWarnings);
 
                 var baContainerErrors = result.Messages.Where(m => m.Id == 8002)
@@ -808,7 +808,7 @@ namespace WixToolsetTest.CoreIntegration
                     return;
                 }
 
-                Assert.False(true, "Expected exception not accepted.");
+                Assert.Fail("Expected exception not accepted.");
             }
         }
 
