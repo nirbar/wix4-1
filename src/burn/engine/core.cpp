@@ -2569,5 +2569,5 @@ static void LogRollbackBoundary(
     __in const BURN_ROLLBACK_BOUNDARY* pRollbackBoundary
     )
 {
-    LogId(REPORT_STANDARD, MSG_PLANNED_ROLLBACK_BOUNDARY, pRollbackBoundary->sczId, LoggingBoolToString(pRollbackBoundary->fVital), LoggingBoolToString(pRollbackBoundary->fTransaction), LoggingBoolToString(pRollbackBoundary->fTransactionAuthored));
+    LogId(REPORT_STANDARD, MSG_PLANNED_ROLLBACK_BOUNDARY, pRollbackBoundary->sczId, LoggingBoolToString(pRollbackBoundary->fVital));
 }

@@ -370,8 +370,7 @@ LExit:
 // PlanCalculate - calculates the execute and rollback state for the requested package state.
 //
 extern "C" HRESULT MspEnginePlanCalculatePackage(
-    __in BURN_PACKAGE* pPackage,
-    __in BOOL fInsideMsiTransaction
+    __in BURN_PACKAGE* pPackage
     )
 {
     HRESULT hr = S_OK;
@@ -461,7 +460,7 @@ extern "C" HRESULT MspEnginePlanCalculatePackage(
         }
 
         // Calculate the rollback action if there is an execute action.
-        if (BOOTSTRAPPER_ACTION_STATE_NONE != execute && !fInsideMsiTransaction)
+        if (BOOTSTRAPPER_ACTION_STATE_NONE != execute)
         {
             switch (pPackage->currentState)
             {
@@ -558,6 +557,11 @@ extern "C" HRESULT MspEnginePlanAddPackage(
         {
             hr = PlanTargetProduct(display, pUserExperience, FALSE, pPlan, pLog, pVariables, pTargetProduct->execute, pPackage, pTargetProduct);
             ExitOnFailure(hr, "Failed to plan target product.");
+
+            if (pPackage->pMsiTransaction && pPackage->pMsiTransaction->fPlanned)
+            {
+                ++pPackage->pMsiTransaction->dwPackages;
+            }
         }
 
         if (BOOTSTRAPPER_ACTION_STATE_NONE != pTargetProduct->rollback)

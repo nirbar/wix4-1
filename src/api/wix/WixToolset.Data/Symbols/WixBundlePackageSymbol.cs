@@ -28,6 +28,7 @@ namespace WixToolset.Data
                 new IntermediateFieldDefinition(nameof(WixBundlePackageSymbolFields.Description), IntermediateFieldType.String),
                 new IntermediateFieldDefinition(nameof(WixBundlePackageSymbolFields.RollbackBoundaryRef), IntermediateFieldType.String),
                 new IntermediateFieldDefinition(nameof(WixBundlePackageSymbolFields.RollbackBoundaryBackwardRef), IntermediateFieldType.String),
+                new IntermediateFieldDefinition(nameof(WixBundlePackageSymbolFields.MsiTransactionRef), IntermediateFieldType.String),
             },
             typeof(WixBundlePackageSymbol));
     }
@@ -57,6 +58,7 @@ namespace WixToolset.Data.Symbols
         Description,
         RollbackBoundaryRef,
         RollbackBoundaryBackwardRef,
+        MsiTransactionRef,
     }
 
     /// <summary>
@@ -208,6 +210,12 @@ namespace WixToolset.Data.Symbols
         {
             get => (string)this.Fields[(int)WixBundlePackageSymbolFields.RollbackBoundaryBackwardRef];
             set => this.Set((int)WixBundlePackageSymbolFields.RollbackBoundaryBackwardRef, value);
+        }
+
+        public string MsiTransactionRef
+        {
+            get => (string)this.Fields[(int)WixBundlePackageSymbolFields.MsiTransactionRef];
+            set => this.Set((int)WixBundlePackageSymbolFields.MsiTransactionRef, value);
         }
 
         public bool Permanent

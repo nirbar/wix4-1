@@ -1741,6 +1741,10 @@ namespace WixToolset.Core
                             previousId = this.ParseRollbackBoundaryElement(child, ComplexReferenceParentType.PackageGroup, BurnConstants.BundleChainPackageGroupId, previousType, previousId);
                             previousType = ComplexReferenceChildType.Package;
                             break;
+                        case "MsiTransaction":
+                            previousId = this.ParseMsiTransactionElement(child, ComplexReferenceParentType.PackageGroup, BurnConstants.BundleChainPackageGroupId, previousType, previousId);
+                            previousType = ComplexReferenceChildType.Package;
+                            break;
                         case "PackageGroupRef":
                             previousId = this.ParsePackageGroupRefElement(child, ComplexReferenceParentType.PackageGroup, BurnConstants.BundleChainPackageGroupId, previousType, previousId);
                             previousType = ComplexReferenceChildType.PackageGroup;
@@ -1858,8 +1862,6 @@ namespace WixToolset.Core
             var sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             Identifier id = null;
             var vital = YesNoType.Yes;
-            var transaction = YesNoType.No;
-            string logPathVariable = null;
 
             // This list lets us evaluate extension attributes *after* all core attributes
             // have been parsed and dealt with, regardless of authoring order.
@@ -1882,11 +1884,10 @@ namespace WixToolset.Core
                         case "Vital":
                             vital = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
-                        case "Transaction":
-                            transaction = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
-                            break;
                         case "LogPathVariable":
-                            logPathVariable = this.Core.GetAttributeValue(sourceLineNumbers, attrib, EmptyRule.CanBeEmpty);
+                        case "Transaction":
+                            this.Messaging.Write(CompilerErrors.ObsoleteAttribute(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, "MsiTransaction"));
+                            allowed = false;
                             break;
                         default:
                             allowed = false;
@@ -1935,24 +1936,156 @@ namespace WixToolset.Core
 
             this.Core.ParseForExtensionElements(node);
 
-            if (transaction == YesNoType.Yes)
+            if (!this.Core.EncounteredError)
             {
-                if (logPathVariable == null)
+                this.CreateRollbackBoundary(sourceLineNumbers, id, vital, parentType, parentId, previousType, previousId);
+            }
+
+            return id.Id;
+        }
+
+        /// <summary>
+        /// Parse MsiTransaction element
+        /// </summary>
+        /// <param name="node">Element to parse</param>
+        /// <param name="parentType">Type of parent group, if known.</param>
+        /// <param name="parentId">Identifier of parent group, if known.</param>
+        /// <param name="previousType">Type of previous item, if known.</param>
+        /// <param name="previousId">Identifier of previous item, if known</param>
+        /// <returns>Identifier for package element.</returns>
+        private string ParseMsiTransactionElement(XElement node, ComplexReferenceParentType parentType, string parentId, ComplexReferenceChildType previousType, string previousId)
+        {
+            Debug.Assert(ComplexReferenceParentType.PackageGroup == parentType);
+            Debug.Assert(ComplexReferenceChildType.Unknown == previousType || ComplexReferenceChildType.PackageGroup == previousType || ComplexReferenceChildType.Package == previousType);
+
+            var sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            Identifier id = null;
+            string logPathVariable = null;
+
+            // This list lets us evaluate extension attributes *after* all core attributes
+            // have been parsed and dealt with, regardless of authoring order.
+            var extensionAttributes = new List<XAttribute>();
+
+            foreach (var attrib in node.Attributes())
+            {
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || CompilerCore.WixNamespace == attrib.Name.Namespace)
                 {
-                    logPathVariable = String.Concat("WixBundleLog_", id.Id);
+                    var allowed = true;
+                    switch (attrib.Name.LocalName)
+                    {
+                        case "Id":
+                            id = this.Core.GetAttributeIdentifier(sourceLineNumbers, attrib);
+                            break;
+                        case "LogPathVariable":
+                            logPathVariable = this.Core.GetAttributeValue(sourceLineNumbers, attrib, EmptyRule.CanBeEmpty);
+                            break;
+                        default:
+                            allowed = false;
+                            break;
+                    }
+
+                    if (!allowed)
+                    {
+                        this.Core.UnexpectedAttribute(node, attrib);
+                    }
+                }
+                else
+                {
+                    // Save the extension attributes for later...
+                    extensionAttributes.Add(attrib);
                 }
             }
-            else if (logPathVariable != null)
+
+            /*TODO Do we want to plan a MSI transaction start on rollback (that is, if a failure occured in subsequent packages after the transaction has been committed)?
+             * Once a transaction has been committed, I'm not sure what the desired rollback behaviour is:
+             * If we schedule a transaction on rollback, and one of the packages within the transaction fails, then all the packages in the transactions will revert to their installed state. Is that desireable?
+             * If deciding to do it, then the following changes should be made:
+             * - Add RollbackLogVariable to the schema, manifest, BURN_MSI_TRANSACTION
+             * - On PlanMsiTransactionComplete plan a rollback action to start a MSI transaction
+             * - On PlanMsiTransactionBegin plan a rollback action to commit a MSI transaction
+             * - On committing the MSI transaction, allow fActive to be true/false (in rollback, if the failure occurred within the transaction, it will be false. Otherwise, true)
+             */
+
+            if (null == id)
             {
-                this.Core.Write(ErrorMessages.IllegalAttributeValueWithoutOtherAttribute(sourceLineNumbers, node.Name.LocalName, "LogPathVariable", logPathVariable, "Transaction"));
+                id = this.Core.CreateIdentifier("tx", sourceLineNumbers.FileName, sourceLineNumbers.LineNumber?.ToString());
+
+                if (null == id)
+                {
+                    this.Core.Write(ErrorMessages.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Id"));
+                    id = Identifier.Invalid;
+                }
+            }
+            else if (!Common.IsIdentifier(id.Id))
+            {
+                this.Core.Write(ErrorMessages.IllegalIdentifier(sourceLineNumbers, node.Name.LocalName, "Id", id.Id));
+            }
+
+            // Now that the identifier is known, we can parse the extension attributes...
+            var contextValues = new Dictionary<string, string>
+            {
+                ["MsiTransactionId"] = id.Id
+            };
+            foreach (var attribute in extensionAttributes)
+            {
+                this.Core.ParseExtensionAttribute(node, attribute, contextValues);
+            }
+
+            if (logPathVariable == null)
+            {
+                logPathVariable = String.Concat("WixBundleLog_", id.Id);
             }
 
             if (!this.Core.EncounteredError)
             {
-                this.CreateRollbackBoundary(sourceLineNumbers, id, vital, transaction, logPathVariable, parentType, parentId, previousType, previousId);
+                this.CreateMsiTransaction(sourceLineNumbers, id, logPathVariable, parentType, parentId, previousType, previousId);
+                this.CreateChainPackageMetaRows(sourceLineNumbers, parentType, parentId, ComplexReferenceChildType.Package, id.Id, previousType, previousId, null);
+
+                previousType = ComplexReferenceChildType.Package;
+                previousId = id.Id;
             }
 
-            return id.Id;
+            foreach (var child in node.Elements())
+            {
+                if (CompilerCore.WixNamespace == child.Name.Namespace)
+                {
+                    switch (child.Name.LocalName)
+                    {
+                        case "MsiPackage":
+                            previousId = this.ParseMsiPackageElement(child, parentType, parentId, previousType, previousId);
+                            previousType = ComplexReferenceChildType.Package;
+                            break;
+                        case "MspPackage":
+                            previousId = this.ParseMspPackageElement(child, parentType, parentId, previousType, previousId);
+                            previousType = ComplexReferenceChildType.Package;
+                            break;
+                        case "PackageGroupRef":
+                            previousId = this.ParsePackageGroupRefElement(child, parentType, parentId, previousType, previousId);
+                            previousType = ComplexReferenceChildType.PackageGroup;
+                            break;
+                        default:
+                            this.Core.UnexpectedElement(node, child);
+                            break;
+                    }
+                }
+                else
+                {
+                    this.Core.ParseExtensionElement(node, child);
+                }
+            }
+
+            // End the transaction
+            var endId = this.Core.CreateIdentifier("etx", id.Id);
+            if (!this.Core.EncounteredError)
+            {
+                this.Core.AddSymbol(new WixBundleEndMsiTransactionSymbol(sourceLineNumbers, endId)
+                {
+                    TransactionId = id.Id,
+                });
+
+                this.CreateChainPackageMetaRows(sourceLineNumbers, parentType, parentId, ComplexReferenceChildType.Package, endId.Id, previousType, previousId, null);
+            }
+            return endId.Id;
         }
 
         /// <summary>
@@ -3160,6 +3293,10 @@ namespace WixToolset.Core
                             previousId = this.ParseRollbackBoundaryElement(child, ComplexReferenceParentType.PackageGroup, id.Id, previousType, previousId);
                             previousType = ComplexReferenceChildType.Package;
                             break;
+                        case "MsiTransaction":
+                            previousId = this.ParseMsiTransactionElement(child, ComplexReferenceParentType.PackageGroup, id.Id, previousType, previousId);
+                            previousType = ComplexReferenceChildType.Package;
+                            break;
                         case "PackageGroupRef":
                             previousId = this.ParsePackageGroupRefElement(child, ComplexReferenceParentType.PackageGroup, id.Id, previousType, previousId);
                             previousType = ComplexReferenceChildType.PackageGroup;
@@ -3274,25 +3411,41 @@ namespace WixToolset.Core
         /// <param name="sourceLineNumbers">Source line numbers.</param>
         /// <param name="id">Identifier for the rollback boundary.</param>
         /// <param name="vital">Indicates whether the rollback boundary is vital or not.</param>
-        /// <param name="transaction">Indicates whether the rollback boundary will use an MSI transaction.</param>
-        /// <param name="logPathVariable">The variable for the path of the MSI transaction log.</param>
         /// <param name="parentType">Type of parent group.</param>
         /// <param name="parentId">Identifier of parent group.</param>
         /// <param name="previousType">Type of previous item, if any.</param>
         /// <param name="previousId">Identifier of previous item, if any.</param>
-        private void CreateRollbackBoundary(SourceLineNumber sourceLineNumbers, Identifier id, YesNoType vital, YesNoType transaction, string logPathVariable, ComplexReferenceParentType parentType, string parentId, ComplexReferenceChildType previousType, string previousId)
+        private void CreateRollbackBoundary(SourceLineNumber sourceLineNumbers, Identifier id, YesNoType vital, ComplexReferenceParentType parentType, string parentId, ComplexReferenceChildType previousType, string previousId)
         {
             this.Core.AddSymbol(new WixChainItemSymbol(sourceLineNumbers, id));
 
             var rollbackBoundary = this.Core.AddSymbol(new WixBundleRollbackBoundarySymbol(sourceLineNumbers, id)
             {
-                Transaction = transaction == YesNoType.Yes,
                 Vital = vital == YesNoType.Yes,
             });
 
+            this.CreateChainPackageMetaRows(sourceLineNumbers, parentType, parentId, ComplexReferenceChildType.Package, id.Id, previousType, previousId, null);
+        }
+
+        /// <summary>
+        /// Creates MSI transaction start.
+        /// </summary>
+        /// <param name="sourceLineNumbers">Source line numbers.</param>
+        /// <param name="id">Identifier for the rollback boundary.</param>
+        /// <param name="logPathVariable">The variable for the path of the MSI transaction log.</param>
+        /// <param name="parentType">Type of parent group.</param>
+        /// <param name="parentId">Identifier of parent group.</param>
+        /// <param name="previousType">Type of previous item, if any.</param>
+        /// <param name="previousId">Identifier of previous item, if any.</param>
+        private void CreateMsiTransaction(SourceLineNumber sourceLineNumbers, Identifier id, string logPathVariable, ComplexReferenceParentType parentType, string parentId, ComplexReferenceChildType previousType, string previousId)
+        {
+            this.Core.AddSymbol(new WixChainItemSymbol(sourceLineNumbers, id));
+
+            var msiTransaction = this.Core.AddSymbol(new WixBundleMsiTransactionSymbol(sourceLineNumbers, id));
+
             if (logPathVariable != null)
             {
-                rollbackBoundary.LogPathVariable = logPathVariable;
+                msiTransaction.LogPathVariable = logPathVariable;
             }
 
             this.CreateChainPackageMetaRows(sourceLineNumbers, parentType, parentId, ComplexReferenceChildType.Package, id.Id, previousType, previousId, null);

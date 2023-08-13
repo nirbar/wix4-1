@@ -332,11 +332,13 @@ namespace WixToolset.Core.Burn
             }
 
             IEnumerable<WixBundleRollbackBoundarySymbol> boundaries;
+            IEnumerable<WixBundleMsiTransactionSymbol> msiTransactios;
             {
                 var command = new OrderPackagesAndRollbackBoundariesCommand(this.Messaging, section, facades);
                 command.Execute();
 
                 boundaries = command.UsedRollbackBoundaries;
+                msiTransactios = command.UsedMsiTransactios;
             }
 
             {
@@ -402,7 +404,7 @@ namespace WixToolset.Core.Burn
             // Generate the core-defined BA manifest tables...
             string baManifestPath;
             {
-                var command = new CreateBootstrapperApplicationManifestCommand(section, bundleSymbol, boundaries, facades, uxPayloadIndex, payloadSymbols, packagesPayloads, this.IntermediateFolder, this.InternalBurnBackendHelper);
+                var command = new CreateBootstrapperApplicationManifestCommand(section, bundleSymbol, boundaries, msiTransactios, facades, uxPayloadIndex, payloadSymbols, packagesPayloads, this.IntermediateFolder, this.InternalBurnBackendHelper);
                 command.Execute();
 
                 var baManifestPayload = command.BootstrapperApplicationManifestPayloadRow;
@@ -469,7 +471,7 @@ namespace WixToolset.Core.Burn
             {
                 var executableName = Path.GetFileName(this.OutputPath);
 
-                var command = new CreateBurnManifestCommand(executableName, section, bundleSymbol, containers.Values, chainSymbol, facades, boundaries, uxPayloads, payloadSymbols, packagesPayloads, orderedSearches, this.IntermediateFolder);
+                var command = new CreateBurnManifestCommand(executableName, section, bundleSymbol, containers.Values, chainSymbol, facades, boundaries, msiTransactios, uxPayloads, payloadSymbols, packagesPayloads, orderedSearches, this.IntermediateFolder);
                 command.Execute();
 
                 manifestPath = command.OutputPath;

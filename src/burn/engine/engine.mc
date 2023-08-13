@@ -544,7 +544,7 @@ MessageId=222
 Severity=Success
 SymbolicName=MSG_PLANNED_ROLLBACK_BOUNDARY
 Language=English
-Planned rollback boundary: '%1!ls!', vital: %2!hs!, transaction: %3!hs! (default: %4!hs!)
+Planned rollback boundary: '%1!ls!', vital: %2!hs!
 .
 
 MessageId=223
@@ -1076,7 +1076,7 @@ MessageId=381
 Severity=Warning
 SymbolicName=MSG_APPLY_CANCEL_IGNORED_DURING_ROLLBACK
 Language=English
-Ignoring application request to cancel from %1!ls! during rollback. 
+Ignoring application request to cancel from %1!ls! during rollback.
 .
 
 MessageId=382
@@ -1273,5 +1273,20 @@ Severity=Success
 SymbolicName=MSG_MSI_PROPERTY_CONDITION_FAILED
 Language=English
 Skipping MSI property '%1!ls!' because condition '%2!ls!' evaluates to %3!hs!.
+.
+
+MessageId=701
+Severity=Success
+SymbolicName=MSG_PLANNED_MSI_TRANSACTION
+Language=English
+Planned MSI transaction: '%1!ls!', planned: %2!hs!
+.
+
+
+MessageId=702
+Severity=Success
+SymbolicName=MSG_PLAN_CANCEL_MSI_TRANSACTION
+Language=English
+Canceling planned MSI transaction '%1!ls!' because it contains %2!lu! packages.
 .
 

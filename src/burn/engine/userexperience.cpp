@@ -2380,31 +2380,61 @@ LExit:
     return hr;
 }
 
-EXTERN_C BAAPI UserExperienceOnPlanRollbackBoundary(
+EXTERN_C BAAPI UserExperienceOnPlanMsiTransaction(
     __in BURN_USER_EXPERIENCE* pUserExperience,
-    __in_z LPCWSTR wzRollbackBoundaryId,
+    __in_z LPCWSTR wzTransactionId,
     __inout BOOL* pfTransaction
     )
 {
     HRESULT hr = S_OK;
-    BA_ONPLANROLLBACKBOUNDARY_ARGS args = { };
-    BA_ONPLANROLLBACKBOUNDARY_RESULTS results = { };
+    BA_ONPLANMSITRANSACTION_ARGS args = { };
+    BA_ONPLANMSITRANSACTION_RESULTS results = { };
 
     args.cbSize = sizeof(args);
-    args.wzRollbackBoundaryId = wzRollbackBoundaryId;
-    args.fRecommendedTransaction = *pfTransaction;
+    args.wzTransactionId = wzTransactionId;
 
     results.cbSize = sizeof(results);
     results.fTransaction = *pfTransaction;
 
-    hr = SendBAMessage(pUserExperience, BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANROLLBACKBOUNDARY, &args, &results);
-    ExitOnFailure(hr, "BA OnPlanRollbackBoundary failed.");
+    hr = SendBAMessage(pUserExperience, BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSITRANSACTION, &args, &results);
+    ExitOnFailure(hr, "BA OnPlanMsiTransaction failed.");
 
     if (results.fCancel)
     {
         hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
     *pfTransaction = results.fTransaction;
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnPlanMsiTransactionComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzTransactionId,
+    __in DWORD dwPackagesInTransaction,
+    __in BOOL fPlanned
+    )
+
+{
+    HRESULT hr = S_OK;
+    BA_ONPLANMSITRANSACTIONCOMPLETE_ARGS args = { };
+    BA_ONPLANMSITRANSACTIONCOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzTransactionId = wzTransactionId;
+    args.dwPackagesInTransaction = dwPackagesInTransaction;
+    args.fPlanned = fPlanned;
+
+    results.cbSize = sizeof(results);
+
+    hr = SendBAMessage(pUserExperience, BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSITRANSACTIONCOMPLETE, &args, &results);
+    ExitOnFailure(hr, "BA OnPlanMsiTransactionComplete failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
 
 LExit:
     return hr;

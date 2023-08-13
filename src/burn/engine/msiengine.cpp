@@ -853,8 +853,7 @@ LExit:
 // PlanCalculate - calculates the execute and rollback state for the requested package state.
 //
 extern "C" HRESULT MsiEnginePlanCalculatePackage(
-    __in BURN_PACKAGE* pPackage,
-    __in BOOL fInsideMsiTransaction
+    __in BURN_PACKAGE* pPackage
     )
 {
     Trace(REPORT_STANDARD, "Planning MSI package 0x%p", pPackage);
@@ -953,7 +952,7 @@ extern "C" HRESULT MsiEnginePlanCalculatePackage(
     }
 
     // Calculate the rollback action if there is an execute action.
-    if (BOOTSTRAPPER_ACTION_STATE_NONE != execute && !fInsideMsiTransaction)
+    if (BOOTSTRAPPER_ACTION_STATE_NONE != execute)
     {
         switch (pPackage->currentState)
         {
@@ -1099,6 +1098,11 @@ extern "C" HRESULT MsiEnginePlanAddPackage(
         pAction->msiPackage.rgFeatures = rgFeatureActions;
         rgFeatureActions = NULL;
 
+        if (pPackage->pMsiTransaction && pPackage->pMsiTransaction->fPlanned)
+        {
+            ++pPackage->pMsiTransaction->dwPackages;
+        }
+
         hr = MsiEnginePlanPackageOptions(display, pUserExperience, pPackage->sczId, TRUE, pAction->msiPackage.action,
             &pAction->msiPackage.actionMsiProperty, &pAction->msiPackage.uiLevel, &pAction->msiPackage.fDisableExternalUiHandler, &pAction->msiPackage.fileVersioning);
         ExitOnFailure(hr, "Failed to get msi ui options.");
@@ -1115,16 +1119,16 @@ LExit:
 }
 
 extern "C" HRESULT MsiEngineBeginTransaction(
-    __in BURN_ROLLBACK_BOUNDARY* pRollbackBoundary
+    __in BURN_MSI_TRANSACTION* pMsiTransaction
     )
 {
     HRESULT hr = S_OK;
     MSIHANDLE hTransactionHandle = NULL;
     HANDLE hChangeOfOwnerEvent = NULL;
 
-    LogId(REPORT_STANDARD, MSG_MSI_TRANSACTION_BEGIN, pRollbackBoundary->sczId);
+    LogId(REPORT_STANDARD, MSG_MSI_TRANSACTION_BEGIN, pMsiTransaction->sczId);
 
-    hr = WiuBeginTransaction(pRollbackBoundary->sczId, 0, &hTransactionHandle, &hChangeOfOwnerEvent, WIU_LOG_DEFAULT | INSTALLLOGMODE_VERBOSE, pRollbackBoundary->sczLogPath);
+    hr = WiuBeginTransaction(pMsiTransaction->sczId, 0, &hTransactionHandle, &hChangeOfOwnerEvent, WIU_LOG_DEFAULT | INSTALLLOGMODE_VERBOSE, pMsiTransaction->sczLogPath);
 
     if (HRESULT_FROM_WIN32(ERROR_ROLLBACK_DISABLED) == hr)
     {
@@ -1140,16 +1144,16 @@ LExit:
 }
 
 extern "C" HRESULT MsiEngineCommitTransaction(
-    __in BURN_ROLLBACK_BOUNDARY* pRollbackBoundary,
+    __in BURN_MSI_TRANSACTION* pMsiTransaction,
     __out BOOTSTRAPPER_APPLY_RESTART* pRestart
     )
 {
     HRESULT hr = S_OK;
     WIU_RESTART restart = WIU_RESTART_NONE;
 
-    LogId(REPORT_STANDARD, MSG_MSI_TRANSACTION_COMMIT, pRollbackBoundary->sczId);
+    LogId(REPORT_STANDARD, MSG_MSI_TRANSACTION_COMMIT, pMsiTransaction->sczId);
 
-    hr = WiuEndTransaction(MSITRANSACTIONSTATE_COMMIT, WIU_LOG_DEFAULT | INSTALLLOGMODE_VERBOSE, pRollbackBoundary->sczLogPath, &restart);
+    hr = WiuEndTransaction(MSITRANSACTIONSTATE_COMMIT, WIU_LOG_DEFAULT | INSTALLLOGMODE_VERBOSE, pMsiTransaction->sczLogPath, &restart);
     ExitOnFailure(hr, "Failed to commit the MSI transaction");
 
 LExit:
@@ -1172,16 +1176,16 @@ LExit:
 }
 
 extern "C" HRESULT MsiEngineRollbackTransaction(
-    __in BURN_ROLLBACK_BOUNDARY* pRollbackBoundary,
+    __in BURN_MSI_TRANSACTION* pMsiTransaction,
     __out BOOTSTRAPPER_APPLY_RESTART* pRestart
     )
 {
     HRESULT hr = S_OK;
     WIU_RESTART restart = WIU_RESTART_NONE;
 
-    LogId(REPORT_WARNING, MSG_MSI_TRANSACTION_ROLLBACK, pRollbackBoundary->sczId);
+    LogId(REPORT_WARNING, MSG_MSI_TRANSACTION_ROLLBACK, pMsiTransaction->sczId);
 
-    hr = WiuEndTransaction(MSITRANSACTIONSTATE_ROLLBACK, WIU_LOG_DEFAULT | INSTALLLOGMODE_VERBOSE, pRollbackBoundary->sczLogPath, &restart);
+    hr = WiuEndTransaction(MSITRANSACTIONSTATE_ROLLBACK, WIU_LOG_DEFAULT | INSTALLLOGMODE_VERBOSE, pMsiTransaction->sczLogPath, &restart);
     ExitOnFailure(hr, "Failed to rollback the MSI transaction");
 
 LExit:

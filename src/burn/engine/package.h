@@ -220,15 +220,20 @@ typedef struct _BURN_DEPENDENCY_PROVIDER
     BURN_DEPENDENCY_ACTION providerRollback;   // only valid during Plan.
 } BURN_DEPENDENCY_PROVIDER;
 
+typedef struct _BURN_MSI_TRANSACTION
+{
+    LPWSTR sczId;
+    BOOL fPlanned;
+    UINT dwPackages;
+    BOOL fActive; // only valid during Apply.
+    LPWSTR sczLogPathVariable;
+    LPWSTR sczLogPath;
+} BURN_MSI_TRANSACTION;
+
 typedef struct _BURN_ROLLBACK_BOUNDARY
 {
     LPWSTR sczId;
     BOOL fVital;
-    BOOL fTransactionAuthored;
-    BOOL fTransaction;
-    BOOL fActiveTransaction; // only valid during Apply.
-    LPWSTR sczLogPathVariable;
-    LPWSTR sczLogPath;
 } BURN_ROLLBACK_BOUNDARY;
 
 typedef struct _BURN_PATCH_TARGETCODE
@@ -281,6 +286,8 @@ typedef struct _BURN_PACKAGE
 
     BURN_ROLLBACK_BOUNDARY* pRollbackBoundaryForward;  // used during install and repair.
     BURN_ROLLBACK_BOUNDARY* pRollbackBoundaryBackward; // used during uninstall.
+
+    BURN_MSI_TRANSACTION* pMsiTransaction;
 
     BOOTSTRAPPER_PACKAGE_STATE currentState;    // only valid after Detect.
     BOOL fCached;                               // only valid after Detect.
@@ -433,6 +440,9 @@ typedef struct _BURN_PACKAGES
     BURN_ROLLBACK_BOUNDARY* rgRollbackBoundaries;
     DWORD cRollbackBoundaries;
 
+    BURN_MSI_TRANSACTION* rgMsiTransactions;
+    DWORD cMsiTransactions;
+
     BURN_PACKAGE* rgPackages;
     DWORD cPackages;
 
@@ -477,10 +487,10 @@ HRESULT PackageGetProperty(
     __in_z LPCWSTR wzProperty,
     __out_z_opt LPWSTR* psczValue
     );
-HRESULT PackageFindRollbackBoundaryById(
+HRESULT PackageFindMsiTransactionById(
     __in BURN_PACKAGES* pPackages,
     __in_z LPCWSTR wzId,
-    __out BURN_ROLLBACK_BOUNDARY** ppRollbackBoundary
+    __out BURN_MSI_TRANSACTION** ppTransaction
     );
 
 

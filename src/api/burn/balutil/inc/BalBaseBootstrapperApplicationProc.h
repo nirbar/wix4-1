@@ -171,13 +171,22 @@ static HRESULT BalBaseBAProcOnPlanRelatedBundle(
     return pBA->OnPlanRelatedBundle(pArgs->wzBundleId, pArgs->recommendedState, &pResults->requestedState, &pResults->fCancel);
 }
 
-static HRESULT BalBaseBAProcOnPlanRollbackBoundary(
+static HRESULT BalBaseBAProcOnPlanMsiTransaction(
     __in IBootstrapperApplication* pBA,
-    __in BA_ONPLANROLLBACKBOUNDARY_ARGS* pArgs,
-    __inout BA_ONPLANROLLBACKBOUNDARY_RESULTS* pResults
+    __in BA_ONPLANMSITRANSACTION_ARGS* pArgs,
+    __inout BA_ONPLANMSITRANSACTION_RESULTS* pResults
     )
 {
-    return pBA->OnPlanRollbackBoundary(pArgs->wzRollbackBoundaryId, pArgs->fRecommendedTransaction, &pResults->fTransaction, &pResults->fCancel);
+    return pBA->OnPlanMsiTransaction(pArgs->wzTransactionId, &pResults->fTransaction, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnPlanMsiTransactionComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONPLANMSITRANSACTIONCOMPLETE_ARGS* pArgs,
+    __inout BA_ONPLANMSITRANSACTIONCOMPLETE_RESULTS* pResults
+    )
+{
+    return pBA->OnPlanMsiTransactionComplete(pArgs->wzTransactionId, pArgs->dwPackagesInTransaction, pArgs->fPlanned, &pResults->fCancel);
 }
 
 static HRESULT BalBaseBAProcOnPlanPackageBegin(
@@ -997,8 +1006,11 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPAYLOADEXTRACTCOMPLETE:
             hr = BalBaseBAProcOnCachePayloadExtractComplete(pBA, reinterpret_cast<BA_ONCACHEPAYLOADEXTRACTCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEPAYLOADEXTRACTCOMPLETE_RESULTS*>(pvResults));
             break;
-        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANROLLBACKBOUNDARY:
-            hr = BalBaseBAProcOnPlanRollbackBoundary(pBA, reinterpret_cast<BA_ONPLANROLLBACKBOUNDARY_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANROLLBACKBOUNDARY_RESULTS*>(pvResults));
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSITRANSACTION:
+            hr = BalBaseBAProcOnPlanMsiTransaction(pBA, reinterpret_cast<BA_ONPLANMSITRANSACTION_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANMSITRANSACTION_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSITRANSACTIONCOMPLETE:
+            hr = BalBaseBAProcOnPlanMsiTransactionComplete(pBA, reinterpret_cast<BA_ONPLANMSITRANSACTIONCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANMSITRANSACTIONCOMPLETE_RESULTS*>(pvResults));
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONSETUPDATEBEGIN:
             hr = BalBaseBAProcOnSetUpdateBegin(pBA, reinterpret_cast<BA_ONSETUPDATEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONSETUPDATEBEGIN_RESULTS*>(pvResults));

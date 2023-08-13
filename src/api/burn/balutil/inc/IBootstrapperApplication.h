@@ -163,11 +163,18 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __inout BOOL* pfCancel
         ) = 0;
 
-    // OnPlanRollbackBoundary - called when the engine is planning a rollback boundary.
-    STDMETHOD(OnPlanRollbackBoundary)(
-        __in_z LPCWSTR wzRollbackBoundaryId,
-        __in BOOL fRecommendedTransaction,
+    // OnPlanMsiTransaction - called when the engine is planning a MSI transaction.
+    STDMETHOD(OnPlanMsiTransaction)(
+        __in_z LPCWSTR wzTransactionId,
         __inout BOOL* pfTransaction,
+        __inout BOOL* pfCancel
+        ) = 0;
+
+    // OnPlanMsiTransactionComplete - called when the engine has finished planning a MSI transaction.
+    STDMETHOD(OnPlanMsiTransactionComplete)(
+        __in_z LPCWSTR wzTransactionId,
+        __in DWORD dwPackagesInTransaction,
+        __in BOOL fPlanned,
         __inout BOOL* pfCancel
         ) = 0;
 

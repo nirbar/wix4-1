@@ -263,10 +263,20 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP OnPlanRollbackBoundary(
-        __in_z LPCWSTR /*wzRollbackBoundaryId*/,
-        __in BOOL /*fRecommendedTransaction*/,
+    virtual STDMETHODIMP OnPlanMsiTransaction(
+        __in_z LPCWSTR /*wzTransactionId*/,
         __inout BOOL* /*pfTransaction*/,
+        __inout BOOL* pfCancel
+        )
+    {
+        *pfCancel |= CheckCanceled();
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnPlanMsiTransactionComplete(
+        __in_z LPCWSTR /*wzTransactionId*/,
+        __in DWORD /*dwPackagesInTransaction*/,
+        __in BOOL /*fPlanned*/,
         __inout BOOL* pfCancel
         )
     {

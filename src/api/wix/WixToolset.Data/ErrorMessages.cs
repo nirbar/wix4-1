@@ -1488,17 +1488,24 @@ namespace WixToolset.Data
 
         public static Message MsiTransactionInvalidPackage2(SourceLineNumber sourceLineNumbers)
         {
-            return Message(sourceLineNumbers, Ids.MsiTransactionInvalidPackage2, "Location of rollback boundary related to previous error.");
+            return Message(sourceLineNumbers, Ids.MsiTransactionInvalidPackage2, "Location of MSI transaction related to previous error.");
         }
 
+        [Obsolete]
         public static Message MsiTransactionX86BeforeX64Package(SourceLineNumber sourceLineNumbers, string x64PackageId, string x86PackageId)
         {
             return Message(sourceLineNumbers, Ids.MsiTransactionX86BeforeX64Package, "Package '{0}' is x64 but Package '{1}' is x86. MSI transactions must install all x64 packages before any x86 package.", x64PackageId, x86PackageId);
         }
 
+        [Obsolete]
         public static Message MsiTransactionX86BeforeX64Package2(SourceLineNumber sourceLineNumbers)
         {
             return Message(sourceLineNumbers, Ids.MsiTransactionX86BeforeX64Package2, "Location of x86 package related to previous error.");
+        }
+
+        public static Message MsiTransactionX86AndX64Packages(SourceLineNumber sourceLineNumbers, string packageId)
+        {
+            return Message(sourceLineNumbers, Ids.MsiTransactionX86AndX64Packages, "Package '{0}' bitness differs from the bitness of preceding package(s). MSI transactions must contain only x86 packages or only x64 packages.", packageId);
         }
 
         public static Message MultipleEntrySections(SourceLineNumber sourceLineNumbers, string sectionName1, string sectionName2)
@@ -2674,6 +2681,7 @@ namespace WixToolset.Data
             MsiTransactionInvalidPackage2 = 412,
             ExpectedAttributeOrElementWithOtherAttribute = 413,
             ExpectedAttributeOrElementWithoutOtherAttribute = 414,
+            MsiTransactionX86AndX64Packages = 415,
         }
     }
 }

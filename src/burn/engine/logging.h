@@ -74,8 +74,8 @@ HRESULT LoggingSetPackageVariable(
     __out_opt LPWSTR* psczLogPath
     );
 
-HRESULT LoggingSetTransactionVariable(
-    __in BURN_ROLLBACK_BOUNDARY* pRollbackBoundary,
+extern "C" HRESULT LoggingSetTransactionVariable(
+    __in BURN_MSI_TRANSACTION* pMsiTransaction,
     __in_z_opt LPCWSTR wzSuffix,
     __in BURN_LOGGING* pLog,
     __in BURN_VARIABLES* pVariables

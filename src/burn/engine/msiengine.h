@@ -45,8 +45,7 @@ HRESULT MsiEnginePlanInitializePackage(
     __in BURN_USER_EXPERIENCE* pUserExperience
     );
 HRESULT MsiEnginePlanCalculatePackage(
-    __in BURN_PACKAGE* pPackage,
-    __in BOOL fInsideMsiTransaction
+    __in BURN_PACKAGE* pPackage
     );
 HRESULT MsiEnginePlanAddPackage(
     __in BOOTSTRAPPER_DISPLAY display,
@@ -57,14 +56,14 @@ HRESULT MsiEnginePlanAddPackage(
     __in BURN_VARIABLES* pVariables
     );
 HRESULT MsiEngineBeginTransaction(
-    __in BURN_ROLLBACK_BOUNDARY* pRollbackBoundary
+    __in BURN_MSI_TRANSACTION* pMsiTransaction
     );
 HRESULT MsiEngineCommitTransaction(
-    __in BURN_ROLLBACK_BOUNDARY* pRollbackBoundary,
+    __in BURN_MSI_TRANSACTION* pMsiTransaction,
     __out BOOTSTRAPPER_APPLY_RESTART* pRestart
     );
 HRESULT MsiEngineRollbackTransaction(
-    __in BURN_ROLLBACK_BOUNDARY* pRollbackBoundary,
+    __in BURN_MSI_TRANSACTION* pMsiTransaction,
     __out BOOTSTRAPPER_APPLY_RESTART* pRestart
     );
 HRESULT MsiEngineExecutePackage(

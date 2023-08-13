@@ -49,8 +49,7 @@ HRESULT MspEnginePlanInitializePackage(
     __in BURN_USER_EXPERIENCE* pUserExperience
     );
 HRESULT MspEnginePlanCalculatePackage(
-    __in BURN_PACKAGE* pPackage,
-    __in BOOL fInsideMsiTransaction
+    __in BURN_PACKAGE* pPackage
     );
 HRESULT MspEnginePlanAddPackage(
     __in BOOTSTRAPPER_DISPLAY display,

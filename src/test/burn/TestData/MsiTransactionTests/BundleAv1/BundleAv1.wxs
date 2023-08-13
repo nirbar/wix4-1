@@ -5,9 +5,11 @@
   <Fragment>
     <PackageGroup Id="BundlePackages">
       <MsiPackage Id="PackageA" SourceFile="$(var.PackageA.TargetPath)" />
-      <RollbackBoundary Transaction="yes" />
-      <MsiPackage Id="PackageB" SourceFile="$(var.PackageBv1.TargetPath)" />
-      <MsiPackage Id="PackageC" SourceFile="$(var.PackageCv1.TargetPath)" />
+      <RollbackBoundary/>
+      <MsiTransaction>
+          <MsiPackage Id="PackageB" SourceFile="$(var.PackageBv1.TargetPath)" />
+          <MsiPackage Id="PackageC" SourceFile="$(var.PackageCv1.TargetPath)" />
+      </MsiTransaction>
     </PackageGroup>
   </Fragment>
 </Wix>

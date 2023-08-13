@@ -86,7 +86,10 @@ namespace WixToolset.Mba.Core
         public event EventHandler<PlanRelatedBundleTypeEventArgs> PlanRelatedBundleType;
 
         /// <inheritdoc/>
-        public event EventHandler<PlanRollbackBoundaryEventArgs> PlanRollbackBoundary;
+        public event EventHandler<PlanMsiTransactionEventArgs> PlanMsiTransaction;
+
+        /// <inheritdoc/>
+        public event EventHandler<PlanMsiTransactionCompleteEventArgs> PlanMsiTransactionComplete;
 
         /// <inheritdoc/>
         public event EventHandler<PlanPackageBeginEventArgs> PlanPackageBegin;
@@ -537,11 +540,23 @@ namespace WixToolset.Mba.Core
         }
 
         /// <summary>
-        /// Called by the engine, raises the <see cref="PlanRollbackBoundary"/> event.
+        /// Called by the engine, raises the <see cref="PlanMsiTransaction"/> event.
         /// </summary>
-        protected virtual void OnPlanRollbackBoundary(PlanRollbackBoundaryEventArgs args)
+        protected virtual void OnPlanMsiTransaction(PlanMsiTransactionEventArgs args)
         {
-            EventHandler<PlanRollbackBoundaryEventArgs> handler = this.PlanRollbackBoundary;
+            EventHandler<PlanMsiTransactionEventArgs> handler = this.PlanMsiTransaction;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
+        /// Called by the engine, raises the <see cref="PlanMsiTransactionComplete"/> event.
+        /// </summary>
+        protected virtual void OnPlanMsiTransactionComplete(PlanMsiTransactionCompleteEventArgs args)
+        {
+            EventHandler<PlanMsiTransactionCompleteEventArgs> handler = this.PlanMsiTransactionComplete;
             if (null != handler)
             {
                 handler(this, args);
@@ -1571,12 +1586,21 @@ namespace WixToolset.Mba.Core
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnPlanRollbackBoundary(string wzRollbackBoundaryId, bool fRecommendedTransaction, ref bool fTransaction, ref bool fCancel)
+        int IBootstrapperApplication.OnPlanMsiTransaction(string wzTransactionId, ref bool fTransaction, ref bool fCancel)
         {
-            PlanRollbackBoundaryEventArgs args = new PlanRollbackBoundaryEventArgs(wzRollbackBoundaryId, fRecommendedTransaction, fTransaction, fCancel);
-            this.OnPlanRollbackBoundary(args);
+            PlanMsiTransactionEventArgs args = new PlanMsiTransactionEventArgs(wzTransactionId, fTransaction, fCancel);
+            this.OnPlanMsiTransaction(args);
 
             fTransaction = args.Transaction;
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnPlanMsiTransactionComplete(string wzTransactionId, uint dwPackagesInTransaction, bool fPlanned, ref bool fCancel)
+        {
+            PlanMsiTransactionCompleteEventArgs args = new PlanMsiTransactionCompleteEventArgs(wzTransactionId, dwPackagesInTransaction, fPlanned, fCancel);
+            this.OnPlanMsiTransactionComplete(args);
+
             fCancel = args.Cancel;
             return args.HResult;
         }

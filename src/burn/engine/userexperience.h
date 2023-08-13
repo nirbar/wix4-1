@@ -537,10 +537,16 @@ BAAPI UserExperienceOnPlanRestoreRelatedBundle(
     __in_z LPCWSTR wzBundleId,
     __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
     );
-BAAPI UserExperienceOnPlanRollbackBoundary(
+BAAPI UserExperienceOnPlanMsiTransaction(
     __in BURN_USER_EXPERIENCE* pUserExperience,
-    __in_z LPCWSTR wzRollbackBoundaryId,
-    __inout BOOL *pfTransaction
+    __in_z LPCWSTR wzTransactionId,
+    __inout BOOL* pfTransaction
+    );
+BAAPI UserExperienceOnPlanMsiTransactionComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzTransactionId,
+    __in DWORD dwPackagesInTransaction,
+    __in BOOL fPlanned
     );
 BAAPI UserExperienceOnPlanPatchTarget(
     __in BURN_USER_EXPERIENCE* pUserExperience,
