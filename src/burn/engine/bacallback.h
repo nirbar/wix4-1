@@ -456,10 +456,16 @@ HRESULT BACallbackOnPlanRestoreRelatedBundle(
     __in_z LPCWSTR wzBundleId,
     __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
     );
-HRESULT BACallbackOnPlanRollbackBoundary(
+HRESULT BACallbackOnPlanMsiTransaction(
     __in BURN_USER_EXPERIENCE* pUserExperience,
-    __in_z LPCWSTR wzRollbackBoundaryId,
+    __in_z LPCWSTR wzTransactionId,
     __inout BOOL *pfTransaction
+    );
+HRESULT BACallbackOnPlanMsiTransactionComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzTransactionId,
+    __in DWORD dwPackagesInTransaction,
+    __in BOOL fTransaction
     );
 HRESULT BACallbackOnPlanPatchTarget(
     __in BURN_USER_EXPERIENCE* pUserExperience,

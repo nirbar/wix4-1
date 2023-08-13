@@ -27,12 +27,22 @@ namespace WixToolset.Core.Burn.Bundles
 
         public IEnumerable<WixBundleRollbackBoundarySymbol> UsedRollbackBoundaries { get; private set; }
 
+        public IEnumerable<WixBundleMsiTransactionSymbol> UsedMsiTransactios { get; private set; }
+
         public void Execute()
         {
             var groupSymbols = this.Section.Symbols.OfType<WixGroupSymbol>().ToList();
             var boundariesById = this.Section.Symbols.OfType<WixBundleRollbackBoundarySymbol>().ToDictionary(b => b.Id.Id);
 
+            var msiTransactionsById = this.Section.Symbols.OfType<WixBundleMsiTransactionSymbol>().ToDictionary(t => t.Id.Id);
+            var msiEndTransactionsById = this.Section.Symbols.OfType<WixBundleEndMsiTransactionSymbol>().ToDictionary(t => t.Id.Id);
+            if (msiTransactionsById.Any())
+            {
+                this.Messaging.Write(WarningMessages.MsiTransactionLimitations(msiTransactionsById.First().Value.SourceLineNumbers));
+            }
+
             var usedBoundaries = new List<WixBundleRollbackBoundarySymbol>();
+            var usedMsiTransactions = new List<WixBundleMsiTransactionSymbol>();
 
             // Process the chain of packages to add them in the correct order
             // and assign the forward rollback boundaries as appropriate. Remember
@@ -45,8 +55,9 @@ namespace WixToolset.Core.Burn.Bundles
             // defined.
             var pendingRollbackBoundary = new WixBundleRollbackBoundarySymbol(null, new Identifier(AccessModifier.Section, BurnConstants.BundleDefaultBoundaryId)) { Vital = true };
             var lastRollbackBoundary = pendingRollbackBoundary;
-            PackageFacade msiTransactionX86Package = null;
-            var warnedMsiTransaction = false;
+            WixBundleMsiTransactionSymbol lastMsiTransaction = null;
+            bool transactionHasX86Package = false;
+            bool transactionHasX64Package = false;
 
             foreach (var groupSymbol in groupSymbols)
             {
@@ -54,8 +65,6 @@ namespace WixToolset.Core.Burn.Bundles
                 {
                     if (this.PackageFacades.TryGetFacadeByPackageId(groupSymbol.ChildId, out var facade))
                     {
-                        var insideMsiTransaction = lastRollbackBoundary.Transaction;
-
                         if (null != pendingRollbackBoundary)
                         {
                             // If we used the default boundary, ensure the symbol is added to the section.
@@ -64,47 +73,76 @@ namespace WixToolset.Core.Burn.Bundles
                                 this.Section.AddSymbol(pendingRollbackBoundary);
                             }
 
-                            if (insideMsiTransaction && !warnedMsiTransaction)
-                            {
-                                warnedMsiTransaction = true;
-                                this.Messaging.Write(WarningMessages.MsiTransactionLimitations(pendingRollbackBoundary.SourceLineNumbers));
-                            }
-
                             usedBoundaries.Add(pendingRollbackBoundary);
                             facade.PackageSymbol.RollbackBoundaryRef = pendingRollbackBoundary.Id.Id;
                             pendingRollbackBoundary = null;
-                            msiTransactionX86Package = null;
                         }
 
-                        if (insideMsiTransaction)
+                        if (null != lastMsiTransaction)
                         {
+                            facade.PackageSymbol.MsiTransactionRef = lastMsiTransaction.Id.Id;
+
                             if (facade.PackageSymbol.Type != WixBundlePackageType.Msi && facade.PackageSymbol.Type != WixBundlePackageType.Msp)
                             {
                                 this.Messaging.Write(ErrorMessages.MsiTransactionInvalidPackage(facade.PackageSymbol.SourceLineNumbers, facade.PackageId, facade.PackageSymbol.Type.ToString()));
-                                this.Messaging.Write(ErrorMessages.MsiTransactionInvalidPackage2(lastRollbackBoundary.SourceLineNumbers));
+                                this.Messaging.Write(ErrorMessages.MsiTransactionInvalidPackage2(lastMsiTransaction.SourceLineNumbers));
                             }
                             // Not possible to tell the bitness of Msp.
                             else if (facade.PackageSymbol.Type == WixBundlePackageType.Msi)
                             {
-                                if (msiTransactionX86Package == null && !facade.PackageSymbol.Win64)
+                                if (facade.PackageSymbol.Win64)
                                 {
-                                    msiTransactionX86Package = facade;
+                                    transactionHasX64Package = true;
                                 }
-                                // Error if MSI transaction has x86 package preceding x64 packages
-                                else if (msiTransactionX86Package != null && facade.PackageSymbol.Win64)
+                                else
                                 {
-                                    this.Messaging.Write(ErrorMessages.MsiTransactionX86BeforeX64Package(facade.PackageSymbol.SourceLineNumbers, facade.PackageId, msiTransactionX86Package.PackageId));
-                                    this.Messaging.Write(ErrorMessages.MsiTransactionX86BeforeX64Package2(msiTransactionX86Package.PackageSymbol.SourceLineNumbers));
+                                    transactionHasX86Package = true;
+                                }
+
+                                // Error if transaction has both x86 and x64 packages
+                                // The rule says that x64 packages must come before any x86 packages
+                                // However since uninstall works in reverse order we can't have mixed-bitness transactions
+                                if (transactionHasX64Package && transactionHasX86Package)
+                                {
+                                    this.Messaging.Write(ErrorMessages.MsiTransactionX86AndX64Packages(facade.PackageSymbol.SourceLineNumbers, facade.PackageId));
                                 }
                             }
                         }
 
                         this.PackageFacades.AddOrdered(facade);
                     }
+                    else if (msiTransactionsById.ContainsKey(groupSymbol.ChildId)) // MSI transaction
+                    {
+                        // transaction isn't allowed within a transaction
+                        if (null != lastMsiTransaction)
+                        {
+                            this.Messaging.Write(ErrorMessages.MsiTransactionInvalidPackage(groupSymbol.SourceLineNumbers, groupSymbol.ChildId, "MsiTransaction"));
+                            this.Messaging.Write(ErrorMessages.MsiTransactionInvalidPackage2(lastMsiTransaction.SourceLineNumbers));
+                        }
+
+                        lastMsiTransaction = msiTransactionsById[groupSymbol.ChildId];
+                        usedMsiTransactions.Add(lastMsiTransaction);
+                        transactionHasX86Package = false;
+                        transactionHasX64Package = false;
+                    }
+                    else if (msiEndTransactionsById.ContainsKey(groupSymbol.ChildId)) // End of MSI transaction
+                    {
+                        lastMsiTransaction = null;
+                        transactionHasX86Package = false;
+                        transactionHasX64Package = false;
+                    }
                     else // must be a rollback boundary.
                     {
                         // Discard the next rollback boundary if we have a previously defined boundary.
                         var nextRollbackBoundary = boundariesById[groupSymbol.ChildId];
+
+                        // Rollback boundary isn't allowed within a transaction
+                        if (null != lastMsiTransaction)
+                        {
+                            this.Messaging.Write(ErrorMessages.MsiTransactionInvalidPackage(nextRollbackBoundary.SourceLineNumbers, nextRollbackBoundary.Id.Id, "RollbackBoundary"));
+                            this.Messaging.Write(ErrorMessages.MsiTransactionInvalidPackage2(lastMsiTransaction.SourceLineNumbers));
+                        }
+
                         if (null != pendingRollbackBoundary && pendingRollbackBoundary.Id.Id != BurnConstants.BundleDefaultBoundaryId)
                         {
                             this.Messaging.Write(WarningMessages.DiscardedRollbackBoundary(nextRollbackBoundary.SourceLineNumbers, nextRollbackBoundary.Id.Id));
@@ -176,6 +214,7 @@ namespace WixToolset.Core.Burn.Bundles
             }
 
             this.UsedRollbackBoundaries = usedBoundaries;
+            this.UsedMsiTransactios = usedMsiTransactions;
         }
     }
 }

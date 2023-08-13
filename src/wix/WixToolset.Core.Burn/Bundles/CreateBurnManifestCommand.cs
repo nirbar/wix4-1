@@ -16,7 +16,7 @@ namespace WixToolset.Core.Burn.Bundles
 
     internal class CreateBurnManifestCommand
     {
-        public CreateBurnManifestCommand(string executableName, IntermediateSection section, WixBundleSymbol bundleSymbol, WixBootstrapperApplicationSymbol primaryBundleApplicationSymbol, WixBootstrapperApplicationSymbol secondaryBundleApplicationSymbol, IEnumerable<WixBundleContainerSymbol> containers, WixChainSymbol chainSymbol, PackageFacades packageFacades, IEnumerable<WixBundleRollbackBoundarySymbol> boundaries, IEnumerable<WixBundlePayloadSymbol> uxPayloads, Dictionary<string, WixBundlePayloadSymbol> allPayloadsById, Dictionary<string, Dictionary<string, WixBundlePayloadSymbol>> packagesPayloads, IEnumerable<ISearchFacade> orderedSearches, string intermediateFolder)
+        public CreateBurnManifestCommand(string executableName, IntermediateSection section, WixBundleSymbol bundleSymbol, WixBootstrapperApplicationSymbol primaryBundleApplicationSymbol, WixBootstrapperApplicationSymbol secondaryBundleApplicationSymbol, IEnumerable<WixBundleContainerSymbol> containers, WixChainSymbol chainSymbol, PackageFacades packageFacades, IEnumerable<WixBundleRollbackBoundarySymbol> boundaries, IEnumerable<WixBundleMsiTransactionSymbol> transactions, IEnumerable<WixBundlePayloadSymbol> uxPayloads, Dictionary<string, WixBundlePayloadSymbol> allPayloadsById, Dictionary<string, Dictionary<string, WixBundlePayloadSymbol>> packagesPayloads, IEnumerable<ISearchFacade> orderedSearches, string intermediateFolder)
         {
             this.ExecutableName = executableName;
             this.Section = section;
@@ -27,6 +27,7 @@ namespace WixToolset.Core.Burn.Bundles
             this.Containers = containers;
             this.PackageFacades = packageFacades;
             this.RollbackBoundaries = boundaries;
+            this.MsiTransactions = transactions;
             this.UXContainerPayloads = uxPayloads;
             this.Payloads = allPayloadsById;
             this.PackagesPayloads = packagesPayloads;
@@ -47,6 +48,8 @@ namespace WixToolset.Core.Burn.Bundles
         private WixBootstrapperApplicationSymbol SecondaryBundleApplicationSymbol { get; }
 
         private WixChainSymbol Chain { get; }
+
+        private IEnumerable<WixBundleMsiTransactionSymbol> MsiTransactions { get; }
 
         private IEnumerable<WixBundleRollbackBoundarySymbol> RollbackBoundaries { get; }
 
@@ -203,11 +206,18 @@ namespace WixToolset.Core.Burn.Bundles
                     writer.WriteStartElement("RollbackBoundary");
                     writer.WriteAttributeString("Id", rollbackBoundary.Id.Id);
                     writer.WriteAttributeString("Vital", rollbackBoundary.Vital ? "yes" : "no");
-                    writer.WriteAttributeString("Transaction", rollbackBoundary.Transaction ? "yes" : "no");
 
-                    if (!String.IsNullOrEmpty(rollbackBoundary.LogPathVariable))
+                    writer.WriteEndElement();
+                }
+
+                foreach (var msiTransaction in this.MsiTransactions)
+                {
+                    writer.WriteStartElement("MsiTransaction");
+                    writer.WriteAttributeString("Id", msiTransaction.Id.Id);
+
+                    if (!String.IsNullOrEmpty(msiTransaction.LogPathVariable))
                     {
-                        writer.WriteAttributeString("LogPathVariable", rollbackBoundary.LogPathVariable);
+                        writer.WriteAttributeString("LogPathVariable", msiTransaction.LogPathVariable);
                     }
 
                     writer.WriteEndElement();
@@ -383,6 +393,11 @@ namespace WixToolset.Core.Burn.Bundles
                     if (!String.IsNullOrEmpty(package.PackageSymbol.RollbackBoundaryBackwardRef))
                     {
                         writer.WriteAttributeString("RollbackBoundaryBackward", package.PackageSymbol.RollbackBoundaryBackwardRef);
+                    }
+
+                    if (!String.IsNullOrEmpty(package.PackageSymbol.MsiTransactionRef))
+                    {
+                        writer.WriteAttributeString("MsiTransaction", package.PackageSymbol.MsiTransactionRef);
                     }
 
                     if (!String.IsNullOrEmpty(package.PackageSymbol.LogPathVariable))

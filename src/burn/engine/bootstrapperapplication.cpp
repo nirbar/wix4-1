@@ -269,7 +269,7 @@ EXTERN_C HRESULT BootstrapperApplicationInterpretExecuteResult(
     else
     {
         int nCheckedResult = BootstrapperApplicationCheckExecuteResult(pUserExperience, fRollback, dwAllowedResults, nResult);
-        hr = IDOK == nCheckedResult || IDNOACTION == nCheckedResult ? S_OK : IDCANCEL == nCheckedResult || IDABORT == nCheckedResult ? HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT) : HRESULT_FROM_WIN32(ERROR_INSTALL_FAILURE);
+        hr = IDOK == nCheckedResult || IDNOACTION == nCheckedResult ? S_OK : IDCANCEL == nCheckedResult || IDABORT == nCheckedResult ? E_INSTALLUSEREXIT : HRESULT_FROM_WIN32(ERROR_INSTALL_FAILURE);
     }
 
     return hr;
@@ -494,7 +494,7 @@ static int FilterResult(
     }
     else
     {
-        switch (dwAllowedResults)
+        switch (dwAllowedResults & MB_TYPEMASK)
         {
         case MB_OK:
             nResult = IDOK;

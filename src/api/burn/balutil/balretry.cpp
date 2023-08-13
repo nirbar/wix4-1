@@ -129,7 +129,7 @@ DAPI_(HRESULT) BalRetryEndContainerOrPayload(
     if (FAILED(hrError) && vrgRetryInfo[type].cRetries < vdwMaxRetries && IsActiveRetryEntry(type, wzId))
     {
         // Retry on all errors except the following.
-        if (HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT) != hrError &&
+        if (E_INSTALLUSEREXIT != hrError &&
             BG_E_NETWORK_DISCONNECTED != hrError &&
             HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) != hrError &&
             HRESULT_FROM_WIN32(ERROR_INTERNET_NAME_NOT_RESOLVED) != hrError)

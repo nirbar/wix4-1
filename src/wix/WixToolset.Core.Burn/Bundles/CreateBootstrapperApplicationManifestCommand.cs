@@ -15,11 +15,12 @@ namespace WixToolset.Core.Burn.Bundles
 
     internal class CreateBootstrapperApplicationManifestCommand
     {
-        public CreateBootstrapperApplicationManifestCommand(IntermediateSection section, WixBundleSymbol bundleSymbol, IEnumerable<WixBundleRollbackBoundarySymbol> boundaries, PackageFacades packageFacades, int lastUXPayloadIndex, Dictionary<string, WixBundlePayloadSymbol> payloadSymbols, Dictionary<string, Dictionary<string, WixBundlePayloadSymbol>> packagesPayloads, string intermediateFolder, IInternalBurnBackendHelper internalBurnBackendHelper)
+        public CreateBootstrapperApplicationManifestCommand(IntermediateSection section, WixBundleSymbol bundleSymbol, IEnumerable<WixBundleRollbackBoundarySymbol> boundaries, IEnumerable<WixBundleMsiTransactionSymbol> transactions, PackageFacades packageFacades, int lastUXPayloadIndex, Dictionary<string, WixBundlePayloadSymbol> payloadSymbols, Dictionary<string, Dictionary<string, WixBundlePayloadSymbol>> packagesPayloads, string intermediateFolder, IInternalBurnBackendHelper internalBurnBackendHelper)
         {
             this.Section = section;
             this.BundleSymbol = bundleSymbol;
             this.RollbackBoundaries = boundaries;
+            this.MsiTransactions = transactions;
             this.PackagesFacades = packageFacades;
             this.LastUXPayloadIndex = lastUXPayloadIndex;
             this.Payloads = payloadSymbols;
@@ -31,6 +32,8 @@ namespace WixToolset.Core.Burn.Bundles
         private IntermediateSection Section { get; }
 
         private WixBundleSymbol BundleSymbol { get; }
+
+        private IEnumerable<WixBundleMsiTransactionSymbol> MsiTransactions { get; }
 
         private IEnumerable<WixBundleRollbackBoundarySymbol> RollbackBoundaries { get; }
 
@@ -73,6 +76,8 @@ namespace WixToolset.Core.Burn.Bundles
 
                 this.WriteRollbackBoundaryInfo(writer);
 
+                this.WriteMsiTransactionInfo(writer);
+
                 this.WritePackageInfo(writer);
 
                 this.WriteFeatureInfo(writer);
@@ -109,11 +114,21 @@ namespace WixToolset.Core.Burn.Bundles
                 writer.WriteStartElement("WixRollbackBoundary");
                 writer.WriteAttributeString("Id", rollbackBoundary.Id.Id);
                 writer.WriteAttributeString("Vital", rollbackBoundary.Vital ? "yes" : "no");
-                writer.WriteAttributeString("Transaction", rollbackBoundary.Transaction ? "yes" : "no");
 
-                if (!String.IsNullOrEmpty(rollbackBoundary.LogPathVariable))
+                writer.WriteEndElement();
+            }
+        }
+
+        private void WriteMsiTransactionInfo(XmlTextWriter writer)
+        {
+            foreach (var msiTransaction in this.MsiTransactions)
+            {
+                writer.WriteStartElement("WixMsiTransaction");
+                writer.WriteAttributeString("Id", msiTransaction.Id.Id);
+
+                if (!String.IsNullOrEmpty(msiTransaction.LogPathVariable))
                 {
-                    writer.WriteAttributeString("LogPathVariable", rollbackBoundary.LogPathVariable);
+                    writer.WriteAttributeString("LogPathVariable", msiTransaction.LogPathVariable);
                 }
 
                 writer.WriteEndElement();

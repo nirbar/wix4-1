@@ -347,7 +347,7 @@ extern "C" UINT __stdcall WixCloseApplications(
         if (dwAttributes & CLOSEAPP_ATTRIBUTE_PROMPTTOCONTINUE)
         {
             hr = PromptToContinue(pwzTarget, pwzDescription ? pwzDescription : L"");
-            if (HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT) == hr)
+            if (E_INSTALLUSEREXIT == hr)
             {
                 // Skip error message if user canceled.
                 ExitFunction();
@@ -455,7 +455,7 @@ LExit:
 
     if (FAILED(hr))
     {
-        er = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT) == hr ? ERROR_INSTALL_USEREXIT : ERROR_INSTALL_FAILURE;
+        er = E_INSTALLUSEREXIT == hr ? ERROR_INSTALL_USEREXIT : ERROR_INSTALL_FAILURE;
     }
     return WcaFinalize(er);
 }

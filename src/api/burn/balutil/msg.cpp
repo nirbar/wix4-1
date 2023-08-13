@@ -4210,7 +4210,7 @@ LExit:
     return hr;
 }
 
-static HRESULT OnPlanRollbackBoundary(
+static HRESULT OnPlanMsiTransaction(
     __in IBootstrapperApplication* pApplication,
     __in BUFF_READER* pReaderArgs,
     __in BUFF_READER* pReaderResults,
@@ -4218,52 +4218,103 @@ static HRESULT OnPlanRollbackBoundary(
     )
 {
     HRESULT hr = S_OK;
-    BA_ONPLANROLLBACKBOUNDARY_ARGS args = { };
-    BA_ONPLANROLLBACKBOUNDARY_RESULTS results = { };
-    LPWSTR sczRollbackBoundaryId = NULL;
+    BA_ONPLANMSITRANSACTION_ARGS args = { };
+    BA_ONPLANMSITRANSACTION_RESULTS results = { };
+    LPWSTR sczTransactionId = NULL;
 
     // Read args.
     hr = BuffReaderReadNumber(pReaderArgs, &args.dwApiVersion);
-    ExitOnFailure(hr, "Failed to read API version of OnPlanRollbackBoundary args.");
+    ExitOnFailure(hr, "Failed to read API version of OnPlanMsiTransaction args.");
 
-    hr = BuffReaderReadString(pReaderArgs, &sczRollbackBoundaryId);
-    ExitOnFailure(hr, "Failed to read rollback boundary id of OnPlanRollbackBoundary args.");
+    hr = BuffReaderReadString(pReaderArgs, &sczTransactionId);
+    ExitOnFailure(hr, "Failed to read id of OnPlanMsiTransaction args.");
 
-    args.wzRollbackBoundaryId = sczRollbackBoundaryId;
-
-    hr = BuffReaderReadNumber(pReaderArgs, reinterpret_cast<DWORD*>(&args.fRecommendedTransaction));
-    ExitOnFailure(hr, "Failed to read recommended transaction of OnPlanRollbackBoundary args.");
+    args.wzTransactionId = sczTransactionId;
 
     // Read results.
     hr = BuffReaderReadNumber(pReaderResults, &results.dwApiVersion);
-    ExitOnFailure(hr, "Failed to read API version of OnPlanRollbackBoundary results.");
+    ExitOnFailure(hr, "Failed to read API version of OnPlanMsiTransaction results.");
 
     hr = BuffReaderReadNumber(pReaderResults, reinterpret_cast<DWORD*>(&results.fTransaction));
-    ExitOnFailure(hr, "Failed to read transaction of OnPlanRollbackBoundary results.");
+    ExitOnFailure(hr, "Failed to read transaction of OnPlanMsiTransaction results.");
 
     // Callback.
-    hr = pApplication->BAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANROLLBACKBOUNDARY, &args, &results);
+    hr = pApplication->BAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSITRANSACTION, &args, &results);
 
     if (E_NOTIMPL == hr)
     {
-        hr = pApplication->OnPlanRollbackBoundary(args.wzRollbackBoundaryId, args.fRecommendedTransaction, &results.fTransaction, &results.fCancel);
+        hr = pApplication->OnPlanMsiTransaction(args.wzTransactionId, &results.fTransaction, &results.fCancel);
     }
 
-    pApplication->BAProcFallback(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANROLLBACKBOUNDARY, &args, &results, &hr);
-    BalExitOnFailure(hr, "BA OnPlanRollbackBoundary failed.");
+    pApplication->BAProcFallback(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSITRANSACTION, &args, &results, &hr);
+    BalExitOnFailure(hr, "BA OnPlanMsiTransaction failed.");
 
     // Write results.
     hr = BuffWriteNumberToBuffer(pBuffer, sizeof(results));
-    ExitOnFailure(hr, "Failed to write size of OnPlanRollbackBoundary struct.");
+    ExitOnFailure(hr, "Failed to write size of OnPlanMsiTransaction struct.");
 
     hr = BuffWriteNumberToBuffer(pBuffer, results.fTransaction);
-    ExitOnFailure(hr, "Failed to write transaction of OnPlanRollbackBoundary struct.");
+    ExitOnFailure(hr, "Failed to write transaction of OnPlanMsiTransaction struct.");
 
     hr = BuffWriteNumberToBuffer(pBuffer, results.fCancel);
-    ExitOnFailure(hr, "Failed to write cancel of OnPlanRollbackBoundary struct.");
+    ExitOnFailure(hr, "Failed to write cancel of OnPlanMsiTransaction struct.");
 
 LExit:
-    ReleaseStr(sczRollbackBoundaryId);
+    ReleaseStr(sczTransactionId);
+    return hr;
+}
+
+static HRESULT OnPlanMsiTransactionComplete(
+    __in IBootstrapperApplication* pApplication,
+    __in BUFF_READER* pReaderArgs,
+    __in BUFF_READER* pReaderResults,
+    __in BUFF_BUFFER* pBuffer
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONPLANMSITRANSACTIONCOMPLETE_ARGS args = { };
+    BA_ONPLANMSITRANSACTIONCOMPLETE_RESULTS results = { };
+    LPWSTR sczTransactionId = NULL;
+
+    // Read args.
+    hr = BuffReaderReadNumber(pReaderArgs, &args.dwApiVersion);
+    ExitOnFailure(hr, "Failed to read API version of OnPlanMsiTransactionComplete args.");
+
+    hr = BuffReaderReadString(pReaderArgs, &sczTransactionId);
+    ExitOnFailure(hr, "Failed to read id of OnPlanMsiTransactionComplete args.");
+
+    args.wzTransactionId = sczTransactionId;
+
+    hr = BuffReaderReadNumber(pReaderArgs, &args.dwPackagesInTransaction);
+    ExitOnFailure(hr, "Failed to read package count of OnPlanMsiTransactionComplete args.");
+
+    hr = BuffReaderReadNumber(pReaderArgs, reinterpret_cast<DWORD*>(&args.fPlanned));
+    ExitOnFailure(hr, "Failed to read API version of OnPlanMsiTransactionComplete args.");
+
+    // Read results.
+    hr = BuffReaderReadNumber(pReaderResults, &results.dwApiVersion);
+    ExitOnFailure(hr, "Failed to read plan of OnPlanMsiTransactionComplete results.");
+
+    // Callback.
+    hr = pApplication->BAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSITRANSACTIONCOMPLETE, &args, &results);
+
+    if (E_NOTIMPL == hr)
+    {
+        hr = pApplication->OnPlanMsiTransactionComplete(args.wzTransactionId, args.dwPackagesInTransaction, args.fPlanned, &results.fCancel);
+    }
+
+    pApplication->BAProcFallback(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSITRANSACTIONCOMPLETE, &args, &results, &hr);
+    BalExitOnFailure(hr, "BA OnPlanMsiTransactionComplete failed.");
+
+    // Write results.
+    hr = BuffWriteNumberToBuffer(pBuffer, sizeof(results));
+    ExitOnFailure(hr, "Failed to write size of OnPlanMsiTransactionComplete struct.");
+
+    hr = BuffWriteNumberToBuffer(pBuffer, results.fCancel);
+    ExitOnFailure(hr, "Failed to write cancel of OnPlanMsiTransactionComplete struct.");
+
+LExit:
+    ReleaseStr(sczTransactionId);
     return hr;
 }
 
@@ -5168,8 +5219,12 @@ static HRESULT ProcessMessage(
                 hr = OnCachePayloadExtractProgress(pApplication, &readerArgs, &readerResults, &bufferResponse);
                 break;
 
-            case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANROLLBACKBOUNDARY:
-                hr = OnPlanRollbackBoundary(pApplication, &readerArgs, &readerResults, &bufferResponse);
+            case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSITRANSACTION:
+                hr = OnPlanMsiTransaction(pApplication, &readerArgs, &readerResults, &bufferResponse);
+                break;
+
+            case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSITRANSACTIONCOMPLETE:
+                hr = OnPlanMsiTransactionComplete(pApplication, &readerArgs, &readerResults, &bufferResponse);
                 break;
 
             case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPATIBLEMSIPACKAGE:

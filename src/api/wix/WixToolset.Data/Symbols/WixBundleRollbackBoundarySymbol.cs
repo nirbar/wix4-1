@@ -11,7 +11,6 @@ namespace WixToolset.Data
             new[]
             {
                 new IntermediateFieldDefinition(nameof(WixBundleSymbolFields.Attributes), IntermediateFieldType.Number),
-                new IntermediateFieldDefinition(nameof(WixBundlePackageSymbolFields.LogPathVariable), IntermediateFieldType.String),
             },
             typeof(WixBundleRollbackBoundarySymbol));
     }
@@ -24,7 +23,6 @@ namespace WixToolset.Data.Symbols
     public enum WixBundleRollbackBoundarySymbolFields
     {
         Attributes,
-        LogPathVariable,
     }
 
     [Flags]
@@ -32,7 +30,6 @@ namespace WixToolset.Data.Symbols
     {
         None = 0x0,
         Vital = 0x1,
-        Transaction = 0x2,
     }
 
     public class WixBundleRollbackBoundarySymbol : IntermediateSymbol
@@ -53,12 +50,6 @@ namespace WixToolset.Data.Symbols
             set => this.Set((int)WixBundleRollbackBoundarySymbolFields.Attributes, (int)value);
         }
 
-        public string LogPathVariable
-        {
-            get => (string)this.Fields[(int)WixBundleRollbackBoundarySymbolFields.LogPathVariable];
-            set => this.Set((int)WixBundleRollbackBoundarySymbolFields.LogPathVariable, value);
-        }
-
         public bool Vital
         {
             get { return this.Attributes.HasFlag(WixBundleRollbackBoundaryAttributes.Vital); }
@@ -71,22 +62,6 @@ namespace WixToolset.Data.Symbols
                 else
                 {
                     this.Attributes &= ~WixBundleRollbackBoundaryAttributes.Vital;
-                }
-            }
-        }
-
-        public bool Transaction
-        {
-            get { return this.Attributes.HasFlag(WixBundleRollbackBoundaryAttributes.Transaction); }
-            set
-            {
-                if (value)
-                {
-                    this.Attributes |= WixBundleRollbackBoundaryAttributes.Transaction;
-                }
-                else
-                {
-                    this.Attributes &= ~WixBundleRollbackBoundaryAttributes.Transaction;
                 }
             }
         }

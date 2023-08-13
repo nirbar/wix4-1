@@ -11,6 +11,37 @@ namespace WixToolsetTest.CoreIntegration
     public class MsiTransactionFixture
     {
         [Fact]
+        public void TwoTransactionsBundle()
+        {
+            var folder = TestData.Get(@"TestData");
+
+            using (var fs = new DisposableFileSystem())
+            {
+                var baseFolder = fs.GetFolder();
+                var intermediateFolder = Path.Combine(baseFolder, "obj");
+                var binFolder = Path.Combine(baseFolder, "bin");
+                var exePath = Path.Combine(baseFolder, @"bin\test.exe");
+
+                BuildMsiPackages(folder, intermediateFolder, binFolder);
+
+                var result = WixRunner.Execute(new[]
+                {
+                    "build",
+                    "-sw1151", // this is expected for this test
+                    Path.Combine(folder, "MsiTransaction", "TwoTransactionsBundle.wxs"),
+                    Path.Combine(folder, "BundleWithPackageGroupRef", "Bundle.wxs"),
+                    "-bindpath", Path.Combine(folder, "SimpleBundle", "data"),
+                    "-bindpath", Path.Combine(folder, ".Data"),
+                    "-bindpath", binFolder,
+                    "-intermediateFolder", intermediateFolder,
+                    "-o", exePath,
+                });
+
+                Assert.Equal(0, result.ExitCode);
+            }
+        }
+
+        [Fact]
         public void CannotBuildExePackageInMsiTransaction()
         {
             var folder = TestData.Get(@"TestData");
@@ -29,6 +60,64 @@ namespace WixToolsetTest.CoreIntegration
                     Path.Combine(folder, "BundleWithPackageGroupRef", "Bundle.wxs"),
                     "-bindpath", Path.Combine(folder, "SimpleBundle", "data"),
                     "-bindpath", Path.Combine(folder, ".Data"),
+                    "-intermediateFolder", intermediateFolder,
+                    "-o", exePath,
+                });
+
+                Assert.Equal(5, result.ExitCode);
+            }
+        }
+
+        [Fact]
+        public void CannotBuildExePackageRefInMsiTransaction()
+        {
+            var folder = TestData.Get(@"TestData");
+
+            using (var fs = new DisposableFileSystem())
+            {
+                var baseFolder = fs.GetFolder();
+                var intermediateFolder = Path.Combine(baseFolder, "obj");
+                var exePath = Path.Combine(baseFolder, @"bin\test.exe");
+
+                var result = WixRunner.Execute(new[]
+                {
+                    "build",
+                    "-sw1151", // this is expected for this test
+                    Path.Combine(folder, "MsiTransaction", "ExeRefInMsiTransactionBundle.wxs"),
+                    Path.Combine(folder, "BundleWithPackageGroupRef", "Bundle.wxs"),
+                    "-bindpath", Path.Combine(folder, "SimpleBundle", "data"),
+                    "-bindpath", Path.Combine(folder, ".Data"),
+                    "-intermediateFolder", intermediateFolder,
+                    "-o", exePath,
+                });
+
+                Assert.Equal(412, result.ExitCode);
+            }
+        }
+
+        [Fact]
+        public void CannotBuildNestedMsiTransaction()
+        {
+            var folder = TestData.Get(@"TestData");
+
+            using (var fs = new DisposableFileSystem())
+            {
+                var baseFolder = fs.GetFolder();
+                var intermediateFolder = Path.Combine(baseFolder, "obj");
+                var binFolder = Path.Combine(baseFolder, "bin");
+                var exePath = Path.Combine(baseFolder, @"bin\test.exe");
+
+                BuildMsiPackages(folder, intermediateFolder, binFolder);
+
+                var result = WixRunner.Execute(new[]
+                {
+                    "build",
+                    "-sw1151", // this is expected for this test
+                    Path.Combine(folder, "MsiTransaction", "NestedMsiTransaction.wxs"),
+                    Path.Combine(folder, "BundleWithPackageGroupRef", "Bundle.wxs"),
+                    "-bindpath", Path.Combine(folder, "SimpleBundle", "data"),
+                    "-bindpath", Path.Combine(folder, ".Data"),
+                    "-bindpath", binFolder,
                     "-intermediateFolder", intermediateFolder,
                     "-o", exePath,
                 });
@@ -63,12 +152,12 @@ namespace WixToolsetTest.CoreIntegration
                     "-o", exePath,
                 });
 
-                Assert.Equal(410, result.ExitCode);
+                Assert.Equal(418, result.ExitCode);
             }
         }
 
         [Fact]
-        public void CanBuildX86AfterX64Bundle()
+        public void CannotBuildX86AfterX64Bundle()
         {
             var folder = TestData.Get(@"TestData");
 
@@ -95,19 +184,7 @@ namespace WixToolsetTest.CoreIntegration
                     "-o", exePath,
                 });
 
-                result.AssertSuccess();
-
-                Assert.True(File.Exists(exePath));
-
-                var extractResult = BundleExtractor.ExtractBAContainer(null, exePath, baFolderPath, extractFolderPath);
-                extractResult.AssertSuccess();
-
-                var rollbackBoundaries = extractResult.GetManifestTestXmlLines("/burn:BurnManifest/burn:RollbackBoundary");
-                WixAssert.CompareLineByLine(new[]
-                {
-                    "<RollbackBoundary Id='WixDefaultBoundary' Vital='yes' Transaction='no' />",
-                    "<RollbackBoundary Id='rba31DvS6_ninGllmavuS.cp4RYckk' Vital='yes' Transaction='yes' LogPathVariable='WixBundleLog_rba31DvS6_ninGllmavuS.cp4RYckk' />",
-                }, rollbackBoundaries);
+                Assert.Equal(418, result.ExitCode);
             }
         }
 

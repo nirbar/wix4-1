@@ -374,9 +374,14 @@ namespace WixToolset.BootstrapperApplicationApi
         event EventHandler<PlanRestoreRelatedBundleEventArgs> PlanRestoreRelatedBundle;
 
         /// <summary>
-        /// Fired when the engine is planning a rollback boundary.
+        /// Fired when the engine is planning a MSI transaction, before <see cref="PlanMsiPackage"/> of the first package in the transaction.
         /// </summary>
-        event EventHandler<PlanRollbackBoundaryEventArgs> PlanRollbackBoundary;
+        event EventHandler<PlanMsiTransactionEventArgs> PlanMsiTransaction;
+
+        /// <summary>
+        /// Fired when the engine is planning a MSI transaction commit, after <see cref="PlanMsiPackage"/> of the last package in the transaction.
+        /// </summary>
+        event EventHandler<PlanMsiTransactionCompleteEventArgs> PlanMsiTransactionComplete;
 
         /// <summary>
         /// Fired when the engine has changed progress for the bundle installation.

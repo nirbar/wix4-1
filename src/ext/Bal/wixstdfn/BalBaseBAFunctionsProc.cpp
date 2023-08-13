@@ -173,13 +173,22 @@ static HRESULT BalBaseBAFunctionsProcOnPlanRelatedBundle(
     return pBAFunctions->OnPlanRelatedBundle(pArgs->wzBundleId, pArgs->recommendedState, &pResults->requestedState, &pResults->fCancel);
 }
 
-static HRESULT BalBaseBAFunctionsProcOnPlanRollbackBoundary(
-    __in IBAFunctions* pBAFunctions,
-    __in BA_ONPLANROLLBACKBOUNDARY_ARGS* pArgs,
-    __inout BA_ONPLANROLLBACKBOUNDARY_RESULTS* pResults
+static HRESULT BalBaseBAFunctionsProcOnPlanMsiTransaction(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONPLANMSITRANSACTION_ARGS* pArgs,
+    __inout BA_ONPLANMSITRANSACTION_RESULTS* pResults
     )
 {
-    return pBAFunctions->OnPlanRollbackBoundary(pArgs->wzRollbackBoundaryId, pArgs->fRecommendedTransaction, &pResults->fTransaction, &pResults->fCancel);
+    return pBA->OnPlanMsiTransaction(pArgs->wzTransactionId, &pResults->fTransaction, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAFunctionsProcOnPlanMsiTransactionComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONPLANMSITRANSACTIONCOMPLETE_ARGS* pArgs,
+    __inout BA_ONPLANMSITRANSACTIONCOMPLETE_RESULTS* pResults
+    )
+{
+    return pBA->OnPlanMsiTransactionComplete(pArgs->wzTransactionId, pArgs->dwPackagesInTransaction, pArgs->fPlanned, &pResults->fCancel);
 }
 
 static HRESULT BalBaseBAFunctionsProcOnPlanPackageBegin(
@@ -1041,8 +1050,11 @@ HRESULT WINAPI BalBaseBAFunctionsProc(
         case BA_FUNCTIONS_MESSAGE_ONCACHEPAYLOADEXTRACTCOMPLETE:
             hr = BalBaseBAFunctionsProcOnCachePayloadExtractComplete(pBAFunctions, reinterpret_cast<BA_ONCACHEPAYLOADEXTRACTCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEPAYLOADEXTRACTCOMPLETE_RESULTS*>(pvResults));
             break;
-        case BA_FUNCTIONS_MESSAGE_ONPLANROLLBACKBOUNDARY:
-            hr = BalBaseBAFunctionsProcOnPlanRollbackBoundary(pBAFunctions, reinterpret_cast<BA_ONPLANROLLBACKBOUNDARY_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANROLLBACKBOUNDARY_RESULTS*>(pvResults));
+        case BA_FUNCTIONS_MESSAGE_ONPLANMSITRANSACTION:
+            hr = BalBaseBAFunctionsProcOnPlanMsiTransaction(pBAFunctions, reinterpret_cast<BA_ONPLANMSITRANSACTION_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANMSITRANSACTION_RESULTS*>(pvResults));
+            break;
+        case BA_FUNCTIONS_MESSAGE_ONPLANMSITRANSACTIONCOMPLETE:
+            hr = BalBaseBAFunctionsProcOnPlanMsiTransactionComplete(pBAFunctions, reinterpret_cast<BA_ONPLANMSITRANSACTIONCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANMSITRANSACTIONCOMPLETE_RESULTS*>(pvResults));
             break;
         case BA_FUNCTIONS_MESSAGE_ONDETECTCOMPATIBLEMSIPACKAGE:
             hr = BalBaseBAFunctionsProcOnDetectCompatiblePackage(pBAFunctions, reinterpret_cast<BA_ONDETECTCOMPATIBLEMSIPACKAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTCOMPATIBLEMSIPACKAGE_RESULTS*>(pvResults));

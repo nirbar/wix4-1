@@ -1671,8 +1671,11 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPAYLOADEXTRACTPROGRESS:
             OnCachePayloadExtractProgressFallback(reinterpret_cast<BA_ONCACHEPAYLOADEXTRACTPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEPAYLOADEXTRACTPROGRESS_RESULTS*>(pvResults));
             break;
-        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANROLLBACKBOUNDARY:
-            OnPlanRollbackBoundaryFallback(reinterpret_cast<BA_ONPLANROLLBACKBOUNDARY_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANROLLBACKBOUNDARY_RESULTS*>(pvResults));
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSITRANSACTION:
+            OnPlanMsiTransactionFallback(reinterpret_cast<BA_ONPLANMSITRANSACTION_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANMSITRANSACTION_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSITRANSACTIONCOMPLETE:
+            OnPlanMsiTransactionCompleteFallback(reinterpret_cast<BA_ONPLANMSITRANSACTIONCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANMSITRANSACTIONCOMPLETE_RESULTS*>(pvResults));
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPATIBLEMSIPACKAGE:
             OnDetectCompatibleMsiPackageFallback(reinterpret_cast<BA_ONDETECTCOMPATIBLEMSIPACKAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTCOMPATIBLEMSIPACKAGE_RESULTS*>(pvResults));
@@ -2320,14 +2323,21 @@ private: // privates
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEPAYLOADEXTRACTPROGRESS, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
-    void OnPlanRollbackBoundaryFallback(
-        __in BA_ONPLANROLLBACKBOUNDARY_ARGS* pArgs,
-        __inout BA_ONPLANROLLBACKBOUNDARY_RESULTS* pResults
+    void OnPlanMsiTransactionFallback(
+        __in BA_ONPLANMSITRANSACTION_ARGS* pArgs,
+        __inout BA_ONPLANMSITRANSACTION_RESULTS* pResults
         )
     {
-        BOOL fTransaction = pResults->fTransaction;
-        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANROLLBACKBOUNDARY, pArgs, pResults, m_pvBAFunctionsProcContext);
-        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_ROLLBACK_BOUNDARY, m_hModule, pArgs->wzRollbackBoundaryId, LoggingBoolToString(fTransaction), LoggingBoolToString(pResults->fTransaction));
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANMSITRANSACTION, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_MSI_TRANSACTION, m_hModule, pArgs->wzTransactionId, LoggingBoolToString(pResults->fTransaction));
+    }
+
+    void OnPlanMsiTransactionCompleteFallback(
+        __in BA_ONPLANMSITRANSACTIONCOMPLETE_ARGS* pArgs,
+        __inout BA_ONPLANMSITRANSACTIONCOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANMSITRANSACTIONCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     void OnDetectCompatibleMsiPackageFallback(
@@ -4697,7 +4707,7 @@ LExit:
     {
         TBPFLAG flag = TBPF_NORMAL;
 
-        if (IsCanceled() || HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT) == hrStatus)
+        if (IsCanceled() || E_INSTALLUSEREXIT == hrStatus)
         {
             flag = TBPF_PAUSED;
         }

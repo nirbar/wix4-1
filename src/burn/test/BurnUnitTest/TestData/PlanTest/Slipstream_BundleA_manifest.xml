@@ -44,7 +44,7 @@
     <Payload Id="NetFx48Web" FilePath="redist\ndp48-web.exe" FileSize="1479400" Hash="5A84A8E612E270E27D0061D58DB6B470153BE1F9" DownloadUrl="https://go.microsoft.com/fwlink/?LinkId=2085155" Packaging="external" SourcePath="redist\ndp48-web.exe" />
     <Payload Id="PackageA" FilePath="PackageAv1.msi" FileSize="32768" Hash="2369B16B7219B3C834DFBC5D2AF8B2EF8803D43D" Packaging="external" SourcePath="PackageAv1.msi" />
     <Payload Id="PatchA" FilePath="PatchA.msp" FileSize="20480" Hash="FABC6C18E4A778E127E84CDF67F93A291CAEC8BB" Packaging="external" SourcePath="PatchA.msp" />
-    <RollbackBoundary Id="WixDefaultBoundary" Vital="yes" Transaction="no" />
+    <RollbackBoundary Id="WixDefaultBoundary" Vital="yes" />
     <Registration Id="{22D1DDBA-284D-40A7-BD14-95EA07906F21}" ExecutableName="BundleA.exe" PerMachine="yes" Tag="" Version="1.0.0.0" ProviderKey="{22D1DDBA-284D-40A7-BD14-95EA07906F21}">
         <Arp Register="yes" DisplayName="~SlipstreamTests - BundleA" DisplayVersion="1.0.0.0" />
     </Registration>

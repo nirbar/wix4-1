@@ -2,12 +2,16 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <Fragment>
         <PackageGroup Id="BundlePackages">
-            <MsiPackage SourceFile="FirstX64\" Name="FirstX64\FirstX64.msi" />
-            <RollbackBoundary/>
             <MsiTransaction>
                 <MsiPackage SourceFile="FirstX86\" Name="FirstX86\FirstX86.msi" />
+                <PackageGroupRef Id="Nested"/>
+            </MsiTransaction>
+        </PackageGroup>
+    </Fragment>
+    <Fragment>
+        <PackageGroup Id="Nested">
+            <MsiTransaction>
                 <MsiPackage SourceFile="SecondX86\" Name="SecondX86\SecondX86.msi" />
-                <MsiPackage SourceFile="SecondX64\" Name="SecondX64\SecondX64.msi" />
             </MsiTransaction>
         </PackageGroup>
     </Fragment>

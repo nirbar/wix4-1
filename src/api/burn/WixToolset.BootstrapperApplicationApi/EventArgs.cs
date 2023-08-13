@@ -1016,39 +1016,66 @@ namespace WixToolset.BootstrapperApplicationApi
     }
 
     /// <summary>
-    /// Event arguments for <see cref="IDefaultBootstrapperApplication.PlanRollbackBoundary"/>
+    /// Event arguments for <see cref="IDefaultBootstrapperApplication.PlanMsiTransaction"/>
     /// </summary>
     [Serializable]
-    public class PlanRollbackBoundaryEventArgs : CancellableHResultEventArgs
+    public class PlanMsiTransactionEventArgs : CancellableHResultEventArgs
     {
         /// <summary>
         /// This class is for events raised by the engine.
         /// It is not intended to be instantiated by user code.
         /// </summary>
-        public PlanRollbackBoundaryEventArgs(string rollbackBoundaryId, bool recommendedTransaction, bool transaction, bool cancelRecommendation)
+        public PlanMsiTransactionEventArgs(string transactionId, bool transaction, bool cancelRecommendation)
             : base(cancelRecommendation)
         {
-            this.RollbackBoundaryId = rollbackBoundaryId;
-            this.RecommendedTransaction = recommendedTransaction;
+            this.TransactionId = transactionId;
             this.Transaction = transaction;
         }
 
         /// <summary>
-        /// Gets the identity of the rollback boundary to plan for.
+        /// Gets the identity of the MSI transaction to plan for.
         /// </summary>
-        public string RollbackBoundaryId { get; private set; }
+        public string TransactionId { get; private set; }
 
         /// <summary>
-        /// Whether or not the rollback boundary was authored to use an MSI transaction.
-        /// </summary>
-        public bool RecommendedTransaction { get; private set; }
-
-        /// <summary>
-        /// Whether or not an MSI transaction will be used in the rollback boundary.
-        /// If <see cref="RecommendedTransaction"/> is false, setting the value to true has no effect.
-        /// If <see cref="RecommendedTransaction"/> is true, setting the value to false will cause the packages inside this rollback boundary to be executed without a wrapping MSI transaction.
+        /// Whether or not an MSI transaction will be used.
+        /// Setting the value to false will cause the packages to be executed without a wrapping MSI transaction.
         /// </summary>
         public bool Transaction { get; set; }
+    }
+
+    /// <summary>
+    /// Event arguments for <see cref="IDefaultBootstrapperApplication.PlanMsiTransactionComplete"/>
+    /// </summary>
+    [Serializable]
+    public class PlanMsiTransactionCompleteEventArgs : CancellableHResultEventArgs
+    {
+        /// <summary>
+        /// This class is for events raised by the engine.
+        /// It is not intended to be instantiated by user code.
+        /// </summary>
+        public PlanMsiTransactionCompleteEventArgs(string transactionId, uint packagesInTransaction, bool planned, bool cancelRecommendation)
+            : base(cancelRecommendation)
+        {
+            this.TransactionId = transactionId;
+            this.PackagesInTransaction = packagesInTransaction;
+            this.Planned = planned;
+        }
+
+        /// <summary>
+        /// Gets the identity of the MSI transaction to plan for.
+        /// </summary>
+        public string TransactionId { get; private set; }
+
+        /// <summary>
+        /// The number of packages that were planned for this transaction.
+        /// </summary>
+        public uint PackagesInTransaction { get; private set; }
+
+        /// <summary>
+        /// Whether or not an MSI transaction will be used. The engine may decide to unplan a transaction if it contains one or zero packages.
+        /// </summary>
+        public bool Planned { get; private set; }
     }
 
     /// <summary>

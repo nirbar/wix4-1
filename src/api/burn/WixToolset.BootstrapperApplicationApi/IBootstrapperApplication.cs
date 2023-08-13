@@ -250,14 +250,25 @@ namespace WixToolset.BootstrapperApplicationApi
             );
 
         /// <summary>
-        /// See <see cref="IDefaultBootstrapperApplication.PlanRollbackBoundary"/>.
+        /// See <see cref="IDefaultBootstrapperApplication.PlanMsiTransaction"/>.
         /// </summary>
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        int OnPlanRollbackBoundary(
-            [MarshalAs(UnmanagedType.LPWStr)] string wzRollbackBoundaryId,
-            [MarshalAs(UnmanagedType.Bool)] bool fRecommendedTransaction,
+        int OnPlanMsiTransaction(
+            [MarshalAs(UnmanagedType.LPWStr)] string wzTransactionId,
             [MarshalAs(UnmanagedType.Bool)] ref bool fTransaction,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
+            );
+
+        /// <summary>
+        /// See <see cref="IDefaultBootstrapperApplication.PlanMsiTransactionComplete"/>.
+        /// </summary>
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnPlanMsiTransactionComplete(
+            [MarshalAs(UnmanagedType.LPWStr)] string wzTransactionId,
+            [MarshalAs(UnmanagedType.U4)] uint dwPackagesInTransaction,
+            [MarshalAs(UnmanagedType.Bool)] bool fPlanned,
             [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
@@ -1803,6 +1814,11 @@ namespace WixToolset.BootstrapperApplicationApi
         /// The engine will launch again after the machine is restarted.
         /// </summary>
         Restart,
+
+        /// <summary>
+        /// Instructs the engine to retry ending the transaction.
+        /// </summary>
+        Retry,
     };
 
     /// <summary>

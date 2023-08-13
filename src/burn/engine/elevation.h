@@ -187,18 +187,18 @@ HRESULT ElevationChildResumeAutomaticUpdates();
 
 HRESULT ElevationMsiBeginTransaction(
     __in HANDLE hPipe,
-    __in BURN_ROLLBACK_BOUNDARY* pRollbackBoundary
+    __in BURN_MSI_TRANSACTION* pMsiTransaction
     );
 HRESULT ElevationMsiCommitTransaction(
     __in HANDLE hPipe,
-    __in BURN_ROLLBACK_BOUNDARY* pRollbackBoundary,
+    __in BURN_MSI_TRANSACTION* pMsiTransaction,
     __in PFN_MSIEXECUTEMESSAGEHANDLER pfnMessageHandler,
     __in LPVOID pvContext,
     __out BOOTSTRAPPER_APPLY_RESTART* pRestart
     );
 HRESULT ElevationMsiRollbackTransaction(
     __in HANDLE hPipe,
-    __in BURN_ROLLBACK_BOUNDARY* pRollbackBoundary,
+    __in BURN_MSI_TRANSACTION* pMsiTransaction,
     __in PFN_MSIEXECUTEMESSAGEHANDLER pfnMessageHandler,
     __in LPVOID pvContext,
     __out BOOTSTRAPPER_APPLY_RESTART* pRestart

@@ -810,7 +810,7 @@ extern "C" HRESULT ExeEngineRunProcess(
             }
         }
 
-        hr = (IDOK == nResult || IDNOACTION == nResult) ? S_OK : IDCANCEL == nResult ? HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT) : HRESULT_FROM_WIN32(ERROR_INSTALL_FAILURE);
+        hr = (IDOK == nResult || IDNOACTION == nResult) ? S_OK : IDCANCEL == nResult ? E_INSTALLUSEREXIT : HRESULT_FROM_WIN32(ERROR_INSTALL_FAILURE);
         ExitOnRootFailure(hr, "Bootstrapper application aborted during package process progress.");
 
         hr = CoreWaitForProcCompletion(pi.hProcess, 500, pdwExitCode);

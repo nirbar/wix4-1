@@ -82,7 +82,7 @@ MessageId=8
 Severity=Success
 SymbolicName=MSG_WIXSTDBA_PLANNED_ROLLBACK_BOUNDARY
 Language=English
-WIXSTDBA: Planned rollback boundary: %1!ls!, wixstdba requested transaction: %2!hs!, bafunctions requested transaction: %3!hs!
+WIXSTDBA: Planned rollback boundary: %1!ls!
 .
 
 MessageId=9
@@ -97,5 +97,12 @@ Severity=Success
 SymbolicName=MSG_WIXSTDBA_PLANNED_RELATED_BUNDLE_TYPE
 Language=English
 WIXSTDBA: Planned related bundle type: %1!ls!, wixstdba requested: %2!hs!, bafunctions requested: %3!hs!
+.
+
+MessageId=11
+Severity=Success
+SymbolicName=MSG_WIXSTDBA_PLANNED_MSI_TRANSACTION
+Language=English
+WIXSTDBA: Planned MSI transaction: %1!ls!, bafunctions requested transaction: %2!hs!
 .
 

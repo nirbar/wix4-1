@@ -114,7 +114,7 @@ namespace WixToolsetTest.CoreIntegration
                 var rollbackBoundaries = extractResult.GetManifestTestXmlLines("/burn:BurnManifest/burn:RollbackBoundary");
                 WixAssert.CompareLineByLine(new[]
                 {
-                    "<RollbackBoundary Id='First' Vital='yes' Transaction='no' />",
+                    "<RollbackBoundary Id='First' Vital='yes' />",
                 }, rollbackBoundaries);
 
                 var ignoreAttributesByElementName = new Dictionary<string, List<string>>

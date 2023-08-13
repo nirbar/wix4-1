@@ -2,10 +2,14 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <Fragment>
         <PackageGroup Id="BundlePackages">
-            <RollbackBoundary Id="HasExe"/>
             <MsiTransaction>
-                <ExePackage SourceFile="burn.exe" DetectCondition="none" Permanent="yes" />
+                <PackageGroupRef Id="BundlePackagesRef"/>
             </MsiTransaction>
+        </PackageGroup>
+    </Fragment>
+    <Fragment>
+        <PackageGroup Id="BundlePackagesRef">
+            <ExePackage SourceFile="burn.exe" DetectCondition="none" Permanent="yes" />
         </PackageGroup>
     </Fragment>
 </Wix>

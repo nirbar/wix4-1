@@ -10,8 +10,9 @@ This repository contains the PanelSwWix4: A custom WiX Toolset codebase
 
 # Customizations:
 
-- [Harvest AdditionalOptions](https://github.com/wixtoolset/issues/issues/7427): Allow customized AdditionalOptions for all HarvestX MSBuild ItemGroups
 - [Fix MultiSzInsertString](https://github.com/wixtoolset/issues/issues/7311) to create a double-null terminated buffer
 - [6298](https://github.com/wixtoolset/issues/issues/6298): Extract detached containers with "wix burn extract"
 - ExePackage/@DetectVersionVariable: Support using one of the XxxSearch elements to provide a version number in a variable to test against the package's version.
 - [4889](https://github.com/wixtoolset/issues/issues/4889): Support custom container compressions using bundle extensions
+- Un-plan MSI transaction if it contains less than 2 packages
+- Add BA methods OnPlanMsiTransaction, OnPlanMsiTransactionComplete: Let BA opt-out of MSI transactions.

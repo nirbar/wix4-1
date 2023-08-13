@@ -5023,15 +5023,15 @@ LExit:
     return hr;
 }
 
-EXTERN_C HRESULT BACallbackOnPlanRollbackBoundary(
+EXTERN_C HRESULT BACallbackOnPlanMsiTransaction(
     __in BURN_USER_EXPERIENCE* pUserExperience,
-    __in_z LPCWSTR wzRollbackBoundaryId,
+    __in_z LPCWSTR wzTransactionId,
     __inout BOOL* pfTransaction
     )
 {
     HRESULT hr = S_OK;
-    BA_ONPLANROLLBACKBOUNDARY_ARGS args = { };
-    BA_ONPLANROLLBACKBOUNDARY_RESULTS results = { };
+    BA_ONPLANMSITRANSACTION_ARGS args = { };
+    BA_ONPLANMSITRANSACTION_RESULTS results = { };
     BUFF_BUFFER bufferArgs = { };
     BUFF_BUFFER bufferResults = { };
     PIPE_RPC_RESULT rpc = { };
@@ -5039,32 +5039,28 @@ EXTERN_C HRESULT BACallbackOnPlanRollbackBoundary(
 
     // Init structs.
     args.dwApiVersion = WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION;
-    args.wzRollbackBoundaryId = wzRollbackBoundaryId;
-    args.fRecommendedTransaction = *pfTransaction;
+    args.wzTransactionId = wzTransactionId;
 
     results.dwApiVersion = WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION;
     results.fTransaction = *pfTransaction;
 
     // Send args.
     hr = BuffWriteNumberToBuffer(&bufferArgs, args.dwApiVersion);
-    ExitOnFailure(hr, "Failed to write API version of OnPlanRollbackBoundary args.");
+    ExitOnFailure(hr, "Failed to write API version of OnPlanMsiTransaction args.");
 
-    hr = BuffWriteStringToBuffer(&bufferArgs, args.wzRollbackBoundaryId);
-    ExitOnFailure(hr, "Failed to write rollback boundary id of OnPlanRollbackBoundary args.");
-
-    hr = BuffWriteNumberToBuffer(&bufferArgs, args.fRecommendedTransaction);
-    ExitOnFailure(hr, "Failed to write recommended transaction of OnPlanRollbackBoundary args.");
+    hr = BuffWriteStringToBuffer(&bufferArgs, args.wzTransactionId);
+    ExitOnFailure(hr, "Failed to write rollback boundary id of OnPlanMsiTransaction args.");
 
     // Send results.
     hr = BuffWriteNumberToBuffer(&bufferResults, results.dwApiVersion);
-    ExitOnFailure(hr, "Failed to write API version of OnPlanRollbackBoundary results.");
+    ExitOnFailure(hr, "Failed to write API version of OnPlanMsiTransaction results.");
 
     hr = BuffWriteNumberToBuffer(&bufferResults, results.fTransaction);
-    ExitOnFailure(hr, "Failed to write transaction of OnPlanRollbackBoundary results.");
+    ExitOnFailure(hr, "Failed to write transaction of OnPlanMsiTransaction results.");
 
     // Callback.
-    hr = SendBAMessage(pUserExperience, BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANROLLBACKBOUNDARY, &bufferArgs, &bufferResults, &rpc);
-    ExitOnFailure(hr, "BA OnPlanRollbackBoundary failed.");
+    hr = SendBAMessage(pUserExperience, BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSITRANSACTION, &bufferArgs, &bufferResults, &rpc);
+    ExitOnFailure(hr, "BA OnPlanMsiTransaction failed.");
 
     if (S_FALSE == hr)
     {
@@ -5073,13 +5069,13 @@ EXTERN_C HRESULT BACallbackOnPlanRollbackBoundary(
 
     // Read results.
     hr = BuffReadNumber(rpc.pbData, rpc.cbData, &iBuffer, &results.dwApiVersion);
-    ExitOnFailure(hr, "Failed to read size of OnPlanRollbackBoundary result.");
+    ExitOnFailure(hr, "Failed to read size of OnPlanMsiTransaction result.");
 
     hr = BuffReadNumber(rpc.pbData, rpc.cbData, &iBuffer, reinterpret_cast<DWORD*>(&results.fTransaction));
-    ExitOnFailure(hr, "Failed to read transaction of OnPlanRollbackBoundary result.");
+    ExitOnFailure(hr, "Failed to read transaction of OnPlanMsiTransaction result.");
 
     hr = BuffReadNumber(rpc.pbData, rpc.cbData, &iBuffer, reinterpret_cast<DWORD*>(&results.fCancel));
-    ExitOnFailure(hr, "Failed to read cancel of OnPlanRollbackBoundary result.");
+    ExitOnFailure(hr, "Failed to read cancel of OnPlanMsiTransaction result.");
 
     if (results.fCancel)
     {
@@ -5087,6 +5083,75 @@ EXTERN_C HRESULT BACallbackOnPlanRollbackBoundary(
     }
 
     *pfTransaction = results.fTransaction;
+
+LExit:
+    PipeFreeRpcResult(&rpc);
+    ReleaseBuffer(bufferResults);
+    ReleaseBuffer(bufferArgs);
+
+    return hr;
+}
+
+EXTERN_C HRESULT BACallbackOnPlanMsiTransactionComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzTransactionId,
+    __in DWORD dwPackagesInTransaction,
+    __in BOOL fTransaction
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONPLANMSITRANSACTIONCOMPLETE_ARGS args = { };
+    BA_ONPLANMSITRANSACTIONCOMPLETE_RESULTS results = { };
+    BUFF_BUFFER bufferArgs = { };
+    BUFF_BUFFER bufferResults = { };
+    PIPE_RPC_RESULT rpc = { };
+    SIZE_T iBuffer = 0;
+
+    // Init structs.
+    args.dwApiVersion = WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION;
+    args.wzTransactionId = wzTransactionId;
+    args.dwPackagesInTransaction = dwPackagesInTransaction;
+    args.fPlanned = fTransaction;
+
+    results.dwApiVersion = WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION;
+
+    // Send args.
+    hr = BuffWriteNumberToBuffer(&bufferArgs, args.dwApiVersion);
+    ExitOnFailure(hr, "Failed to write API version of OnPlanMsiTransactionComplete args.");
+
+    hr = BuffWriteStringToBuffer(&bufferArgs, args.wzTransactionId);
+    ExitOnFailure(hr, "Failed to write rollback boundary id of OnPlanMsiTransactionComplete args.");
+
+    hr = BuffWriteNumberToBuffer(&bufferArgs, args.dwPackagesInTransaction);
+    ExitOnFailure(hr, "Failed to write packages number in transaction of OnPlanMsiTransactionComplete args.");
+
+    hr = BuffWriteNumberToBuffer(&bufferArgs, args.fPlanned);
+    ExitOnFailure(hr, "Failed to write packages transaction plan of OnPlanMsiTransactionComplete args.");
+
+    // Send results.
+    hr = BuffWriteNumberToBuffer(&bufferResults, results.dwApiVersion);
+    ExitOnFailure(hr, "Failed to write API version of OnPlanMsiTransactionComplete results.");
+
+    // Callback.
+    hr = SendBAMessage(pUserExperience, BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSITRANSACTIONCOMPLETE, &bufferArgs, &bufferResults, &rpc);
+    ExitOnFailure(hr, "BA OnPlanMsiTransactionComplete failed.");
+
+    if (S_FALSE == hr)
+    {
+        ExitFunction();
+    }
+
+    // Read results.
+    hr = BuffReadNumber(rpc.pbData, rpc.cbData, &iBuffer, &results.dwApiVersion);
+    ExitOnFailure(hr, "Failed to read size of OnPlanMsiTransactionComplete result.");
+
+    hr = BuffReadNumber(rpc.pbData, rpc.cbData, &iBuffer, reinterpret_cast<DWORD*>(&results.fCancel));
+    ExitOnFailure(hr, "Failed to read cancel of OnPlanMsiTransactionComplete result.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
 
 LExit:
     PipeFreeRpcResult(&rpc);

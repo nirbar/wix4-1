@@ -46,7 +46,7 @@
     <Payload Id="NetFx48Web" FilePath="redist\ndp48-web.exe" FileSize="1439328" CertificateRootPublicKeyIdentifier="F49F9B33E25E33CCA0BFB15A62B7C29FFAB3880B" CertificateRootThumbprint="ABDCA79AF9DD48A0EA702AD45260B3C03093FB4B" DownloadUrl="https://go.microsoft.com/fwlink/?LinkId=2085155" Packaging="external" SourcePath="redist\ndp48-web.exe" />
     <Payload Id="TestExe.exe" FilePath="TestExe.exe" FileSize="23552" Hash="4344604ECBA4DFE5DE7C680CB1AA5BD6FAA29BF95CE07740F02878C2BB1EF6DE6432944A0DB79B034D1C6F68CF80842EEE442EA8A551816E52D3F68901C50AB9" Packaging="embedded" SourcePath="a0" Container="WixAttachedContainer" />
     <Payload Id="paygJp32KbpyjbVEQFNbl5_izmhdZw" FilePath="TestExe.exe.config" FileSize="387" Hash="8C819A9E835F3921FA80C5C783AB0C42DDAADF0C0F2BEF8630EA122ABCB9DC8EAF0B14E061C46B37C92F55114BB09A8D5B1B613947A76A648953F2C63C0ACA63" Packaging="embedded" SourcePath="a1" Container="WixAttachedContainer" />
-    <RollbackBoundary Id="WixDefaultBoundary" Vital="yes" Transaction="no" />
+    <RollbackBoundary Id="WixDefaultBoundary" Vital="yes" />
     <Registration Id="{9C184683-04FB-49AD-9D79-65101BDC3EE3}" ExecutableName="BundleD.exe" PerMachine="yes" Tag="" Version="1.0.0.0" ProviderKey="{9C184683-04FB-49AD-9D79-65101BDC3EE3}">
         <Arp Register="yes" DisplayName="~FailureTests - BundleD" DisplayVersion="1.0.0.0" />
     </Registration>

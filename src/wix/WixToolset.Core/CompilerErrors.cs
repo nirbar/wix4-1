@@ -37,6 +37,11 @@ namespace WixToolset.Core
             return Message(sourceLineNumbers, Ids.ExampleRegid, "Regid '{0}' is a placeholder that must be replaced with an appropriate value for your installation. Use the simplified URI for your organization or project.", regid);
         }
 
+        public static Message ObsoleteAttribute(SourceLineNumber sourceLineNumbers, string elementName, string attributeName, string replacmentElement)
+        {
+            return Message(sourceLineNumbers, Ids.ObsoleteAttribute, "Attribute '{0}' in element '{1}' is no longer supported. Use element '{2}' instead", attributeName, elementName, replacmentElement);
+        }
+
         private static Message Message(SourceLineNumber sourceLineNumber, Ids id, string format, params object[] args)
         {
             return new Message(sourceLineNumber, MessageLevel.Error, (int)id, format, args);
@@ -51,6 +56,7 @@ namespace WixToolset.Core
             ExampleRegid = 6602,
             IllegalBundleVariableName = 6603,
             AlreadyDefinedBootstrapperApplicationSource = 6604,
+            ObsoleteAttribute = 6605,
         } // 5400-5499 and 6600-6699 were the ranges for Dependency and Tag which are now in Core between CompilerWarnings and CompilerErrors.
     }
 }
