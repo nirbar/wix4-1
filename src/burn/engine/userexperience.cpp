@@ -2829,7 +2829,7 @@ static int FilterResult(
     }
     else
     {
-        switch (dwAllowedResults)
+        switch (dwAllowedResults & MB_TYPEMASK)
         {
         case MB_OK:
             nResult = IDOK;

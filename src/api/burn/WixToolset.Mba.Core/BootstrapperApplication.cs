@@ -541,6 +541,7 @@ namespace WixToolset.Mba.Core
 
         /// <summary>
         /// Called by the engine, raises the <see cref="PlanMsiTransaction"/> event.
+        /// Before <see cref="OnPlanMsiPackage(PlanMsiPackageEventArgs)"/> of the first package in the transaction.
         /// </summary>
         protected virtual void OnPlanMsiTransaction(PlanMsiTransactionEventArgs args)
         {
@@ -553,6 +554,7 @@ namespace WixToolset.Mba.Core
 
         /// <summary>
         /// Called by the engine, raises the <see cref="PlanMsiTransactionComplete"/> event.
+        /// After <see cref="OnPlanMsiPackage(PlanMsiPackageEventArgs)"/> of the last package in the transaction.
         /// </summary>
         protected virtual void OnPlanMsiTransactionComplete(PlanMsiTransactionCompleteEventArgs args)
         {
