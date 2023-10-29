@@ -71,6 +71,7 @@ extern "C" HRESULT LoggingOpen(
     LPWSTR sczLoggingBaseFolder = NULL;
     LPWSTR sczPrefixFormatted = NULL;
     LPCWSTR wzPostfix = NULL;
+    LPWSTR sczProcessPath = NULL;
 
     switch (pInternalCommand->mode)
     {
@@ -186,6 +187,17 @@ extern "C" HRESULT LoggingOpen(
                 ExitOnFailure(hr, "Failed to get non-session specific TEMP folder.");
             }
 
+            if (!wzPrefix || !*wzPrefix)
+            {
+                hr = PathForCurrentProcess(&sczProcessPath, NULL);
+                ExitOnFailure(hr, "Failed to get process full path.");
+
+                hr = FileStripExtension(sczProcessPath, &sczPrefixFormatted);
+                ExitOnFailure(hr, "Failed to get file name from path.");
+
+                wzPrefix = sczPrefixFormatted;
+            }
+
             hr = LogOpen(sczLoggingBaseFolder, wzPrefix, wzPostfix, pLog->sczExtension, FALSE, FALSE, &pLog->sczPath);
             if (FAILED(hr))
             {
@@ -233,6 +245,7 @@ extern "C" HRESULT LoggingOpen(
 
 LExit:
     ReleaseStr(sczLoggingBaseFolder);
+    ReleaseStr(sczProcessPath);
     StrSecureZeroFreeString(sczPrefixFormatted);
 
     return hr;
