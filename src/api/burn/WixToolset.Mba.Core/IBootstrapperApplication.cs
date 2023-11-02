@@ -1820,6 +1820,11 @@ namespace WixToolset.Mba.Core
         /// The engine will launch again after the machine is restarted.
         /// </summary>
         Restart,
+
+        /// <summary>
+        /// Instructs the engine to retry ending the transaction.
+        /// </summary>
+        Retry,
     };
 
     /// <summary>

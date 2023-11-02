@@ -300,6 +300,8 @@ enum BOOTSTRAPPER_EXECUTEMSITRANSACTIONCOMPLETE_ACTION
     // Instructs the engine to stop processing the chain and restart.
     // The engine will launch again after the machine is restarted.
     BOOTSTRAPPER_EXECUTEMSITRANSACTIONCOMPLETE_ACTION_RESTART,
+    // Retry ending the transaction
+    BOOTSTRAPPER_EXECUTEMSITRANSACTIONCOMPLETE_ACTION_RETRY,
 };
 
 enum BOOTSTRAPPER_EXECUTEPROCESSCANCEL_ACTION

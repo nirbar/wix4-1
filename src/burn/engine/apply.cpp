@@ -302,7 +302,8 @@ static HRESULT ExecuteMsiCommitTransaction(
     __in BURN_ENGINE_STATE* pEngineState,
     __in BURN_MSI_TRANSACTION* pMsiTransaction,
     __in BURN_EXECUTE_CONTEXT* pContext,
-    __out BOOTSTRAPPER_APPLY_RESTART *pRestart
+    __out BOOL *pfRetry,
+    __inout BOOTSTRAPPER_APPLY_RESTART *pRestart
     );
 static HRESULT ExecuteMsiRollbackTransaction(
     __in BURN_ENGINE_STATE* pEngineState,
@@ -797,8 +798,12 @@ extern "C" HRESULT ApplyExecute(
 
                 if (pMsiTransaction && pMsiTransaction->fActive)
                 {
-                    hrRollback = ExecuteMsiCommitTransaction(pEngineState, pMsiTransaction, &context, pRestart);
-                    IgnoreRollbackError(hrRollback, "Failed commit transaction from disable rollback");
+                    for (BOOL retry = TRUE; retry;)
+                    {
+                        retry = FALSE;
+                        hrRollback = ExecuteMsiCommitTransaction(pEngineState, pMsiTransaction, &context, &retry, pRestart);
+                        IgnoreRollbackError(hrRollback, "Failed commit transaction from disable rollback");
+                    }
                 }
 
                 break;
@@ -2447,6 +2452,7 @@ static HRESULT DoExecuteAction(
     do
     {
         fInsideMsiTransaction = ppMsiTransaction && *ppMsiTransaction && (*ppMsiTransaction)->fActive;
+        fRetry = FALSE;
 
         switch (pExecuteAction->type)
         {
@@ -2532,7 +2538,7 @@ static HRESULT DoExecuteAction(
             break;
 
         case BURN_EXECUTE_ACTION_TYPE_COMMIT_MSI_TRANSACTION:
-            hr = ExecuteMsiCommitTransaction(pEngineState, pExecuteAction->msiTransaction.pMsiTransaction, pContext, &restart);
+            hr = ExecuteMsiCommitTransaction(pEngineState, pExecuteAction->msiTransaction.pMsiTransaction, pContext, &fRetry, &restart);
             *ppMsiTransaction = NULL;
             ExitOnFailure(hr, "Failed to execute commit MSI transaction action.");
             break;
@@ -3389,12 +3395,14 @@ static HRESULT ExecuteMsiCommitTransaction(
     __in BURN_ENGINE_STATE* pEngineState,
     __in BURN_MSI_TRANSACTION* pMsiTransaction,
     __in BURN_EXECUTE_CONTEXT* pContext,
-    __out BOOTSTRAPPER_APPLY_RESTART *pRestart
+    __out BOOL *pfRetry,
+    __inout BOOTSTRAPPER_APPLY_RESTART *pRestart
     )
 {
     HRESULT hr = S_OK;
     BOOL fCommitBeginCalled = FALSE;
     BOOTSTRAPPER_EXECUTEMSITRANSACTIONCOMPLETE_ACTION action = BOOTSTRAPPER_EXECUTEMSITRANSACTIONCOMPLETE_ACTION_NONE;
+    BOOTSTRAPPER_APPLY_RESTART restart = BOOTSTRAPPER_APPLY_RESTART_NONE;
 
     if (!pMsiTransaction->fActive)
     {
@@ -3407,12 +3415,17 @@ static HRESULT ExecuteMsiCommitTransaction(
 
     if (pEngineState->plan.fPerMachine)
     {
-        hr = ElevationMsiCommitTransaction(pEngineState->companionConnection.hPipe, pMsiTransaction, MsiExecuteMessageHandler, pContext, pRestart);
+        hr = ElevationMsiCommitTransaction(pEngineState->companionConnection.hPipe, pMsiTransaction, MsiExecuteMessageHandler, pContext, &restart);
         ExitOnFailure(hr, "Failed to commit an elevated MSI transaction.");
     }
     else
     {
-        hr = MsiEngineCommitTransaction(pMsiTransaction, pRestart);
+        hr = MsiEngineCommitTransaction(pMsiTransaction, &restart);
+    }
+    
+    if (*pRestart < restart)
+    {
+        *pRestart = restart;
     }
 
     // Assume that MsiEndTransaction can only be called once for each MsiBeginTransaction.
@@ -3428,6 +3441,10 @@ LExit:
         if (action == BOOTSTRAPPER_EXECUTEMSITRANSACTIONCOMPLETE_ACTION_RESTART)
         {
             *pRestart = BOOTSTRAPPER_APPLY_RESTART_INITIATED;
+        }
+        else if (pfRetry && (action == BOOTSTRAPPER_EXECUTEMSITRANSACTIONCOMPLETE_ACTION_RETRY))
+        {
+            *pfRetry = TRUE;
         }
     }
 
