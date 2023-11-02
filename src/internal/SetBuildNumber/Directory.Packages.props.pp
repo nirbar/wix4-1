@@ -37,6 +37,7 @@
     <PackageVersion Include="PanelSwWix4.NetFx.wixext" Version="{packageversion}" />
     <PackageVersion Include="PanelSwWix4.UI.wixext" Version="{packageversion}" />
     <PackageVersion Include="PanelSwWix4.Util.wixext" Version="{packageversion}" />
+    <PackageVersion Include="PanelSwWix4.Firewall.wixext" Version="{packageversion}" />
   </ItemGroup>
 
   <ItemGroup>
