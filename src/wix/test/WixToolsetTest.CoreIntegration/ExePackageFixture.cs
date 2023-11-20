@@ -287,26 +287,25 @@ namespace WixToolsetTest.CoreIntegration
         }
 
         [Fact]
-        public void ErrorWhenArpEntryWithUninstallArguments()
+        public void NoErrorWhenArpEntryWithUninstallArguments()
         {
             var folder = TestData.Get(@"TestData", "ExePackage");
 
             using (var fs = new DisposableFileSystem())
             {
                 var baseFolder = fs.GetFolder();
+                var wixlibPath = Path.Combine(baseFolder, "test.wixlib");
 
                 var result = WixRunner.Execute(new[]
                 {
                     "build",
                     Path.Combine(folder, "ArpEntryWithUninstallArguments.wxs"),
-                    "-o", Path.Combine(baseFolder, "test.wixlib")
+                    "-o", wixlibPath
                 });
 
-                WixAssert.CompareLineByLine(new[]
-                {
-                    "The ExePackage element cannot have a child element 'ArpEntry' when attribute 'UninstallArguments' is set.",
-                }, result.Messages.Select(m => m.ToString()).ToArray());
-                Assert.Equal(372, result.ExitCode);
+                result.AssertSuccess();
+
+                Assert.True(File.Exists(wixlibPath));
             }
         }
 

@@ -451,6 +451,11 @@ namespace WixToolset.Core.Burn.Bundles
                                 {
                                     writer.WriteAttributeString("ArpWin64", "yes");
                                 }
+
+                                if (!String.IsNullOrEmpty(exePackage.UninstallCommand))
+                                {
+                                    writer.WriteAttributeString("UninstallArguments", exePackage.UninstallCommand);
+                                }
                                 break;
                             case WixBundleExePackageDetectionType.None:
                                 writer.WriteAttributeString("DetectionType", "none");

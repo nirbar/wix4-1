@@ -2321,11 +2321,6 @@ namespace WixToolset.Core
                 this.Core.ParseExtensionAttribute(node, attribute, contextValues);
             }
 
-            if (packageType == WixBundlePackageType.Exe && (detectCondition != null || uninstallArguments != null))
-            {
-                exeDetectionType = WixBundleExePackageDetectionType.Condition;
-            }
-
             foreach (var child in node.Elements())
             {
                 if (CompilerCore.WixNamespace == child.Name.Namespace)
@@ -2337,24 +2332,12 @@ namespace WixToolset.Core
                             allowed = packageType == WixBundlePackageType.Exe;
                             if (allowed)
                             {
-                                if (exeDetectionType == WixBundleExePackageDetectionType.Arp)
+                                if (exeDetectionType.Value != WixBundleExePackageDetectionType.None)
                                 {
-                                    this.Core.Write(ErrorMessages.TooManyChildren(Preprocessor.GetSourceLineNumbers(child), node.Name.LocalName, child.Name.LocalName));
-                                }
-                                else if (!exeDetectionType.HasValue || exeDetectionType.Value == WixBundleExePackageDetectionType.Condition)
-                                {
-                                    exeDetectionType = null;
-                                }
-                                else
-                                {
-                                    if (exeDetectionType.Value != WixBundleExePackageDetectionType.None)
-                                    {
-                                        throw new WixException($"Unexpected WixBundleExePackageDetectionType: {exeDetectionType}");
-                                    }
-
-                                    exeDetectionType = WixBundleExePackageDetectionType.Arp;
+                                    throw new WixException($"Unexpected WixBundleExePackageDetectionType: {exeDetectionType}");
                                 }
 
+                                exeDetectionType = WixBundleExePackageDetectionType.Arp;
                                 this.ParseExePackageArpEntryElement(child, out arpId, out arpDisplayVersion, out arpWin64);
                             }
                             break;
@@ -2420,6 +2403,11 @@ namespace WixToolset.Core
                 }
             }
 
+            if (packageType == WixBundlePackageType.Exe && exeDetectionType.Value == WixBundleExePackageDetectionType.None && (detectCondition != null || uninstallArguments != null))
+            {
+                exeDetectionType = WixBundleExePackageDetectionType.Condition;
+            }
+
             if (id.Id == BurnConstants.BundleDefaultBoundaryId)
             {
                 this.Messaging.Write(CompilerErrors.ReservedValue(sourceLineNumbers, node.Name.LocalName, "Id", id.Id));
@@ -2452,7 +2440,10 @@ namespace WixToolset.Core
 
                 if (exeDetectionType == WixBundleExePackageDetectionType.Arp)
                 {
-                    // Missing attributes are reported when parsing the element.
+                    if (!String.IsNullOrEmpty(detectCondition))
+                    {
+                        this.Core.Write(ErrorMessages.UnexpectedElementWithAttribute(sourceLineNumbers, node.Name.LocalName, "ArpEntry", "DetectCondition"));
+                    }
                 }
                 else if (exeDetectionType == WixBundleExePackageDetectionType.Condition)
                 {
@@ -2511,10 +2502,6 @@ namespace WixToolset.Core
                     {
                         this.Core.Write(WarningMessages.ExePackageDetectInformationRecommended(sourceLineNumbers));
                     }
-                }
-                else
-                {
-                    this.Core.Write(ErrorMessages.UnexpectedElementWithAttribute(sourceLineNumbers, node.Name.LocalName, "ArpEntry", String.IsNullOrEmpty(detectCondition) ? "UninstallArguments" : "DetectCondition"));
                 }
 
                 if (repairArguments == null && repairCondition != null)
