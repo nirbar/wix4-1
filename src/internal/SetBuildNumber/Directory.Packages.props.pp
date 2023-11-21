@@ -47,6 +47,7 @@
     <PackageVersion Include="System.DirectoryServices.AccountManagement" Version="4.7.0" />
     <PackageVersion Include="System.IO.Compression" Version="4.3.0" />
     <PackageVersion Include="System.IO.FileSystem.AccessControl" Version="4.7.0" />
+    <PackageVersion Include="System.Net.NetworkInformation" Version="4.3.0" />
     <PackageVersion Include="System.Reflection.Metadata" Version="1.6.0" />
     <PackageVersion Include="System.Security.Principal.Windows" Version="4.7.0" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="4.7.0" />
@@ -69,9 +70,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageVersion Include="NuGet.Credentials" Version="6.3.1" />
-    <PackageVersion Include="NuGet.Protocol" Version="6.3.1" />
-    <PackageVersion Include="NuGet.Versioning" Version="6.3.1" />
+    <PackageVersion Include="NuGet.Credentials" Version="6.7.0" />
+    <PackageVersion Include="NuGet.Protocol" Version="6.7.0" />
+    <PackageVersion Include="NuGet.Versioning" Version="6.7.0" />
   </ItemGroup>
 
   <!--

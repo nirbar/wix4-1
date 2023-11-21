@@ -162,7 +162,7 @@ namespace WixToolset.Core
 
             target.UpdateLevel(Data.IntermediateLevels.Compiled);
 
-            return this.Messaging.EncounteredError ? null : target;
+            return target;
         }
 
         /// <summary>
@@ -514,7 +514,7 @@ namespace WixToolset.Core
             {
                 this.Core.Write(ErrorMessages.AppIdIncompatibleAdvertiseState(sourceLineNumbers, node.Name.LocalName, "Advertise", appIdAdvertise.ToString(), advertise.ToString()));
             }
-            else
+            else if (appIdAdvertise != YesNoType.NotSet)
             {
                 advertise = appIdAdvertise;
             }
