@@ -5,6 +5,8 @@
     "PanelSwWix4.Sdk": "{packageversion}"
   },
   "sdk": {
+    "version": "6.0.0",
+    "rollForward": "latestMinor",
     "allowPrerelease": false
   }
 }

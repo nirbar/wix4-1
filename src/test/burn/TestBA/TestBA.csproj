@@ -7,6 +7,7 @@
     <AssemblyName>TestBA</AssemblyName>
     <RootNamespace>WixToolset.Test.BA</RootNamespace>
     <DebugType>embedded</DebugType>
+    <SelfContained Condition=" '$(TargetFrameworkIdentifier)'!='.NETFramework' ">true</SelfContained>
     <RuntimeIdentifier>win-x86</RuntimeIdentifier>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <UseWindowsForms>true</UseWindowsForms>

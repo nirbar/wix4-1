@@ -114,7 +114,7 @@ jobs:
           path: build/logs/
 
       - name: Publish nuget packages to github
-        if: ${{ github.event.inputs.publish_nuget == 'true' }}
+        if: ${{ github.event.inputs.publish_nuget == 'true' }} && ${{ github.ref == 'refs/heads/develop-psw-wix' }}
         env:
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_PAT }}
         run: |
