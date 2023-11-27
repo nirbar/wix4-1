@@ -688,7 +688,6 @@ namespace WixToolsetTest.Sdk
 
                 var result = MsbuildUtilities.BuildProject(buildSystem, projectPath, new[] {
                     "-Restore",
-                    "-p:SelfContained=true",
                     MsbuildUtilities.GetQuotedPropertySwitch(buildSystem, "WixMSBuildProps", MsbuildFixture.WixPropsPath)
                     });
                 result.AssertSuccess();
@@ -727,7 +726,6 @@ namespace WixToolsetTest.Sdk
 
                 var result = MsbuildUtilities.BuildProject(buildSystem, projectPath, new[] {
                     "-Restore",
-                    "-p:SelfContained=true",
                     MsbuildUtilities.GetQuotedPropertySwitch(buildSystem, "WixMSBuildProps", MsbuildFixture.WixPropsPath)
                     });
                 result.AssertSuccess();
