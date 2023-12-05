@@ -457,6 +457,16 @@ namespace WixToolset.Core.Burn.Bundles
                                     writer.WriteAttributeString("UninstallArguments", exePackage.UninstallCommand);
                                 }
                                 break;
+                            case WixBundleExePackageDetectionType.VersionVariable:
+                                writer.WriteAttributeString("DetectionType", "version");
+                                writer.WriteAttributeString("DetectVersionVariable", exePackage.DetectVersionVariable);
+                                writer.WriteAttributeString("PackageVersion", exePackage.Version);
+
+                                if (!String.IsNullOrEmpty(exePackage.UninstallCommand))
+                                {
+                                    writer.WriteAttributeString("UninstallArguments", exePackage.UninstallCommand);
+                                }
+                                break;
                             case WixBundleExePackageDetectionType.None:
                                 writer.WriteAttributeString("DetectionType", "none");
                                 break;

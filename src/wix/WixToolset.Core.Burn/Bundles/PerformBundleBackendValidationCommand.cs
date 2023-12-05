@@ -120,6 +120,13 @@ namespace WixToolset.Core.Burn.Bundles
                         this.Messaging.Write(WarningMessages.InvalidWixVersion(symbol.SourceLineNumbers, symbol.ArpDisplayVersion, "ArpEntry", "Version"));
                     }
                 }
+                else if (symbol.DetectionType == WixBundleExePackageDetectionType.VersionVariable)
+                {
+                    if (!this.BackendHelper.IsValidWixVersion(symbol.Version))
+                    {
+                        this.Messaging.Write(WarningMessages.InvalidWixVersion(symbol.SourceLineNumbers, symbol.Version, "ExePackage", "Version"));
+                    }
+                }
             }
         }
 
