@@ -561,5 +561,169 @@ namespace WixToolsetTest.CoreIntegration
                 }, result.Messages.Select(m => m.ToString()).ToArray());
             }
         }
+
+        [Fact]
+        public void CanBuildWithDetectVersionVariable()
+        {
+            var folder = TestData.Get(@"TestData");
+
+            using (var fs = new DisposableFileSystem())
+            {
+                var baseFolder = fs.GetFolder();
+                var intermediateFolder = Path.Combine(baseFolder, "obj");
+                var binFolder = Path.Combine(baseFolder, "bin");
+                var bundlePath = Path.Combine(binFolder, "test.exe");
+                var baFolderPath = Path.Combine(baseFolder, "ba");
+                var extractFolderPath = Path.Combine(baseFolder, "extract");
+
+                var result = WixRunner.Execute(new[]
+                {
+                    "build",
+                    Path.Combine(folder, "ExePackage", "DetectVersionVariable.wxs"),
+                    Path.Combine(folder, "BundleWithPackageGroupRef", "Bundle.wxs"),
+                    "-bindpath", Path.Combine(folder, "SimpleBundle", "data"),
+                    "-bindpath", Path.Combine(folder, ".Data"),
+                    "-intermediateFolder", intermediateFolder,
+                    "-o", bundlePath,
+                });
+
+                result.AssertSuccess();
+
+                Assert.True(File.Exists(bundlePath));
+
+                var extractResult = BundleExtractor.ExtractBAContainer(null, bundlePath, baFolderPath, extractFolderPath);
+                extractResult.AssertSuccess();
+
+                var exePackages = extractResult.GetManifestTestXmlLines("/burn:BurnManifest/burn:Chain/burn:ExePackage");
+                WixAssert.CompareLineByLine(new string[]
+                {
+                    "<ExePackage Id='burn.exe' Cache='keep' CacheId='F6E722518AC3AB7E31C70099368D5770788C179AA23226110DCF07319B1E1964' InstallSize='463360' Size='463360' PerMachine='yes' Permanent='no' Vital='yes' RollbackBoundaryForward='WixDefaultBoundary' RollbackBoundaryBackward='WixDefaultBoundary' LogPathVariable='WixBundleLog_burn.exe' RollbackLogPathVariable='WixBundleRollbackLog_burn.exe' InstallArguments='-install' RepairArguments='-repair' Repairable='yes' DetectionType='version' DetectVersionVariable='MyDetectVersionVariable' PackageVersion='3.14.0.1703'>" +
+                      "<PayloadRef Id='burn.exe' />" +
+                    "</ExePackage>",
+                }, exePackages);
+            }
+        }
+
+        [Fact]
+        public void WarningWhenInvalidDetectVersionVariableVersion()
+        {
+            var folder = TestData.Get(@"TestData");
+
+            using (var fs = new DisposableFileSystem())
+            {
+                var baseFolder = fs.GetFolder();
+                var intermediateFolder = Path.Combine(baseFolder, "obj");
+                var binFolder = Path.Combine(baseFolder, "bin");
+                var bundlePath = Path.Combine(binFolder, "test.exe");
+                var baFolderPath = Path.Combine(baseFolder, "ba");
+                var extractFolderPath = Path.Combine(baseFolder, "extract");
+
+                var result = WixRunner.Execute(false, new[]
+                {
+                    "build",
+                    Path.Combine(folder, "ExePackage", "InvalidDetectVersionVariableVersion.wxs"),
+                    Path.Combine(folder, "BundleWithPackageGroupRef", "Bundle.wxs"),
+                    "-bindpath", Path.Combine(folder, "SimpleBundle", "data"),
+                    "-bindpath", Path.Combine(folder, ".Data"),
+                    "-intermediateFolder", intermediateFolder,
+                    "-o", bundlePath,
+                });
+
+                WixAssert.CompareLineByLine(new[]
+                {
+                    "Invalid WixVersion '1.0.0.abc' in ExePackage/@'Version'. Comparisons may yield unexpected results."
+                }, result.Messages.Select(m => m.ToString()).ToArray());
+                result.AssertSuccess();
+
+                Assert.True(File.Exists(bundlePath));
+
+                var extractResult = BundleExtractor.ExtractBAContainer(null, bundlePath, baFolderPath, extractFolderPath);
+                extractResult.AssertSuccess();
+
+                var ignoreAttributes = new Dictionary<string, List<string>>
+                {
+                    { "ExePackage", new List<string> { "CacheId", "Size" } },
+                };
+                var exePackages = extractResult.GetManifestTestXmlLines("/burn:BurnManifest/burn:Chain/burn:ExePackage", ignoreAttributes);
+                WixAssert.CompareLineByLine(new string[]
+                {
+                    "<ExePackage Id='burn.exe' Cache='keep' CacheId='*' InstallSize='463360' Size='*' PerMachine='yes' Permanent='no' Vital='yes' RollbackBoundaryForward='WixDefaultBoundary' RollbackBoundaryBackward='WixDefaultBoundary' LogPathVariable='WixBundleLog_burn.exe' RollbackLogPathVariable='WixBundleRollbackLog_burn.exe' InstallArguments='-install' RepairArguments='' Repairable='no' DetectionType='version' DetectVersionVariable='MyDetectVersionVariable' PackageVersion='1.0.0.abc'>" +
+                      "<PayloadRef Id='burn.exe' />" +
+                    "</ExePackage>",
+                }, exePackages);
+            }
+        }
+
+        [Fact]
+        public void ErrorWhenDetectVersionVariableWithArpEntry()
+        {
+            var folder = TestData.Get(@"TestData", "ExePackage");
+
+            using (var fs = new DisposableFileSystem())
+            {
+                var baseFolder = fs.GetFolder();
+
+                var result = WixRunner.Execute(new[]
+                {
+                    "build",
+                    Path.Combine(folder, "ArpEntryAndDetectVersion.wxs"),
+                    "-o", Path.Combine(baseFolder, "test.wixlib")
+                });
+
+                WixAssert.CompareLineByLine(new[]
+                {
+                    "The ExePackage element cannot have a child element 'ArpEntry' when attribute 'DetectVersionVariable' is set.",
+                }, result.Messages.Select(m => m.ToString()).ToArray());
+                Assert.Equal(372, result.ExitCode);
+            }
+        }
+
+        [Fact]
+        public void ErrorWhenDetectVersionVariableWithDetectCondition()
+        {
+            var folder = TestData.Get(@"TestData", "ExePackage");
+
+            using (var fs = new DisposableFileSystem())
+            {
+                var baseFolder = fs.GetFolder();
+
+                var result = WixRunner.Execute(new[]
+                {
+                    "build",
+                    Path.Combine(folder, "DetectVersionVariableAndDetectCondition.wxs"),
+                    "-o", Path.Combine(baseFolder, "test.wixlib")
+                });
+
+                WixAssert.CompareLineByLine(new[]
+                {
+                    "The ExePackage/@DetectVersionVariable attribute cannot be specified when attribute DetectCondition is present.",
+                }, result.Messages.Select(m => m.ToString()).ToArray());
+                Assert.Equal(35, result.ExitCode);
+            }
+        }
+
+        [Fact]
+        public void ErrorWhenDetectVersionVariableWithIlegalVariable()
+        {
+            var folder = TestData.Get(@"TestData", "ExePackage");
+
+            using (var fs = new DisposableFileSystem())
+            {
+                var baseFolder = fs.GetFolder();
+
+                var result = WixRunner.Execute(new[]
+                {
+                    "build",
+                    Path.Combine(folder, "DetectVersionVariableWithIlegalVariable.wxs"),
+                    "-o", Path.Combine(baseFolder, "test.wixlib")
+                });
+
+                WixAssert.CompareLineByLine(new[]
+                {
+                    "The ExePackage/@DetectVersionVariable attribute's value, '*not*a*variable', is not a legal bundle variable name. Identifiers may contain ASCII characters A-Z, a-z, digits, or underscores (_). Every identifier must begin with either a letter or an underscore.",
+                }, result.Messages.Select(m => m.ToString()).ToArray());
+                Assert.Equal(6603, result.ExitCode);
+            }
+        }
     }
 }

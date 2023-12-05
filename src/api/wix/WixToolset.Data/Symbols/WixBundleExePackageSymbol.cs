@@ -19,6 +19,8 @@ namespace WixToolset.Data
                 new IntermediateFieldDefinition(nameof(WixBundleExePackageSymbolFields.DetectionType), IntermediateFieldType.Number),
                 new IntermediateFieldDefinition(nameof(WixBundleExePackageSymbolFields.ArpId), IntermediateFieldType.String),
                 new IntermediateFieldDefinition(nameof(WixBundleExePackageSymbolFields.ArpDisplayVersion), IntermediateFieldType.String),
+                new IntermediateFieldDefinition(nameof(WixBundleExePackageSymbolFields.DetectVersionVariable), IntermediateFieldType.String),
+                new IntermediateFieldDefinition(nameof(WixBundleExePackageSymbolFields.Version), IntermediateFieldType.String),
             },
             typeof(WixBundleExePackageSymbol));
     }
@@ -39,6 +41,8 @@ namespace WixToolset.Data.Symbols
         DetectionType,
         ArpId,
         ArpDisplayVersion,
+        DetectVersionVariable,
+        Version,
     }
 
     /// <summary>
@@ -49,6 +53,7 @@ namespace WixToolset.Data.Symbols
         None,
         Condition,
         Arp,
+        VersionVariable,
     }
 
     [Flags]
@@ -177,5 +182,17 @@ namespace WixToolset.Data.Symbols
         public bool Repairable => this.RepairCommand != null;
 
         public bool Uninstallable => this.UninstallCommand != null;
+
+        public string DetectVersionVariable
+        {
+            get => (string)this.Fields[(int)WixBundleExePackageSymbolFields.DetectVersionVariable];
+            set => this.Set((int)WixBundleExePackageSymbolFields.DetectVersionVariable, value);
+        }
+
+        public string Version
+        {
+            get => (string)this.Fields[(int)WixBundleExePackageSymbolFields.Version];
+            set => this.Set((int)WixBundleExePackageSymbolFields.Version, value);
+        }
     }
 }

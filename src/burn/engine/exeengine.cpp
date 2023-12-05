@@ -7,6 +7,11 @@ static HRESULT DetectArpEntry(
     __out BOOTSTRAPPER_PACKAGE_STATE* pPackageState,
     __out_opt LPWSTR* psczQuietUninstallString
     );
+static HRESULT DetectByVersionVariable(
+    __in BURN_VARIABLES* pVariables,
+    __in const BURN_PACKAGE* pPackage,
+    __out BOOTSTRAPPER_PACKAGE_STATE* pPackageState
+    );
 
 // function definitions
 
@@ -32,6 +37,10 @@ extern "C" HRESULT ExeEngineParsePackageFromXml(
     else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, scz, -1, L"arp", -1))
     {
         pPackage->Exe.detectionType = BURN_EXE_DETECTION_TYPE_ARP;
+    }
+    else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, scz, -1, L"version", -1))
+    {
+        pPackage->Exe.detectionType = BURN_EXE_DETECTION_TYPE_VERSION;
     }
     else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, scz, -1, L"none", -1))
     {
@@ -84,6 +93,30 @@ extern "C" HRESULT ExeEngineParsePackageFromXml(
         // @ArpUseUninstallString
         hr = XmlGetYesNoAttribute(pixnExePackage, L"ArpUseUninstallString", &pPackage->Exe.fArpUseUninstallString);
         ExitOnOptionalXmlQueryFailure(hr, fFoundXml, "Failed to get @ArpWin64.");
+
+        // @UninstallArguments
+        hr = XmlGetAttributeEx(pixnExePackage, L"UninstallArguments", &pPackage->Exe.sczUninstallArguments);
+        ExitOnOptionalXmlQueryFailure(hr, fFoundXml, "Failed to get @UninstallArguments.");
+
+        pPackage->Exe.fUninstallable = TRUE;
+    }
+    else if (BURN_EXE_DETECTION_TYPE_VERSION == pPackage->Exe.detectionType)
+    {
+        // @DetectVersionVariable
+        hr = XmlGetAttributeEx(pixnExePackage, L"DetectVersionVariable", &pPackage->Exe.sczDetectVersionVariable);
+        ExitOnRequiredXmlQueryFailure(hr, "Failed to get @DetectVersionVariable.");
+
+        // @PackageVersion
+        hr = XmlGetAttributeEx(pixnExePackage, L"PackageVersion", &scz);
+        ExitOnRequiredXmlQueryFailure(hr, "Failed to get @PackageVersion.");
+
+        hr = VerParseVersion(scz, 0, FALSE, &pPackage->Exe.pExePackageVersion);
+        ExitOnFailure(hr, "Failed to parse @PackageVersion: %ls", scz);
+
+        if (pPackage->Exe.pExePackageVersion->fInvalid)
+        {
+            LogId(REPORT_WARNING, MSG_MANIFEST_INVALID_VERSION, scz);
+        }
 
         // @UninstallArguments
         hr = XmlGetAttributeEx(pixnExePackage, L"UninstallArguments", &pPackage->Exe.sczUninstallArguments);
@@ -155,7 +188,9 @@ extern "C" void ExeEnginePackageUninitialize(
     ReleaseStr(pPackage->Exe.sczRepairArguments);
     ReleaseStr(pPackage->Exe.sczUninstallArguments);
     ReleaseStr(pPackage->Exe.sczArpKeyPath);
+    ReleaseStr(pPackage->Exe.sczDetectVersionVariable);
     ReleaseVerutilVersion(pPackage->Exe.pArpDisplayVersion);
+    ReleaseVerutilVersion(pPackage->Exe.pExePackageVersion);
     ReleaseMem(pPackage->Exe.rgExitCodes);
 
     // free command-line arguments
@@ -211,6 +246,11 @@ extern "C" HRESULT ExeEngineDetectPackage(
     case BURN_EXE_DETECTION_TYPE_ARP:
         hr = DetectArpEntry(pPackage, &pPackage->currentState, NULL);
         ExitOnFailure(hr, "Failed to detect EXE package by ArpEntry.");
+
+        break;
+    case BURN_EXE_DETECTION_TYPE_VERSION:
+        hr = DetectByVersionVariable(pVariables, pPackage, &pPackage->currentState);
+        ExitOnFailure(hr, "Failed to detect EXE package by version variable.");
 
         break;
     default:
@@ -1073,6 +1113,56 @@ extern "C" HRESULT ExeEngineHandleExitCode(
 
 //LExit:
     LogId(REPORT_STANDARD, MSG_EXECUTE_PACKAGE_PROCESS_EXITED, wzId, dwExitCode, LoggingExitCodeTypeToString(typeCode), LoggingRestartToString(*pRestart));
+
+    return hr;
+}
+
+static HRESULT DetectByVersionVariable(
+    __in BURN_VARIABLES* pVariables,
+    __in const BURN_PACKAGE* pPackage,
+    __out BOOTSTRAPPER_PACKAGE_STATE* pPackageState
+    )
+{
+    HRESULT hr = S_OK;
+    VERUTIL_VERSION* pDetectedVersion = NULL;
+    int nCompareResult = 0;
+
+    *pPackageState = BOOTSTRAPPER_PACKAGE_STATE_ABSENT;
+
+    ExitOnNull((pPackage->Exe.sczDetectVersionVariable && *pPackage->Exe.sczDetectVersionVariable), hr, E_INVALIDSTATE, "DetectVersionVariable is null.");
+    ExitOnNull(pPackage->Exe.pExePackageVersion, hr, E_INVALIDSTATE, "ExeVersion is null.");
+
+    hr = VariableGetVersion(pVariables, pPackage->Exe.sczDetectVersionVariable, &pDetectedVersion);
+    if (hr == E_NOTFOUND)
+    {
+        hr = S_OK;
+        ExitFunction();
+    }
+    ExitOnFailure(hr, "Failed to parse detected version variable.");
+
+    if (pDetectedVersion->fInvalid)
+    {
+        LogId(REPORT_WARNING, MSG_DETECTED_EXE_PACKAGE_INVALID_VERSION, pPackage->Exe.sczDetectVersionVariable, pDetectedVersion->sczVersion);
+    }
+
+    hr = VerCompareParsedVersions(pPackage->Exe.pExePackageVersion, pDetectedVersion, &nCompareResult);
+    ExitOnFailure(hr, "Failed to compare versions.");
+
+    if (nCompareResult < 0)
+    {
+        *pPackageState = BOOTSTRAPPER_PACKAGE_STATE_OBSOLETE;
+    }
+    else if (nCompareResult > 0)
+    {
+        *pPackageState = BOOTSTRAPPER_PACKAGE_STATE_ABSENT;
+    }
+    else
+    {
+        *pPackageState = BOOTSTRAPPER_PACKAGE_STATE_PRESENT;
+    }
+
+LExit:
+    ReleaseVerutilVersion(pDetectedVersion);
 
     return hr;
 }

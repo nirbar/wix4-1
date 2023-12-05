@@ -2028,6 +2028,8 @@ namespace WixToolset.Core
             string uninstallArguments = null;
             var perMachine = YesNoDefaultType.NotSet;
             string detectCondition = null;
+            string detectVersionVariable = null;
+            string version = null;
             string protocol = null;
             long? installSize = null;
             var enableFeatureSelection = YesNoType.NotSet;
@@ -2157,7 +2159,26 @@ namespace WixToolset.Core
                         case "DetectCondition":
                             detectCondition = this.Core.GetAttributeValue(sourceLineNumbers, attrib, EmptyRule.CanBeEmpty);
                             allowed = (packageType == WixBundlePackageType.Exe || packageType == WixBundlePackageType.Msu);
+
+                            if (exeDetectionType != WixBundleExePackageDetectionType.None)
+                            {
+                                this.Core.Write(ErrorMessages.IllegalAttributeWithOtherAttribute(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, "DetectVersionVariable"));
+                            }
                             exeDetectionType = WixBundleExePackageDetectionType.Condition;
+                            break;
+                        case "DetectVersionVariable":
+                            detectVersionVariable = this.Core.GetAttributeBundleVariableNameValue(sourceLineNumbers, attrib);
+                            allowed = (packageType == WixBundlePackageType.Exe);
+
+                            if (exeDetectionType != WixBundleExePackageDetectionType.None)
+                            {
+                                this.Core.Write(ErrorMessages.IllegalAttributeWithOtherAttribute(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, "DetectCondition"));
+                            }
+                            exeDetectionType = WixBundleExePackageDetectionType.VersionVariable;
+                            break;
+                        case "Version":
+                            version = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
+                            allowed = (packageType == WixBundlePackageType.Exe);
                             break;
                         case "Protocol":
                             protocol = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
@@ -2237,7 +2258,7 @@ namespace WixToolset.Core
                             {
                                 if (exeDetectionType != WixBundleExePackageDetectionType.None)
                                 {
-                                    this.Core.Write(ErrorMessages.UnexpectedElementWithAttribute(sourceLineNumbers, node.Name.LocalName, child.Name.LocalName, "DetectCondition"));
+                                    this.Core.Write(ErrorMessages.UnexpectedElementWithAttribute(sourceLineNumbers, node.Name.LocalName, child.Name.LocalName, (exeDetectionType == WixBundleExePackageDetectionType.VersionVariable) ? "DetectVersionVariable" : "DetectCondition"));
                                 }
                                 if (null != uninstallArguments)
                                 {
@@ -2310,7 +2331,7 @@ namespace WixToolset.Core
                 }
             }
 
-            if (packageType == WixBundlePackageType.Exe && exeDetectionType == WixBundleExePackageDetectionType.None && uninstallArguments != null)
+            if (packageType == WixBundlePackageType.Exe && exeDetectionType == WixBundleExePackageDetectionType.None && (detectCondition != null || uninstallArguments != null))
             {
                 exeDetectionType = WixBundleExePackageDetectionType.Condition;
             }
@@ -2345,9 +2366,25 @@ namespace WixToolset.Core
                     perMachine = YesNoDefaultType.Default;
                 }
 
+                if (version != null && exeDetectionType != WixBundleExePackageDetectionType.VersionVariable)
+                {
+                    this.Core.Write(ErrorMessages.IllegalAttributeWithoutOtherAttributes(sourceLineNumbers, node.Name.LocalName, "Version", "DetectVersionVariable"));
+                }
+
                 if (exeDetectionType == WixBundleExePackageDetectionType.Arp)
                 {
                     // Missing attributes are reported when parsing the element.
+                }
+                else if (exeDetectionType == WixBundleExePackageDetectionType.VersionVariable)
+                {
+                    if (String.IsNullOrEmpty(detectVersionVariable))
+                    {
+                        this.Core.Write(ErrorMessages.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "DetectVersionVariable"));
+                    }
+                    if (String.IsNullOrEmpty(version))
+                    {
+                        version = $"!(bind.packageVersion.{id.Id})";
+                    }
                 }
                 else if (exeDetectionType == WixBundleExePackageDetectionType.Condition)
                 {
@@ -2539,6 +2576,8 @@ namespace WixToolset.Core
                             DetectionType = exeDetectionType,
                             ArpId = arpId,
                             ArpDisplayVersion = arpDisplayVersion,
+                            DetectVersionVariable = detectVersionVariable,
+                            Version = version,
                         });
                         break;
 

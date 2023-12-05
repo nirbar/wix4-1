@@ -28,6 +28,7 @@ enum BURN_EXE_DETECTION_TYPE
     BURN_EXE_DETECTION_TYPE_NONE,
     BURN_EXE_DETECTION_TYPE_CONDITION,
     BURN_EXE_DETECTION_TYPE_ARP,
+    BURN_EXE_DETECTION_TYPE_VERSION,
 };
 
 enum BURN_EXE_EXIT_CODE_TYPE
@@ -365,6 +366,9 @@ typedef struct _BURN_PACKAGE
             BOOL fArpUseUninstallString;
             LPWSTR sczArpKeyPath;
             VERUTIL_VERSION* pArpDisplayVersion;
+
+            LPWSTR sczDetectVersionVariable;
+            VERUTIL_VERSION* pExePackageVersion;
 
             LPWSTR sczDetectCondition;
             LPWSTR sczInstallArguments;

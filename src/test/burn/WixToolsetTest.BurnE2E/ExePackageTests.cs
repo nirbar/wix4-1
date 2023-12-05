@@ -34,6 +34,28 @@ namespace WixToolsetTest.BurnE2E
         }
 
         [RuntimeFact]
+        public void CanInstallAndUninstallPerMachineDetectVersionExePackage()
+        {
+            var perMachineDetectVersionExePackageBundle = this.CreateBundleInstaller(@"PerMachineDetectVersionExePackage");
+            var detectVersionExePackage = new ArpEntryInstaller(this.TestContext, "{06603D32-7A0F-477C-815C-B16625FC323E}", true, true);
+            var arpId = detectVersionExePackage.ArpId;
+
+            detectVersionExePackage.VerifyRegistered(false);
+
+            var installLogPath = perMachineDetectVersionExePackageBundle.Install();
+            perMachineDetectVersionExePackageBundle.VerifyRegisteredAndInPackageCache();
+            detectVersionExePackage.VerifyRegistered(true);
+
+            Assert.True(LogVerifier.MessageInLogFile(installLogPath, $"TestExe.exe\" /regw \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{arpId},DisplayVersion,String,1.0.0.0\" /regw \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{arpId},QuietUninstallString,String,\\\""));
+
+            var uninstallLogPath = perMachineDetectVersionExePackageBundle.Uninstall();
+            perMachineDetectVersionExePackageBundle.VerifyUnregisteredAndRemovedFromPackageCache();
+            detectVersionExePackage.VerifyRegistered(false);
+
+            Assert.True(LogVerifier.MessageInLogFile(uninstallLogPath, $"TestExe.exe\" /regd \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{arpId}\""));
+        }
+
+        [RuntimeFact]
         public void CanInstallAndUninstallPerMachineArpEntryWithUninstallStringExePackage()
         {
             var perMachineArpEntryExePackageBundle = this.CreateBundleInstaller(@"PerMachineArpEntryWithUninstallStringExePackage");
