@@ -180,6 +180,12 @@ namespace WixToolset.Core
                                 attributes |= WixBundleAttributes.DisableRemove;
                             }
                             break;
+                        case "Wix3DependencyMode":
+                            if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= WixBundleAttributes.Wix3DependencyMode;
+                            }
+                            break;
                         case "HelpTelephone":
                             helpTelephone = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;

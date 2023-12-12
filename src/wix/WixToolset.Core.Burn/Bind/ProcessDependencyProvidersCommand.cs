@@ -12,13 +12,14 @@ namespace WixToolset.Core.Burn.Bind
 
     internal class ProcessDependencyProvidersCommand
     {
-        public ProcessDependencyProvidersCommand(IServiceProvider serviceProvider, IntermediateSection section, PackageFacades facades)
+        public ProcessDependencyProvidersCommand(IServiceProvider serviceProvider, IntermediateSection section, PackageFacades facades, bool wix3DependencyMode)
         {
             this.Messaging = serviceProvider.GetService<IMessaging>();
             this.BackendHelper = serviceProvider.GetService<IBackendHelper>();
 
             this.Section = section;
             this.Facades = facades;
+            this.Wix3DependencyMode = wix3DependencyMode;
         }
 
         public string BundleProviderKey { get; private set; }
@@ -30,6 +31,8 @@ namespace WixToolset.Core.Burn.Bind
         private IntermediateSection Section { get; }
 
         private PackageFacades Facades { get; }
+
+        private bool Wix3DependencyMode { get; }
 
         /// <summary>
         /// Sets the explicitly provided bundle provider key, if provided. And...
@@ -116,7 +119,7 @@ namespace WixToolset.Core.Burn.Bind
                     this.Section.AddSymbol(new WixDependencyProviderSymbol(facade.PackageSymbol.SourceLineNumbers, facade.PackageSymbol.Id)
                     {
                         ParentRef = facade.PackageId,
-                        ProviderKey = $"{key}_v{facade.PackageSymbol.Version}",
+                        ProviderKey = this.Wix3DependencyMode ? key : $"{key}_v{facade.PackageSymbol.Version}",
                         Version = facade.PackageSymbol.Version,
                         DisplayName = facade.PackageSymbol.DisplayName
                     });

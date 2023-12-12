@@ -79,6 +79,7 @@ namespace WixToolset.Data.Symbols
         None = 0x0,
         DisableRemove = 0x1,
         PerMachine = 0x2,
+        Wix3DependencyMode = 0x4,
     }
 
     public enum WixBundleModifyType
@@ -288,6 +289,22 @@ namespace WixToolset.Data.Symbols
                 else
                 {
                     this.Attributes &= ~WixBundleAttributes.PerMachine;
+                }
+            }
+        }
+
+        public bool Wix3DependencyMode
+        {
+            get { return this.Attributes.HasFlag(WixBundleAttributes.Wix3DependencyMode); }
+            set
+            {
+                if (value)
+                {
+                    this.Attributes |= WixBundleAttributes.Wix3DependencyMode;
+                }
+                else
+                {
+                    this.Attributes &= ~WixBundleAttributes.Wix3DependencyMode;
                 }
             }
         }
