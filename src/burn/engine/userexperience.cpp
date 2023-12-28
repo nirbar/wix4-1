@@ -1023,7 +1023,7 @@ EXTERN_C BAAPI UserExperienceOnCommitMsiTransactionBegin(
 
     if (results.fCancel)
     {
-        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+        hr = E_INSTALLUSEREXIT;
     }
 
 LExit:
@@ -2810,7 +2810,7 @@ extern "C" HRESULT UserExperienceInterpretExecuteResult(
     else
     {
         int nCheckedResult = UserExperienceCheckExecuteResult(pUserExperience, fRollback, dwAllowedResults, nResult);
-        hr = IDOK == nCheckedResult || IDNOACTION == nCheckedResult ? S_OK : IDCANCEL == nCheckedResult || IDABORT == nCheckedResult ? HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT) : HRESULT_FROM_WIN32(ERROR_INSTALL_FAILURE);
+        hr = IDOK == nCheckedResult || IDNOACTION == nCheckedResult ? S_OK : IDCANCEL == nCheckedResult || IDABORT == nCheckedResult ? E_INSTALLUSEREXIT : HRESULT_FROM_WIN32(ERROR_INSTALL_FAILURE);
     }
 
     return hr;

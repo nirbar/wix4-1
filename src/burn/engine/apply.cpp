@@ -2358,7 +2358,7 @@ static DWORD CALLBACK CacheProgressRoutine(
     }
 
 LExit:
-    if (HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT) == hr)
+    if (E_INSTALLUSEREXIT == hr)
     {
         dwResult = PROGRESS_CANCEL;
         pProgress->fCancel = TRUE;
@@ -2539,7 +2539,10 @@ static HRESULT DoExecuteAction(
 
         case BURN_EXECUTE_ACTION_TYPE_COMMIT_MSI_TRANSACTION:
             hr = ExecuteMsiCommitTransaction(pEngineState, pExecuteAction->msiTransaction.pMsiTransaction, pContext, &fRetry, &restart);
-            *ppMsiTransaction = NULL;
+            if (!fRetry && SUCCEEDED(hr))
+            {
+                *ppMsiTransaction = NULL;
+            }
             ExitOnFailure(hr, "Failed to execute commit MSI transaction action.");
             break;
 
@@ -3422,7 +3425,7 @@ static HRESULT ExecuteMsiCommitTransaction(
     {
         hr = MsiEngineCommitTransaction(pMsiTransaction, &restart);
     }
-    
+
     if (*pRestart < restart)
     {
         *pRestart = restart;

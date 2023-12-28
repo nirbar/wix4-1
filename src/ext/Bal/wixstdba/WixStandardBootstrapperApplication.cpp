@@ -4697,7 +4697,7 @@ LExit:
     {
         TBPFLAG flag = TBPF_NORMAL;
 
-        if (IsCanceled() || HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT) == hrStatus)
+        if (IsCanceled() || E_INSTALLUSEREXIT == hrStatus)
         {
             flag = TBPF_PAUSED;
         }
