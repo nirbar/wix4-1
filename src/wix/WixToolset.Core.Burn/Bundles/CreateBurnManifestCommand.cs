@@ -753,6 +753,13 @@ namespace WixToolset.Core.Burn.Bundles
                 writer.WriteAttributeString("Attached", "yes");
                 writer.WriteAttributeString("Primary", "yes");
             }
+
+            // Extension container
+            if (!String.IsNullOrEmpty(container.BootstrapperExtensionRef))
+            {
+                writer.WriteAttributeString("Type", "Extension");
+                writer.WriteAttributeString("ExtensionId", container.BootstrapperExtensionRef);
+            }
         }
 
         private void WriteBurnManifestPayload(XmlTextWriter writer, WixBundlePayloadSymbol payload)

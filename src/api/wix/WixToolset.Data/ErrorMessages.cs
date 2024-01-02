@@ -2276,6 +2276,21 @@ namespace WixToolset.Data
             return new Message(sourceLineNumber, MessageLevel.Error, (int)id, resourceManager, resourceName, args);
         }
 
+        public static Message MissingContainerExtension(SourceLineNumber sourceLineNumber, string containerId, string bootstrapperExtensionRef)
+        {
+            return Message(sourceLineNumber, Ids.MissingContainerExtension, "Container '{0}' has BootstrapperExtensionRef set to '{1}', which could not be resolved to a container extension.", containerId, bootstrapperExtensionRef);
+        }
+
+        public static Message ContainerExtractFailed(SourceLineNumber sourceLineNumber, string containerId, string bootstrapperExtensionRef, string errorMessage)
+        {
+            return Message(sourceLineNumber, Ids.ContainerExtractFailed, "Container '{0}' with BootstrapperExtensionRef set to '{1}' failed to extract the container. {2}", containerId, bootstrapperExtensionRef, errorMessage);
+        }
+
+        public static Message InvalidBurnManifestContainers(SourceLineNumber sourceLineNumber, int containersCount, int missingIndex)
+        {
+            return Message(sourceLineNumber, Ids.InvalidBurnManifestContainers, "The burn manifest file contains {0} containers, yet container with index {1} was not found.", containersCount, missingIndex);
+        }
+
         public enum Ids
         {
             UnexpectedException = 1,
@@ -2667,6 +2682,9 @@ namespace WixToolset.Data
             MsiTransactionInvalidPackage2 = 412,
             ExpectedAttributeOrElementWithOtherAttribute = 413,
             ExpectedAttributeOrElementWithoutOtherAttribute = 414,
+            MissingContainerExtension = 415,
+            ContainerExtractFailed = 416,
+            InvalidBurnManifestContainers = 417,
         }
     }
 }
