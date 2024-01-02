@@ -20,3 +20,4 @@ This repository contains the PanelSwWix4: A custom WiX Toolset codebase
 - [7877](https://github.com/wixtoolset/issues/issues/7877): ArpEntry reads QuietUninstallString or UninstallString, and uses UninstallArguments for the uninstall command line
 - ExePackage/@DetectVersionVariable: Support using one of the XxxSearch elements to provide a version number in a variable to test against the package's version.
 - [7778](https://github.com/wixtoolset/issues/issues/7778): Bundle/@Wix3DependencyMode=yes/no. If yes, then default MSI/MSP provider key uses the ProductCode/PatchCode. Use only if a WiX4 bundle chains packages of a WiX3 bundle.
+- [4889](https://github.com/wixtoolset/issues/issues/4889): Support custom container compressions using bundle extensions

@@ -104,7 +104,7 @@ static HRESULT ParseFromXml(
         }
     }
 
-    // parse built-in condition 
+    // parse built-in condition
     hr = ConditionGlobalParseFromXml(&pEngineState->condition, pixeBundle);
     ExitOnFailure(hr, "Failed to parse global condition.");
 
@@ -133,7 +133,7 @@ static HRESULT ParseFromXml(
     ExitOnFailure(hr, "Failed to parse update.");
 
     // parse containers
-    hr = ContainersParseFromXml(&pEngineState->containers, pixeBundle);
+    hr = ContainersParseFromXml(&pEngineState->containers, pixeBundle, &pEngineState->extensions);
     ExitOnFailure(hr, "Failed to parse containers.");
 
     // parse payloads

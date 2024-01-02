@@ -24,7 +24,7 @@ namespace WixToolset.Core.Burn
     /// </summary>
     internal class BindBundleCommand
     {
-        public BindBundleCommand(IBindContext context, IEnumerable<IBurnBackendBinderExtension> backedExtensions)
+        public BindBundleCommand(IBindContext context, IEnumerable<IBurnBackendBinderExtension> backedExtensions, IEnumerable<IBurnContainerExtension> containerExtensions)
         {
             this.ServiceProvider = context.ServiceProvider;
 
@@ -44,6 +44,7 @@ namespace WixToolset.Core.Burn
             this.OutputPdbPath = context.PdbPath;
 
             this.BackendExtensions = backedExtensions;
+            this.ContainerExtensions = containerExtensions;
         }
 
         private IServiceProvider ServiceProvider { get; }
@@ -65,6 +66,8 @@ namespace WixToolset.Core.Burn
         public IEnumerable<IExpectedExtractFile> ExpectedEmbeddedFiles { get; }
 
         private IEnumerable<IBurnBackendBinderExtension> BackendExtensions { get; }
+
+        private IEnumerable<IBurnContainerExtension> ContainerExtensions { get; }
 
         private Intermediate Output { get; }
 
@@ -445,7 +448,7 @@ namespace WixToolset.Core.Burn
             WixBundleContainerSymbol uxContainer;
             IEnumerable<WixBundlePayloadSymbol> uxPayloads;
             {
-                var command = new CreateNonUXContainers(this.BackendHelper, this.Messaging, bundleApplicationDllSymbol, containers.Values, payloadSymbols, this.IntermediateFolder, layoutDirectory, this.DefaultCompressionLevel);
+                var command = new CreateNonUXContainers(this.BackendHelper, this.Messaging, this.ContainerExtensions, bundleApplicationDllSymbol, containers.Values, payloadSymbols, this.IntermediateFolder, layoutDirectory, this.DefaultCompressionLevel);
                 command.Execute();
 
                 fileTransfers.AddRange(command.FileTransfers);
@@ -609,11 +612,11 @@ namespace WixToolset.Core.Burn
                 variableCache.Add(String.Concat("packageLanguage.", id), msiPackage.ProductLanguage.ToString());
                 variableCache.Add(String.Concat("packageManufacturer.", id), msiPackage.Manufacturer ?? String.Empty);
 
-                if (!string.IsNullOrEmpty(msiPackage.ProductCode))
+                if (!String.IsNullOrEmpty(msiPackage.ProductCode))
                 {
                     variableCache.Add(String.Concat("productCode.", id), msiPackage.ProductCode);
                 }
-                if (!string.IsNullOrEmpty(msiPackage.UpgradeCode))
+                if (!String.IsNullOrEmpty(msiPackage.UpgradeCode))
                 {
                     variableCache.Add(String.Concat("upgradeCode.", id), msiPackage.UpgradeCode);
                 }
@@ -626,7 +629,7 @@ namespace WixToolset.Core.Burn
 
             if (facade.SpecificPackageSymbol is WixBundleBundlePackageSymbol bundlePackage)
             {
-                if (!string.IsNullOrEmpty(bundlePackage.BundleId))
+                if (!String.IsNullOrEmpty(bundlePackage.BundleId))
                 {
                     variableCache.Add(String.Concat("bundleId.", id), bundlePackage.BundleId);
                 }

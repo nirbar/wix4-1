@@ -2288,6 +2288,11 @@ namespace WixToolset.Data
             return new Message(sourceLineNumber, MessageLevel.Error, (int)id, resourceManager, resourceName, args);
         }
 
+        public static Message MissingContainerExtension(SourceLineNumber sourceLineNumber, string containerId, string bundleExtensionRef)
+        {
+            return Message(sourceLineNumber, Ids.MissingContainerExtension, "Container '{0}' has BundleExtensionRef set to '{1}', which could not be resolved to a container extension.", containerId, bundleExtensionRef);
+        }
+
         public enum Ids
         {
             UnexpectedException = 1,
@@ -2682,6 +2687,7 @@ namespace WixToolset.Data
             ExpectedAttributeOrElementWithOtherAttribute = 413,
             ExpectedAttributeOrElementWithoutOtherAttribute = 414,
             MsiTransactionX86AndX64Packages = 415,
+            MissingContainerExtension = 416,
         }
     }
 }
