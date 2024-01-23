@@ -714,6 +714,11 @@ namespace WixToolset.Data
             return Message(sourceLineNumbers, Ids.InvalidWixVersion, "Invalid WixVersion '{0}' in {1}/@'{2}'. Comparisons may yield unexpected results.", version, elementName, attributeName);
         }
 
+        public static Message MissingContainerExtension(SourceLineNumber sourceLineNumbers, string containerId, string bundleExtensionRef)
+        {
+            return Message(sourceLineNumbers, Ids.MissingContainerExtension, "Container '{0}' has BundleExtensionRef set to '{1}', which could not be resolved to a container extension. To extract this container add the missing extension to the extraction command line", containerId, bundleExtensionRef);
+        }
+
         private static Message Message(SourceLineNumber sourceLineNumber, Ids id, string format, params object[] args)
         {
             return new Message(sourceLineNumber, MessageLevel.Warning, (int)id, format, args);
@@ -855,6 +860,7 @@ namespace WixToolset.Data
             DiscardedRollbackBoundary2 = 1160,
             ExePackageDetectInformationRecommended = 1161,
             InvalidWixVersion = 1162,
+            MissingContainerExtension = 1163,
         }
     }
 }

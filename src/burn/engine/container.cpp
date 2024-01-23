@@ -168,7 +168,7 @@ extern "C" HRESULT ContainersInitialize(
             // manifest contained and get the offset to the container.
             if (pContainer->fAttached)
             {
-                hr = SectionGetAttachedContainerInfo(pSection, pContainer->dwAttachedIndex, pContainer->type, &pContainer->qwAttachedOffset, &qwSize, &pContainer->fActuallyAttached);
+                hr = SectionGetAttachedContainerInfo(pSection, pContainer->dwAttachedIndex, &pContainer->qwAttachedOffset, &qwSize, &pContainer->fActuallyAttached);
                 ExitOnFailure(hr, "Failed to get attached container information.");
 
                 if (qwSize != pContainer->qwFileSize)
@@ -226,8 +226,14 @@ extern "C" HRESULT ContainerOpenUX(
     container.fAttached = TRUE;
     container.dwAttachedIndex = 0;
 
-    hr = SectionGetAttachedContainerInfo(pSection, container.dwAttachedIndex, container.type, &container.qwAttachedOffset, &container.qwFileSize, &container.fActuallyAttached);
+    hr = SectionGetAttachedContainerInfo(pSection, container.dwAttachedIndex, &container.qwAttachedOffset, &container.qwFileSize, &container.fActuallyAttached);
     ExitOnFailure(hr, "Failed to get container information for UX container.");
+
+    if (BURN_CONTAINER_TYPE_CABINET != pSection->dwFormat)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+        ExitOnRootFailure(hr, "Unexpected UX container format %u. UX container is expected to always be a cabinet file", pSection->dwFormat);
+    }
 
     AssertSz(container.fActuallyAttached, "The BA container must always be found attached.");
 
@@ -252,6 +258,7 @@ extern "C" HRESULT ContainerOpen(
 {
     HRESULT hr = S_OK;
     LARGE_INTEGER li = { };
+    LPWSTR szTempFile = NULL;
 
     // initialize context
     pContext->type = pContainer->type;
@@ -290,13 +297,28 @@ extern "C" HRESULT ContainerOpen(
         hr = CabExtractOpen(pContext, wzFilePath);
         break;
     case BURN_CONTAINER_TYPE_EXTENSION:
+
+        if (pContainer->fAttached)
+        {
+            hr = FileCreateTemp(L"CNTNR", L"dat", &szTempFile, NULL);
+            ExitOnFailure(hr, "Failed to create temporary container file");
+
+            hr = FileCopyPartial(pContext->hFile, pContext->qwOffset, pContext->qwSize, szTempFile);
+            ExitOnFailure(hr, "Failed to write to temporary container file");
+
+            pContext->Bex.szTempContainerPath = szTempFile;
+            szTempFile = NULL;
+        }
+
         pContext->Bex.pExtension = pContainer->pExtension;
-        hr = BurnExtensionContainerOpen(pContainer->pExtension, pContainer->sczId, wzFilePath, pContext);
+        hr = BurnExtensionContainerOpen(pContainer->pExtension, pContainer->sczId, pContext->Bex.szTempContainerPath ? pContext->Bex.szTempContainerPath : wzFilePath, pContext);
         break;
     }
     ExitOnFailure(hr, "Failed to open container.");
 
 LExit:
+    ReleaseStr(szTempFile);
+
     return hr;
 }
 
@@ -403,6 +425,11 @@ extern "C" HRESULT ContainerClose(
         break;
     case BURN_CONTAINER_TYPE_EXTENSION:
         hr = BurnExtensionContainerClose(pContext->Bex.pExtension, pContext);
+        if (pContext->Bex.szTempContainerPath && *pContext->Bex.szTempContainerPath)
+        {
+            FileEnsureDelete(pContext->Bex.szTempContainerPath);
+            ReleaseNullStr(pContext->Bex.szTempContainerPath);
+        }
         ExitOnFailure(hr, "Failed to close cabinet.");
         break;
     }

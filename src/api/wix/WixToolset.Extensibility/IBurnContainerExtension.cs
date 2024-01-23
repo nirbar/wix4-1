@@ -3,6 +3,7 @@
 namespace WixToolset.Extensibility
 {
     using System.Collections.Generic;
+    using System.Xml;
     using WixToolset.Data.Symbols;
     using WixToolset.Extensibility.Data;
 
@@ -30,5 +31,15 @@ namespace WixToolset.Extensibility
         /// <param name="sha512">SHA512 hash of the container file.</param>
         /// <param name="size">File size of the container file.</param>
         void CreateContainer(WixBundleContainerSymbol container, IEnumerable<WixBundlePayloadSymbol> containerPayloads, out string sha512, out long size);
+
+        /// <summary>
+        /// Extract the container to a folder. Called on 'burn extract' command.
+        /// Note that, the PreBackendBind may not be called when calling this method.
+        /// </summary>
+        /// <param name="containerPath"></param>
+        /// <param name="outputFolder"></param>
+        /// <param name="containerId"></param>
+        /// <param name="extensionDataNode"></param>
+        void ExtractContainer(string containerPath, string outputFolder, string containerId, XmlElement extensionDataNode);
     }
 }

@@ -136,6 +136,7 @@ typedef struct _BURN_CONTAINER_CONTEXT_CABINET
 typedef struct _BURN_CONTAINER_CONTEXT_BEX
 {
     BURN_EXTENSION* pExtension;
+    LPWSTR szTempContainerPath;
     LPVOID pExtensionContext;
 } BURN_CONTAINER_CONTEXT_BEX;
 

@@ -2293,6 +2293,16 @@ namespace WixToolset.Data
             return Message(sourceLineNumber, Ids.MissingContainerExtension, "Container '{0}' has BundleExtensionRef set to '{1}', which could not be resolved to a container extension.", containerId, bundleExtensionRef);
         }
 
+        public static Message ContainerExtractFailed(SourceLineNumber sourceLineNumber, string containerId, string bundleExtensionRef, string errorMessage)
+        {
+            return Message(sourceLineNumber, Ids.ContainerExtractFailed, "Container '{0}' with BundleExtensionRef set to '{1}' failed to extract the container. {2}", containerId, bundleExtensionRef, errorMessage);
+        }
+
+        public static Message InvalidBurnManifestContainers(SourceLineNumber sourceLineNumber, int containersCount, int missingIndex)
+        {
+            return Message(sourceLineNumber, Ids.InvalidBurnManifestContainers, "The burn manifest file contains {0} containers, yet container with index {1} was not found.", containersCount, missingIndex);
+        }
+
         public enum Ids
         {
             UnexpectedException = 1,
@@ -2688,6 +2698,8 @@ namespace WixToolset.Data
             ExpectedAttributeOrElementWithoutOtherAttribute = 414,
             MsiTransactionX86AndX64Packages = 415,
             MissingContainerExtension = 416,
+            ContainerExtractFailed = 417,
+            InvalidBurnManifestContainers = 418,
         }
     }
 }
