@@ -99,7 +99,7 @@ namespace WixToolset.Core.Burn.Bundles
             this.binaryReader.BaseStream.Seek(this.UXAddress, SeekOrigin.Begin);
             using (Stream tempCab = this.fileSystem.OpenFile(null, tempCabPath, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
-                BurnCommon.CopyStream(this.binaryReader.BaseStream, tempCab, (int)uxContainerSlot.Size);
+                BurnCommon.CopyStream(this.binaryReader.BaseStream, tempCab, uxContainerSlot.Size);
             }
 
             var cabinet = new Cabinet(tempCabPath);
@@ -262,7 +262,7 @@ namespace WixToolset.Core.Burn.Bundles
                 this.binaryReader.BaseStream.Seek(nextAddress, SeekOrigin.Begin);
                 using (Stream tempCab = this.fileSystem.OpenFile(null, tempCabPath, FileMode.Create, FileAccess.Write, FileShare.Read))
                 {
-                    BurnCommon.CopyStream(this.binaryReader.BaseStream, tempCab, (int)cntnr.Size);
+                    BurnCommon.CopyStream(this.binaryReader.BaseStream, tempCab, cntnr.Size);
                 }
 
                 if (!(document.SelectSingleNode($"/burn:BurnManifest/burn:Container[@Attached = 'yes' and @AttachedIndex = {i}]", nsmgr) is XmlElement containerElement))
