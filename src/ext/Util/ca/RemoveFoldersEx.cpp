@@ -238,10 +238,10 @@ extern "C" UINT WINAPI WixRemoveFoldersEx(
 
         hr = PathExpand(&sczExpandedPath, sczPath, PATH_EXPAND_ENVIRONMENT);
         ExitOnFailure(hr, "Failed to expand path: %S for row: %S", sczPath, sczId);
-        
+
         hr = PathBackslashTerminate(&sczExpandedPath);
         ExitOnFailure(hr, "Failed to backslash-terminate path: %S", sczExpandedPath);
-    
+
         WcaLog(LOGMSG_STANDARD, "Recursing path: %S for row: %S.", sczExpandedPath, sczId);
         hr = RecursePath(sczExpandedPath, sczId, sczComponent, sczProperty, iMode, f64BitComponent, &dwCounter, &hTable, &hColumns);
         ExitOnFailure(hr, "Failed while navigating path: %S for row: %S", sczPath, sczId);
