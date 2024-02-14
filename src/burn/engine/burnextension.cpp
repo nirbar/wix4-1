@@ -276,6 +276,36 @@ LExit:
     return hr;
 }
 
+EXTERN_C BEEAPI BurnExtensionContainerOpenAttached(
+    __in BURN_EXTENSION* pExtension,
+    __in LPCWSTR wzContainerId,
+    __in HANDLE hBundle,
+    __in DWORD64 qwContainerStartPos,
+    __in DWORD64 qwContainerSize,
+    __in BURN_CONTAINER_CONTEXT* pContext
+)
+{
+    HRESULT hr = S_OK;
+    BUNDLE_EXTENSION_CONTAINER_OPEN_ATTACHED_ARGS args = { };
+    BUNDLE_EXTENSION_CONTAINER_OPEN_ATTACHED_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzContainerId = wzContainerId;
+    args.hBundle = hBundle;
+    args.qwContainerStartPos = qwContainerStartPos;
+    args.qwContainerSize = qwContainerSize;
+
+    results.cbSize = sizeof(results);
+
+    hr = SendRequiredBextMessage(pExtension, BUNDLE_EXTENSION_MESSAGE_CONTAINER_OPEN_ATTACHED, &args, &results);
+    ExitOnFailure(hr, "BundleExtension '%ls' open attached container failed.", pExtension->sczId);
+
+    pContext->Bex.pExtensionContext = results.pContext;
+
+LExit:
+    return hr;
+}
+
 BEEAPI BurnExtensionContainerNextStream(
     __in BURN_EXTENSION* pExtension,
     __in BURN_CONTAINER_CONTEXT* pContext,

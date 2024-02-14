@@ -76,6 +76,17 @@ public: // IBundleExtension
         return E_NOTIMPL;
     }
 
+    virtual STDMETHODIMP ContainerOpenAttached(
+            __in LPCWSTR /*wzContainerId*/,
+            __in HANDLE /*hBundle*/,
+            __in DWORD64 /*qwContainerStartPos*/,
+            __in DWORD64 /*qwContainerSize*/,
+            __out LPVOID* /*ppContext*/
+        )
+    {
+        return E_NOTIMPL;
+    }
+
     // Implementor should keep the stream name in the contex, to release it when done
     virtual STDMETHODIMP ContainerNextStream(
         __in LPVOID /*pContext*/,

@@ -27,6 +27,15 @@ static HRESULT BextBaseBEProcContainerOpen(
     return pBE->ContainerOpen(pArgs->wzContainerId, pArgs->wzFilePath, &pResults->pContext);
 }
 
+static HRESULT BextBaseBEProcContainerOpenAttached(
+    __in IBundleExtension* pBE,
+    __in BUNDLE_EXTENSION_CONTAINER_OPEN_ATTACHED_ARGS* pArgs,
+    __inout BUNDLE_EXTENSION_CONTAINER_OPEN_ATTACHED_RESULTS* pResults
+    )
+{
+    return pBE->ContainerOpenAttached(pArgs->wzContainerId, pArgs->hBundle, pArgs->qwContainerStartPos, pArgs->qwContainerSize, &pResults->pContext);
+}
+
 static HRESULT BextBaseBEProcContainerNextStream(
     __in IBundleExtension* pBE,
     __in BUNDLE_EXTENSION_CONTAINER_NEXT_STREAM_ARGS* pArgs,
@@ -97,6 +106,9 @@ static HRESULT WINAPI BextBaseBundleExtensionProc(
             break;
         case BUNDLE_EXTENSION_MESSAGE_CONTAINER_OPEN:
             hr = BextBaseBEProcContainerOpen(pBE, reinterpret_cast<BUNDLE_EXTENSION_CONTAINER_OPEN_ARGS*>(pvArgs), reinterpret_cast<BUNDLE_EXTENSION_CONTAINER_OPEN_RESULTS*>(pvResults));
+            break;
+        case BUNDLE_EXTENSION_MESSAGE_CONTAINER_OPEN_ATTACHED:
+            hr = BextBaseBEProcContainerOpenAttached(pBE, reinterpret_cast<BUNDLE_EXTENSION_CONTAINER_OPEN_ATTACHED_ARGS*>(pvArgs), reinterpret_cast<BUNDLE_EXTENSION_CONTAINER_OPEN_ATTACHED_RESULTS*>(pvResults));
             break;
         case BUNDLE_EXTENSION_MESSAGE_CONTAINER_NEXT_STREAM:
             hr = BextBaseBEProcContainerNextStream(pBE, reinterpret_cast<BUNDLE_EXTENSION_CONTAINER_NEXT_STREAM_ARGS*>(pvArgs), reinterpret_cast<BUNDLE_EXTENSION_CONTAINER_NEXT_STREAM_RESULTS*>(pvResults));

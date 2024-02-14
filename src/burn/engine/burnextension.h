@@ -61,6 +61,14 @@ BEEAPI BurnExtensionContainerOpen(
     __in LPCWSTR wzFilePath,
     __in BURN_CONTAINER_CONTEXT* pContext
     );
+BEEAPI BurnExtensionContainerOpenAttached(
+    __in BURN_EXTENSION* pExtension,
+    __in LPCWSTR wzContainerId,
+    __in HANDLE hBundle,
+    __in DWORD64 qwContainerStartPos,
+    __in DWORD64 qwContainerSize,
+    __in BURN_CONTAINER_CONTEXT* pContext
+    );
 BEEAPI BurnExtensionContainerNextStream(
     __in BURN_EXTENSION* pExtension,
     __in BURN_CONTAINER_CONTEXT* pContext,

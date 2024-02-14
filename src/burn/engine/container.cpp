@@ -298,20 +298,31 @@ extern "C" HRESULT ContainerOpen(
         break;
     case BURN_CONTAINER_TYPE_EXTENSION:
 
-        if (pContainer->fAttached)
-        {
-            hr = FileCreateTemp(L"CNTNR", L"dat", &szTempFile, NULL);
-            ExitOnFailure(hr, "Failed to create temporary container file");
-
-            hr = FileCopyPartial(pContext->hFile, pContext->qwOffset, pContext->qwSize, szTempFile);
-            ExitOnFailure(hr, "Failed to write to temporary container file");
-
-            pContext->Bex.szTempContainerPath = szTempFile;
-            szTempFile = NULL;
-        }
-
         pContext->Bex.pExtension = pContainer->pExtension;
-        hr = BurnExtensionContainerOpen(pContainer->pExtension, pContainer->sczId, pContext->Bex.szTempContainerPath ? pContext->Bex.szTempContainerPath : wzFilePath, pContext);
+
+        if (pContainer->fActuallyAttached)
+        {
+            hr = BurnExtensionContainerOpenAttached(pContainer->pExtension, pContainer->sczId, pContext->hFile, pContext->qwOffset, pContext->qwSize, pContext);
+            if (FAILED(hr))
+            {
+                LogId(REPORT_STANDARD, MSG_EXT_ATTACHED_CONTAINER_FAILED, pContainer->sczId);
+
+                hr = FileCreateTemp(L"CNTNR", L"dat", &szTempFile, NULL);
+                ExitOnFailure(hr, "Failed to create temporary container file");
+
+                hr = FileCopyPartial(pContext->hFile, pContext->qwOffset, pContext->qwSize, szTempFile);
+                ExitOnFailure(hr, "Failed to write to temporary container file");
+
+                pContext->Bex.szTempContainerPath = szTempFile;
+                szTempFile = NULL;
+
+                hr = BurnExtensionContainerOpen(pContainer->pExtension, pContainer->sczId, pContext->Bex.szTempContainerPath, pContext);
+            }
+        }
+        else
+        {
+            hr = BurnExtensionContainerOpen(pContainer->pExtension, pContainer->sczId, wzFilePath, pContext);
+        }
         break;
     }
     ExitOnFailure(hr, "Failed to open container.");

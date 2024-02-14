@@ -1282,7 +1282,6 @@ Language=English
 Planned MSI transaction: '%1!ls!', planned: %2!hs!
 .
 
-
 MessageId=702
 Severity=Success
 SymbolicName=MSG_PLAN_CANCEL_MSI_TRANSACTION
@@ -1290,3 +1289,9 @@ Language=English
 Canceling planned MSI transaction '%1!ls!' because it contains %2!lu! packages.
 .
 
+MessageId=703
+Severity=Warning
+SymbolicName=MSG_EXT_ATTACHED_CONTAINER_FAILED
+Language=English
+Container extension can not open attached container '%1!ls!'. Unloading the container and retrying.
+.
