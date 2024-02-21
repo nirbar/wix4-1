@@ -62,6 +62,7 @@ namespace WixToolset.Data.Symbols
         None = 0,
         Bundle = 1,
         ArpWin64 = 2,
+        ArpUseUninstallString = 4,
     }
 
     public class WixBundleExePackageSymbol : IntermediateSymbol
@@ -158,6 +159,22 @@ namespace WixToolset.Data.Symbols
                 else
                 {
                     this.Attributes &= ~WixBundleExePackageAttributes.ArpWin64;
+                }
+            }
+        }
+
+        public bool ArpUseUninstallString
+        {
+            get { return this.Attributes.HasFlag(WixBundleExePackageAttributes.ArpUseUninstallString); }
+            set
+            {
+                if (value)
+                {
+                    this.Attributes |= WixBundleExePackageAttributes.ArpUseUninstallString;
+                }
+                else
+                {
+                    this.Attributes &= ~WixBundleExePackageAttributes.ArpUseUninstallString;
                 }
             }
         }

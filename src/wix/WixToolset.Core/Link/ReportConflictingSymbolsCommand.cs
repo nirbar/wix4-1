@@ -5,11 +5,12 @@ namespace WixToolset.Core.Link
     using System.Collections.Generic;
     using System.Linq;
     using WixToolset.Data;
+    using WixToolset.Data.Symbols;
     using WixToolset.Extensibility.Services;
 
     internal class ReportConflictingSymbolsCommand
     {
-        public ReportConflictingSymbolsCommand(IMessaging messaging, IEnumerable<SymbolWithSection> possibleConflicts, IEnumerable<IntermediateSection> resolvedSections)
+        public ReportConflictingSymbolsCommand(IMessaging messaging, IReadOnlyCollection<SymbolWithSection> possibleConflicts, ISet<IntermediateSection> resolvedSections)
         {
             this.Messaging = messaging;
             this.PossibleConflicts = possibleConflicts;
@@ -18,39 +19,74 @@ namespace WixToolset.Core.Link
 
         private IMessaging Messaging { get; }
 
-        private  IEnumerable<SymbolWithSection> PossibleConflicts { get; }
+        private IReadOnlyCollection<SymbolWithSection> PossibleConflicts { get; }
 
-        private IEnumerable<IntermediateSection> ResolvedSections { get; }
+        private ISet<IntermediateSection> ResolvedSections { get; }
 
         public void Execute()
         {
-            // Do a quick check if there are any possibly conflicting symbols that don't come from tables that allow
-            // overriding. Hopefully the symbols with possible conflicts list is usually very short list (empty should
-            // be the most common). If we find any matches, we'll do a more costly check to see if the possible conflicting
+            // Do a quick check if there are any possibly conflicting symbols. Hopefully the symbols with possible conflicts
+            // list is a very short list (empty should be the most common).
+            //
+            // If we have conflicts then we'll do a more costly check to see if the possible conflicting
             // symbols are in sections we actually referenced. From the resulting set, show an error for each duplicate
             // (aka: conflicting) symbol.
-            var illegalDuplicates = this.PossibleConflicts.Where(s => s.Symbol.Definition.Type != SymbolDefinitionType.WixAction && s.Symbol.Definition.Type != SymbolDefinitionType.WixVariable).ToList();
-            if (0 < illegalDuplicates.Count)
+            if (0 < this.PossibleConflicts.Count)
             {
-                var referencedSections = new HashSet<IntermediateSection>(this.ResolvedSections);
-
-                foreach (var referencedDuplicate in illegalDuplicates.Where(s => referencedSections.Contains(s.Section)))
+                foreach (var referencedDuplicate in this.PossibleConflicts.Where(s => this.ResolvedSections.Contains(s.Section)))
                 {
-                    var actuallyReferencedDuplicates = referencedDuplicate.PossiblyConflicts.Where(s => referencedSections.Contains(s.Section)).ToList();
+                    var actuallyReferencedDuplicates = referencedDuplicate.PossiblyConflicts.Where(s => this.ResolvedSections.Contains(s.Section)).ToList();
 
-                    if (actuallyReferencedDuplicates.Any())
+                    if (actuallyReferencedDuplicates.Count > 0)
+                {
+                        var conflicts = actuallyReferencedDuplicates.Append(referencedDuplicate).ToList();
+                        var virtualConflicts = conflicts.Where(s => s.Access == AccessModifier.Virtual).ToList();
+                        var overrideConflicts = conflicts.Where(s => s.Access == AccessModifier.Override).ToList();
+                        var otherConflicts = conflicts.Where(s => s.Access != AccessModifier.Virtual && s.Access != AccessModifier.Override).ToList();
+
+                        IEnumerable<SymbolWithSection> reportDuplicates = actuallyReferencedDuplicates;
+
+                        // If multiple symbols are virtual, use the duplicate virtual symbol message.
+                        if (virtualConflicts.Count > 1)
                     {
-                        var fullName = referencedDuplicate.GetFullName();
+                            var first = virtualConflicts[0];
+                            var referencingSourceLineNumber = first.DirectReferences.FirstOrDefault()?.SourceLineNumbers;
 
-                        this.Messaging.Write(ErrorMessages.DuplicateSymbol(referencedDuplicate.Symbol.SourceLineNumbers, fullName));
+                            reportDuplicates = virtualConflicts.Skip(1);
 
-                        foreach (var duplicate in actuallyReferencedDuplicates)
+                            this.Messaging.Write(LinkerErrors.DuplicateVirtualSymbol(first.Symbol, referencingSourceLineNumber));
+                        }
+                        else if (virtualConflicts.Count == 1 && otherConflicts.Count > 0)
                         {
-                            this.Messaging.Write(ErrorMessages.DuplicateSymbol2(duplicate.Symbol.SourceLineNumbers));
+                            var first = otherConflicts[0];
+                            var referencingSourceLineNumber = first.DirectReferences.FirstOrDefault()?.SourceLineNumbers;
+
+                            reportDuplicates = virtualConflicts;
+
+                            switch (first.Symbol)
+                            {
+                                case WixActionSymbol action:
+                                    this.Messaging.Write(LinkerErrors.VirtualSymbolMustBeOverridden(action));
+                                    break;
+                                default:
+                                    this.Messaging.Write(LinkerErrors.VirtualSymbolMustBeOverridden(first.Symbol, referencingSourceLineNumber));
+                                    break;
                         }
                     }
+                        else
+                        {
+                            var referencingSourceLineNumber = referencedDuplicate.DirectReferences.FirstOrDefault()?.SourceLineNumbers;
+
+                            this.Messaging.Write(LinkerErrors.DuplicateSymbol(referencedDuplicate.Symbol, referencingSourceLineNumber));
                 }
+
+                        foreach (var duplicate in reportDuplicates)
+                        {
+                            this.Messaging.Write(LinkerErrors.DuplicateSymbol2(duplicate.Symbol));
             }
+        }
+    }
+}
         }
     }
 }

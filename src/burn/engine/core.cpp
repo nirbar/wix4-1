@@ -2439,7 +2439,7 @@ static DWORD WINAPI LoggingThreadProc(
     BURN_ENGINE_STATE* pEngineState = reinterpret_cast<BURN_ENGINE_STATE*>(lpThreadParameter);
     BURN_PIPE_RESULT result = { };
 
-    hr = PipePumpMessages(pEngineState->companionConnection.hLoggingPipe, NULL, NULL, &result);
+    hr = BurnPipePumpMessages(pEngineState->companionConnection.hLoggingPipe, NULL, NULL, &result);
     ExitOnFailure(hr, "Failed to pump logging messages for elevated process.");
 
     hr = (HRESULT)result.dwResult;

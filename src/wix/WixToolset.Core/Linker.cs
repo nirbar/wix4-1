@@ -11,7 +11,6 @@ namespace WixToolset.Core
     using WixToolset.Core.Link;
     using WixToolset.Data;
     using WixToolset.Data.Symbols;
-    using WixToolset.Data.WindowsInstaller;
     using WixToolset.Extensibility.Data;
     using WixToolset.Extensibility.Services;
 
@@ -87,6 +86,27 @@ namespace WixToolset.Core
                     if (library != null)
                     {
                         sections.AddRange(library.Sections);
+
+                        if (library.Localizations?.Count > 0)
+                        {
+                            // Include localizations from the extension data and be sure to note that the localization came from
+                            // an extension. It is important to remember which localization came from an extension when filtering
+                            // localizations during the resolve process later.
+                            localizations.AddRange(library.Localizations.Select(l => l.UpdateLocation(LocalizationLocation.Extension)));
+                    }
+                }
+                }
+
+                // Load the standard wixlib.
+                if (!this.Context.SkipStdWixlib)
+                {
+                    var stdlib = WixStandardLibrary.Build(this.Context.Platform);
+
+                    sections.AddRange(stdlib.Sections);
+
+                    if (stdlib.Localizations?.Count > 0)
+                    {
+                        localizations.AddRange(stdlib.Localizations);
                     }
                 }
 
@@ -111,8 +131,19 @@ namespace WixToolset.Core
                     }
                 }
 
-                // Add the missing standard action and directory symbols.
-                this.LoadStandardSymbols(find.SymbolsByName);
+                // Add default symbols that need a bit more intelligence than just being
+                // included in the standard library.
+                {
+                    var command = new AddDefaultSymbolsCommand(find, sections);
+                    command.Execute();
+                }
+
+                // If there are no authored features, create a default feature and assign
+                // the components to it.
+                {
+                    var command = new AssignDefaultFeatureCommand(find, sections);
+                    command.Execute();
+                }
 
                 // Resolve the symbol references to find the set of sections we care about for linking.
                 // Of course, we start with the entry section (that's how it got its name after all).
@@ -150,7 +181,7 @@ namespace WixToolset.Core
                     return null;
                 }
 
-                // Display an error message for Components that were not referenced by a Feature.
+                // If there are authored features, error for any referenced components that aren't assigned to a feature.
                 foreach (var component in sections.SelectMany(s => s.Symbols.Where(y => y.Definition.Type == SymbolDefinitionType.Component)))
                 {
                     if (!referencedComponents.Contains(component.Id.Id))
@@ -176,7 +207,6 @@ namespace WixToolset.Core
                 // Create a new section to hold the linked content. Start with the entry section's
                 // metadata.
                 var resolvedSection = new IntermediateSection(find.EntrySection.Id, find.EntrySection.Type);
-                var references = new List<WixSimpleReferenceSymbol>();
                 var identicalDirectoryIds = new HashSet<string>(StringComparer.Ordinal);
 
                 foreach (var section in sections)
@@ -191,6 +221,11 @@ namespace WixToolset.Core
                             {
                                 continue;
                             }
+                        }
+                        else if (find.OverriddenSymbols.Contains(symbol))
+                        {
+                            // Skip the symbols that were overridden.
+                            continue;
                         }
 
                         var copySymbol = true; // by default, copy symbols.
@@ -247,13 +282,9 @@ namespace WixToolset.Core
                                 }
                                 break;
 
+                            case SymbolDefinitionType.WixSimpleReference:
                             case SymbolDefinitionType.WixComplexReference:
                                 copySymbol = false;
-                                break;
-
-                            case SymbolDefinitionType.WixSimpleReference:
-                                copySymbol = false;
-                                references.Add(symbol as WixSimpleReferenceSymbol);
                                 break;
 
                             case SymbolDefinitionType.WixVariable:
@@ -292,12 +323,6 @@ namespace WixToolset.Core
                 if (resolvedSection.Type == SectionType.Bundle)
                 {
                     var command = new FlattenAndProcessBundleTablesCommand(resolvedSection, this.Messaging);
-                    command.Execute();
-                }
-                else if (resolvedSection.Type == SectionType.Package || resolvedSection.Type == SectionType.Module)
-                {
-                    // Packages and modules get standard directories add.
-                    var command = new AddRequiredStandardDirectories(resolvedSection, references);
                     command.Execute();
                 }
 
@@ -349,37 +374,6 @@ namespace WixToolset.Core
         }
 
         /// <summary>
-        /// Load the standard action and directory symbols.
-        /// </summary>
-        /// <param name="symbolsByName">Collection of symbols.</param>
-        private void LoadStandardSymbols(IDictionary<string, SymbolWithSection> symbolsByName)
-        {
-            foreach (var actionSymbol in WindowsInstallerStandard.StandardActions())
-            {
-                var symbolWithSection = new SymbolWithSection(null, actionSymbol);
-                var fullName = symbolWithSection.GetFullName();
-
-                // If the action's symbol has not already been defined (i.e. overriden by the user), add it now.
-                if (!symbolsByName.ContainsKey(fullName))
-                {
-                    symbolsByName.Add(fullName, symbolWithSection);
-                }
-            }
-
-            foreach (var directorySymbol in WindowsInstallerStandard.StandardDirectories())
-            {
-                var symbolWithSection = new SymbolWithSection(null, directorySymbol);
-                var fullName = symbolWithSection.GetFullName();
-
-                // If the directory's symbol has not already been defined (i.e. overriden by the user), add it now.
-                if (!symbolsByName.ContainsKey(fullName))
-                {
-                    symbolsByName.Add(fullName, symbolWithSection);
-                }
-            }
-        }
-
-        /// <summary>
         /// Process the complex references.
         /// </summary>
         /// <param name="resolvedSection">Active section to add symbols to.</param>
@@ -395,7 +389,8 @@ namespace WixToolset.Core
             foreach (var section in sections)
             {
                 // Need ToList since we might want to add symbols while processing.
-                foreach (var wixComplexReferenceRow in section.Symbols.OfType<WixComplexReferenceSymbol>().ToList())
+                var wixComplexReferences = section.Symbols.OfType<WixComplexReferenceSymbol>().ToList();
+                foreach (var wixComplexReferenceRow in wixComplexReferences)
                 {
                     ConnectToFeature connection;
                     switch (wixComplexReferenceRow.ParentType)
@@ -538,6 +533,10 @@ namespace WixToolset.Core
                                     }
 
                                     featuresToFeatures.Add(new ConnectToFeature(section, wixComplexReferenceRow.Child, null, wixComplexReferenceRow.IsPrimary));
+                                    break;
+
+                                case ComplexReferenceChildType.Component:
+                                case ComplexReferenceChildType.ComponentGroup:
                                     break;
 
                                 default:

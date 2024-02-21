@@ -2147,6 +2147,7 @@ namespace WixToolset.Core
             string arpId = null;
             string arpDisplayVersion = null;
             var arpWin64 = YesNoType.NotSet;
+            var arpUseUninstallString = YesNoType.NotSet;
 
             var expectedNetFx4Args = new string[] { "/q", "/norestart" };
 
@@ -2366,7 +2367,7 @@ namespace WixToolset.Core
                                 }
 
                                 exeDetectionType = WixBundleExePackageDetectionType.Arp;
-                                this.ParseExePackageArpEntryElement(child, out arpId, out arpDisplayVersion, out arpWin64);
+                                this.ParseExePackageArpEntryElement(child, out arpId, out arpDisplayVersion, out arpWin64, out uninstallArguments, out arpUseUninstallString);
                             }
                             break;
                         case "SlipstreamMsp":
@@ -2663,6 +2664,7 @@ namespace WixToolset.Core
                         WixBundleExePackageAttributes exeAttributes = 0;
                         exeAttributes |= (YesNoType.Yes == bundle) ? WixBundleExePackageAttributes.Bundle : 0;
                         exeAttributes |= (YesNoType.Yes == arpWin64) ? WixBundleExePackageAttributes.ArpWin64 : 0;
+                        exeAttributes |= (YesNoType.Yes == arpUseUninstallString) ? WixBundleExePackageAttributes.ArpUseUninstallString : 0;
 
                         this.Core.AddSymbol(new WixBundleExePackageSymbol(sourceLineNumbers, id)
                         {
@@ -3139,12 +3141,14 @@ namespace WixToolset.Core
             }
         }
 
-        private void ParseExePackageArpEntryElement(XElement node, out string id, out string version, out YesNoType win64)
+        private void ParseExePackageArpEntryElement(XElement node, out string id, out string version, out YesNoType win64, out string uninstallArguments, out YesNoType arpUseUninstallString)
         {
             var sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             id = null;
             version = null;
             win64 = YesNoType.NotSet;
+            arpUseUninstallString = YesNoType.NotSet;
+            uninstallArguments = null;
 
             foreach (var attrib in node.Attributes())
             {
@@ -3157,6 +3161,12 @@ namespace WixToolset.Core
                             break;
                         case "Version":
                             version = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "AdditionalUninstallArguments":
+                            uninstallArguments = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "UseUninstallString":
+                            arpUseUninstallString = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
                         case "Win64":
                             win64 = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
@@ -3529,7 +3539,7 @@ namespace WixToolset.Core
                             name = this.Core.GetAttributeMsiPropertyNameValue(sourceLineNumbers, attrib);
                             break;
                         case "Value":
-                            value = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
+                            value = this.Core.GetAttributeValue(sourceLineNumbers, attrib, EmptyRule.CanBeEmpty);
                             break;
                         case "Condition":
                             condition = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
