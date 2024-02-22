@@ -169,7 +169,8 @@ static HRESULT CopyPayload(
     __in BURN_CACHE_PROGRESS_CONTEXT* pProgress,
     __in HANDLE hSourceFile,
     __in_z LPCWSTR wzSourcePath,
-    __in_z LPCWSTR wzDestinationPath
+    __in_z LPCWSTR wzDestinationPath,
+    __in BOOL fAllowHardLink
     );
 static HRESULT DownloadPayload(
     __in BURN_CACHE_PROGRESS_CONTEXT* pProgress,
@@ -1437,6 +1438,7 @@ static HRESULT LayoutBundle(
     BOOL fRetry = FALSE;
     BOOL fRetryAcquire = FALSE;
     BOOL fCanceledBegin = FALSE;
+    BOOL fAllowHardLink = TRUE;
 
     progress.pCacheContext = pContext;
 
@@ -1496,7 +1498,7 @@ static HRESULT LayoutBundle(
             }
             else
             {
-                hr = CopyPayload(&progress, pContext->hSourceEngineFile, sczBundlePath, wzUnverifiedPath);
+                hr = CopyPayload(&progress, pContext->hSourceEngineFile, sczBundlePath, wzUnverifiedPath, fAllowHardLink);
                 // Error handling happens after sending complete message to BA.
 
                 // If succeeded, send 100% complete here to make sure progress was sent to the BA.
@@ -1509,6 +1511,7 @@ static HRESULT LayoutBundle(
             UserExperienceOnCacheAcquireComplete(pContext->pUX, NULL, NULL, hr, &fRetryAcquire);
             if (fRetryAcquire)
             {
+                fAllowHardLink = FALSE;
                 continue;
             }
             else if (fCanceledBegin)
@@ -1553,6 +1556,7 @@ static HRESULT LayoutBundle(
 
         if (fRetry)
         {
+            fAllowHardLink = FALSE;
             pContext->qwSuccessfulCacheProgress -= qwBundleSize; // Acquire
         }
     } while (fRetry);
@@ -1631,6 +1635,7 @@ static HRESULT AcquireContainerOrPayload(
     DWORD64 qwFileSize = 0;
     BOOL fMinimumFileSize = FALSE;
     BOOL fEqual = FALSE;
+    BOOL fAllowHardLink = !*pfRetry;
 
     if (pContainer)
     {
@@ -1783,7 +1788,7 @@ static HRESULT AcquireContainerOrPayload(
 
         if (!fPathEqual)
         {
-            hr = CopyPayload(pProgress, INVALID_HANDLE_VALUE, pContext->rgSearchPaths[dwChosenSearchPath], wzDestinationPath);
+            hr = CopyPayload(pProgress, INVALID_HANDLE_VALUE, pContext->rgSearchPaths[dwChosenSearchPath], wzDestinationPath, fAllowHardLink);
             ExitOnFailure(hr, "Failed to copy payload: %ls", wzPayloadId);
 
             // Store the source path so it can be used as the LastUsedFolder if it passes verification.
@@ -1986,7 +1991,8 @@ static HRESULT CopyPayload(
     __in BURN_CACHE_PROGRESS_CONTEXT* pProgress,
     __in HANDLE hSourceFile,
     __in_z LPCWSTR wzSourcePath,
-    __in_z LPCWSTR wzDestinationPath
+    __in_z LPCWSTR wzDestinationPath,
+    __in BOOL fAllowHardLink
     )
 {
     HRESULT hr = S_OK;
@@ -2000,6 +2006,25 @@ static HRESULT CopyPayload(
 
     hr = PreparePayloadDestinationPath(wzDestinationPath);
     ExitOnFailure(hr, "Failed to prepare payload destination path: %ls", wzDestinationPath);
+
+    // Hard links are sufficient because the payload will be verified before copying to the final destination
+    if (fAllowHardLink)
+    {
+        if (::CreateHardLinkW(wzDestinationPath, wzSourcePath, NULL))
+        {
+            LARGE_INTEGER liSourceSize = { };
+            LARGE_INTEGER liZero = { };
+
+            FileSize(wzSourcePath, &liSourceSize.QuadPart);
+            CacheProgressRoutine(liSourceSize, liSourceSize, liZero, liZero, 0, CALLBACK_CHUNK_FINISHED, INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE, pProgress);
+            LogId(REPORT_STANDARD, MSG_PAYLOAD_HARD_LINK, wzSourcePath, wzDestinationPath);
+            ExitFunction();
+        }
+        else
+        {
+            LogId(REPORT_WARNING, MSG_PAYLOAD_HARD_LINK_FAILED, wzSourcePath, ::GetLastError());
+        }
+    }
 
     if (INVALID_HANDLE_VALUE == hSourceFile)
     {

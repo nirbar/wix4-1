@@ -1295,3 +1295,17 @@ SymbolicName=MSG_EXT_ATTACHED_CONTAINER_FAILED
 Language=English
 Container extension can not open attached container '%1!ls!'. Unloading the container and retrying.
 .
+
+MessageId=704
+Severity=Success
+SymbolicName=MSG_PAYLOAD_HARD_LINK
+Language=English
+Created a hard link from '%1!ls!' to '%2!ls!'.
+.
+
+MessageId=705
+Severity=Warning
+SymbolicName=MSG_PAYLOAD_HARD_LINK_FAILED
+Language=English
+Creating a hard link to '%1!ls!' failed with error code %2!u!. Resorting to plain copy.
+.
