@@ -1296,7 +1296,6 @@ Language=English
 Planned MSI transaction: '%1!ls!', planned: %2!hs!
 .
 
-
 MessageId=703
 Severity=Success
 SymbolicName=MSG_PLAN_CANCEL_MSI_TRANSACTION
@@ -1309,4 +1308,18 @@ Severity=Warning
 SymbolicName=MSG_UX_PAYLOAD_MISSING
 Language=English
 UX payload deletion was detected, Id: '%1!ls!', path: '%2!ls!', action: %3!ls!.
+.
+
+MessageId=705
+Severity=Success
+SymbolicName=MSG_PAYLOAD_HARD_LINK
+Language=English
+Created a hard link from '%1!ls!' to '%2!ls!'.
+.
+
+MessageId=706
+Severity=Warning
+SymbolicName=MSG_PAYLOAD_HARD_LINK_FAILED
+Language=English
+Creating a hard link to '%1!ls!' failed with error code %2!u!. Resorting to plain copy.
 .
