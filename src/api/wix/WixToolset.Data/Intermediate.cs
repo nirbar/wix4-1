@@ -215,11 +215,9 @@ namespace WixToolset.Data
         /// Updates the intermediate level to the specified level.
         /// </summary>
         /// <param name="level">Intermediate level.</param>
-        public Intermediate UpdateLevel(string level)
+        public void UpdateLevel(string level)
         {
             this.Level = String.IsNullOrEmpty(this.Level) ? level : String.Concat(this.Level, ";", level);
-
-            return this;
         }
 
         /// <summary>

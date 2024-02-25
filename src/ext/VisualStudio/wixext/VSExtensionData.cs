@@ -7,6 +7,12 @@ namespace WixToolset.VisualStudio
 
     public sealed class VSExtensionData : BaseExtensionData
     {
+        /// <summary>
+        /// Gets the default culture.
+        /// </summary>
+        /// <value>The default culture.</value>
+        public override string DefaultCulture => "en-US";
+
         public override Intermediate GetLibrary(ISymbolDefinitionCreator symbolDefinitions)
         {
             return Intermediate.Load(typeof(VSExtensionData).Assembly, "WixToolset.VisualStudio.vs.wixlib", symbolDefinitions);

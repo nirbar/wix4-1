@@ -25,6 +25,15 @@ typedef enum _BURN_PIPE_MESSAGE_TYPE : DWORD
     BURN_PIPE_MESSAGE_TYPE_TERMINATE = 0xF0000003,
 } BURN_PIPE_MESSAGE_TYPE;
 
+typedef struct _BURN_PIPE_MESSAGE
+{
+    DWORD dwMessage;
+    DWORD cbData;
+
+    BOOL fAllocatedData;
+    LPVOID pvData;
+} BURN_PIPE_MESSAGE;
+
 typedef struct _BURN_PIPE_RESULT
 {
     DWORD dwResult;
@@ -33,20 +42,20 @@ typedef struct _BURN_PIPE_RESULT
 
 
 typedef HRESULT (*PFN_PIPE_MESSAGE_CALLBACK)(
-    __in PIPE_MESSAGE* pMsg,
+    __in BURN_PIPE_MESSAGE* pMsg,
     __in_opt LPVOID pvContext,
     __out DWORD* pdwResult
     );
 
 
 // Common functions.
-void BurnPipeConnectionInitialize(
+void PipeConnectionInitialize(
     __in BURN_PIPE_CONNECTION* pConnection
     );
-void BurnPipeConnectionUninitialize(
+void PipeConnectionUninitialize(
     __in BURN_PIPE_CONNECTION* pConnection
     );
-HRESULT BurnPipeSendMessage(
+HRESULT PipeSendMessage(
     __in HANDLE hPipe,
     __in DWORD dwMessage,
     __in_bcount_opt(cbData) LPVOID pvData,
@@ -55,7 +64,7 @@ HRESULT BurnPipeSendMessage(
     __in_opt LPVOID pvContext,
     __out DWORD* pdwResult
     );
-HRESULT BurnPipePumpMessages(
+HRESULT PipePumpMessages(
     __in HANDLE hPipe,
     __in_opt PFN_PIPE_MESSAGE_CALLBACK pfnCallback,
     __in_opt LPVOID pvContext,
@@ -63,29 +72,29 @@ HRESULT BurnPipePumpMessages(
     );
 
 // Parent functions.
-HRESULT BurnPipeCreateNameAndSecret(
+HRESULT PipeCreateNameAndSecret(
     __out_z LPWSTR *psczConnectionName,
     __out_z LPWSTR *psczSecret
     );
-HRESULT BurnPipeCreatePipes(
+HRESULT PipeCreatePipes(
     __in BURN_PIPE_CONNECTION* pConnection,
     __in BOOL fCompanion
     );
-HRESULT BurnPipeWaitForChildConnect(
+HRESULT PipeWaitForChildConnect(
     __in BURN_PIPE_CONNECTION* pConnection
     );
-HRESULT BurnPipeTerminateLoggingPipe(
+HRESULT PipeTerminateLoggingPipe(
     __in HANDLE hLoggingPipe,
     __in DWORD dwParentExitCode
     );
-HRESULT BurnPipeTerminateChildProcess(
+HRESULT PipeTerminateChildProcess(
     __in BURN_PIPE_CONNECTION* pConnection,
     __in DWORD dwParentExitCode,
     __in BOOL fRestart
     );
 
 // Child functions.
-HRESULT BurnPipeChildConnect(
+HRESULT PipeChildConnect(
     __in BURN_PIPE_CONNECTION* pConnection,
     __in BOOL fCompanion
     );

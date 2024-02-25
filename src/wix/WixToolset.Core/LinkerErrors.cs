@@ -3,48 +3,12 @@
 namespace WixToolset.Core
 {
     using WixToolset.Data;
-    using WixToolset.Data.Symbols;
 
     internal static class LinkerErrors
     {
         public static Message DuplicateBindPathVariableOnCommandLine(string argument, string bindName, string bindValue, string collisionValue)
         {
             return Message(null, Ids.DuplicateBindPathVariableOnCommandLine, "", argument, bindName, bindValue, collisionValue);
-        }
-
-        public static Message DuplicateSymbol(IntermediateSymbol symbol)
-        {
-            return Message(symbol.SourceLineNumbers, Ids.DuplicateSymbol, "Duplicate {0} with identifier '{1}' found. Access modifiers (global, library, file, section) cannot prevent these conflicts. Ensure all your identifiers of a given type (Directory, File, etc.) are unique.", symbol.Definition.Name, symbol.Id.Id);
-        }
-
-        public static Message DuplicateSymbol(IntermediateSymbol symbol, SourceLineNumber referencingSourceLineNumber)
-        {
-            if (referencingSourceLineNumber is null)
-            {
-                return DuplicateSymbol(symbol);
-            }
-
-            return Message(symbol.SourceLineNumbers, Ids.DuplicateSymbol, "Duplicate {0} with identifier '{1}' referenced by {2}. Ensure all your identifiers of a given type (Directory, File, etc.) are unique or use an access modifier to scope the identfier.", symbol.Definition.Name, symbol.Id.Id, referencingSourceLineNumber);
-        }
-
-        public static Message DuplicateVirtualSymbol(IntermediateSymbol symbol)
-        {
-            return Message(symbol.SourceLineNumbers, Ids.DuplicateSymbol, "The virtual {0} with identifier '{1}' is duplicated. Ensure identifiers of a given type (Directory, File, etc.) are unique or did you mean to make one an override for the virtual symbol?", symbol.Definition.Name, symbol.Id.Id);
-        }
-
-        public static Message DuplicateVirtualSymbol(IntermediateSymbol symbol, SourceLineNumber referencingSourceLineNumber)
-        {
-            if (referencingSourceLineNumber is null)
-            {
-                return DuplicateVirtualSymbol(symbol);
-            }
-
-            return Message(symbol.SourceLineNumbers, Ids.DuplicateSymbol, "The virtual {0} with identifier '{1}' is duplicated. Ensure identifiers of a given type (Directory, File, etc.) are unique or did you mean to make one an override for the virtual symbol? Referenced from {2}", symbol.Definition.Name, symbol.Id.Id, referencingSourceLineNumber);
-        }
-
-        public static Message DuplicateSymbol2(IntermediateSymbol symbol)
-        {
-            return Message(symbol.SourceLineNumbers, Ids.DuplicateSymbol2, "Location of symbol related to previous error.");
         }
 
         public static Message OrphanedPayload(SourceLineNumber sourceLineNumbers, string payloadId)
@@ -82,41 +46,6 @@ namespace WixToolset.Core
             return Message(sourceLineNumbers, Ids.UncompressedPayloadInContainer, "The payload '{0}' is uncompressed and cannot be added to container '{1}'. Remove its Compressed attribute and provide a @SourceFile value to allow it to be added to a container.", payloadId, containerId);
         }
 
-        public static Message VirtualSymbolNotFoundForOverride(IntermediateSymbol symbol)
-        {
-            return Message(symbol.SourceLineNumbers, Ids.VirtualSymbolNotFoundForOverride, "Could not find a virtual symbol to override with the {0} symbol '{1}'. Remove the override access modifier or include the code with the virtual symbol.", symbol.Definition.Name, symbol.Id.Id);
-        }
-
-        public static Message VirtualSymbolNotFoundForOverride(IntermediateSymbol symbol, SourceLineNumber referencingSourceLineNumber)
-        {
-            if (referencingSourceLineNumber is null)
-            {
-                return VirtualSymbolNotFoundForOverride(symbol);
-            }
-
-            return Message(symbol.SourceLineNumbers, Ids.VirtualSymbolNotFoundForOverride, "Could not find a virtual symbol to override with the {0} symbol '{1}'. Remove the override access modifier or include the code with the virtual symbol. Referenced from {2}", symbol.Definition.Name, symbol.Id.Id, referencingSourceLineNumber);
-        }
-
-        public static Message VirtualSymbolMustBeOverridden(IntermediateSymbol symbol)
-        {
-            return Message(symbol.SourceLineNumbers, Ids.VirtualSymbolMustBeOverridden, "The {0} symbol '{1}' conflicts with a virtual symbol. Use the 'override' access modifier to override the virtual symbol or use a different Id to avoid the conflict.", symbol.Definition.Name, symbol.Id.Id);
-        }
-
-        public static Message VirtualSymbolMustBeOverridden(WixActionSymbol actionSymbol)
-        {
-            return Message(actionSymbol.SourceLineNumbers, Ids.VirtualSymbolMustBeOverridden, "The action '{0}' conflicts with a virtual symbol with the same id. To override the virtual symbol (e.g., to reschedule a custom action), use the 'override' access modifier: 'override {0}'. If you didn't intend to override a virtual symbol, use a different id to avoid the conflict.", actionSymbol.Action);
-        }
-
-        public static Message VirtualSymbolMustBeOverridden(IntermediateSymbol symbol, SourceLineNumber referencingSourceLineNumber)
-        {
-            if (referencingSourceLineNumber is null)
-            {
-                return VirtualSymbolMustBeOverridden(symbol);
-            }
-
-            return Message(symbol.SourceLineNumbers, Ids.VirtualSymbolMustBeOverridden, "The {0} symbol '{1}' conflicts with a virtual symbol. Use the 'override' access modifier to override the virtual symbol or use a different Id to avoid the conflict. Referenced from {2}", symbol.Definition.Name, symbol.Id.Id, referencingSourceLineNumber);
-        }
-
         private static Message Message(SourceLineNumber sourceLineNumber, Ids id, string format, params object[] args)
         {
             return new Message(sourceLineNumber, MessageLevel.Error, (int)id, format, args);
@@ -124,9 +53,6 @@ namespace WixToolset.Core
 
         public enum Ids
         {
-            DuplicateSymbol = 91,
-            DuplicateSymbol2 = 92,
-
             OrphanedPayload = 7000,
             PackageInMultipleContainers = 7001,
             PayloadSharedWithBA = 7002,
@@ -135,8 +61,6 @@ namespace WixToolset.Core
             UncompressedPayloadInContainer = 7005,
             BAContainerCannotContainRemotePayload = 7006,
             DuplicateBindPathVariableOnCommandLine = 7007,
-            VirtualSymbolNotFoundForOverride = 7008,
-            VirtualSymbolMustBeOverridden = 7009,
         } // last available is 7099. 7100 is WindowsInstallerBackendWarnings.
     }
 }

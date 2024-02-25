@@ -85,7 +85,7 @@ namespace WixToolset
             PreDecompile(wixout);
 
             wixout.Type = OutputType.Package;
-            this.decompiler.KeepModularizationIds = true;
+            this.decompiler.TreatProductAsModule = true;
             Wix.Wix wix = this.decompiler.Decompile(wixout);
 
             if (null == wix)

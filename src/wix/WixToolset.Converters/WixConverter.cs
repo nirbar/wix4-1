@@ -1033,18 +1033,17 @@ namespace WixToolset.Converters
             using (var lab = new ConversionLab(element))
             {
                 var xConditions = element.Elements(ConditionElementName).ToList();
-                var collector = new InnerContentCollector();
+                var comments = new List<XNode>();
                 var conditions = new List<KeyValuePair<string, string>>();
 
                 foreach (var xCondition in xConditions)
                 {
                     var action = UppercaseFirstChar(xCondition.Attribute("Action")?.Value);
-                   
                     if (!String.IsNullOrEmpty(action) &&
-                        collector.CollectInnerTextAndCommentsForAttributeValue(xCondition, out string value) &&
+                        TryGetInnerText(xCondition, out var text, out comments, comments) &&
                         this.OnInformation(ConverterTestType.InnerTextDeprecated, element, "Using {0} element text is deprecated. Use the '{1}Condition' attribute instead.", xCondition.Name.LocalName, action))
                     {
-                        conditions.Add(new KeyValuePair<string, string>(action, value));
+                        conditions.Add(new KeyValuePair<string, string>(action, text));
                     }
                 }
 
@@ -1063,7 +1062,7 @@ namespace WixToolset.Converters
                 }
 
                 lab.RemoveOrphanTextNodes();
-                lab.AddCommentsAsSiblings(collector.Comments);
+                lab.AddCommentsAsSiblings(comments);
             }
         }
 
@@ -1081,17 +1080,15 @@ namespace WixToolset.Converters
             var xCondition = element.Element(ConditionElementName);
             if (xCondition != null)
             {
-                var collector = new InnerContentCollector();
-
-                if (collector.CollectInnerTextAndCommentsForAttributeValue(xCondition, out string value) &&
+                if (TryGetInnerText(xCondition, out var text, out var comments) &&
                     this.OnInformation(ConverterTestType.InnerTextDeprecated, element, "Using {0} element text is deprecated. Use the 'Condition' attribute instead.", xCondition.Name.LocalName))
                 {
                     using (var lab = new ConversionLab(element))
                     {
                         xCondition.Remove();
-                        element.Add(new XAttribute("Condition", value));
+                        element.Add(new XAttribute("Condition", text));
                         lab.RemoveOrphanTextNodes();
-                        lab.AddCommentsAsSiblings(collector.Comments);
+                        lab.AddCommentsAsSiblings(comments);
                     }
                 }
             }
@@ -1194,18 +1191,16 @@ namespace WixToolset.Converters
             if (xCondition != null)
             {
                 var level = xCondition.Attribute("Level")?.Value;
-                var collector = new InnerContentCollector();
-
                 if (!String.IsNullOrEmpty(level) &&
-                    collector.CollectInnerTextAndCommentsForAttributeValue(xCondition, out string value) &&
+                    TryGetInnerText(xCondition, out var text, out var comments) &&
                     this.OnInformation(ConverterTestType.InnerTextDeprecated, element, "Using {0} element text is deprecated. Use the 'Level' element instead.", xCondition.Name.LocalName))
                 {
                     using (var lab = new ConversionLab(xCondition))
                     {
                         lab.ReplaceTargetElement(new XElement(LevelElementName,
                                                               new XAttribute("Value", level),
-                                                              new XAttribute("Condition", value)));
-                        lab.AddCommentsAsSiblings(collector.Comments);
+                                                              new XAttribute("Condition", text)));
+                        lab.AddCommentsAsSiblings(comments);
                     }
                 }
             }
@@ -1240,23 +1235,17 @@ namespace WixToolset.Converters
         private void ConvertLaunchConditionElement(XElement element)
         {
             var message = element.Attribute("Message")?.Value;
-            var collector = new InnerContentCollector();
 
             if (!String.IsNullOrEmpty(message) &&
-                collector.CollectInnerTextWithTrailingWhitespaceAndCommentsForAttributeValue(element, out string value) &&
+                TryGetInnerText(element, out var text, out var comments) &&
                 this.OnInformation(ConverterTestType.InnerTextDeprecated, element, "Using {0} element text is deprecated. Use the 'Launch' element instead.", element.Name.LocalName))
             {
-                if (String.IsNullOrWhiteSpace(value))
-                {
-                    value = String.Empty;
-                }
-
                 using (var lab = new ConversionLab(element))
                 {
                     lab.ReplaceTargetElement(new XElement(LaunchElementName,
-                                                          new XAttribute("Condition", value),
+                                                          new XAttribute("Condition", text),
                                                           new XAttribute("Message", message)));
-                    lab.AddCommentsAsSiblings(collector.Comments);
+                    lab.AddCommentsAsSiblings(comments);
                 }
             }
         }
@@ -1301,8 +1290,7 @@ namespace WixToolset.Converters
             var xCondition = element.Element(ConditionElementName);
             if (xCondition != null)
             {
-                var collector = new InnerContentCollector();
-                if (collector.CollectInnerTextAndCommentsForAttributeValue(xCondition, out string value) &&
+                if (TryGetInnerText(xCondition, out var text, out var comments) &&
                     this.OnInformation(ConverterTestType.InnerTextDeprecated, element, "Using {0} element text is deprecated. Use the 'Condition' attribute instead.", xCondition.Name.LocalName))
                 {
                     using (var lab = new ConversionLab(xCondition))
@@ -1311,9 +1299,9 @@ namespace WixToolset.Converters
                     }
                     using (var lab = new ConversionLab(element))
                     {
-                        element.Add(new XAttribute("Condition", value));
+                        element.Add(new XAttribute("Condition", text));
                         lab.RemoveOrphanTextNodes();
-                        lab.AddCommentsAsSiblings(collector.Comments);
+                        lab.AddCommentsAsSiblings(comments);
                     }
                 }
             }
@@ -1681,35 +1669,33 @@ namespace WixToolset.Converters
 
         private void ConvertPublishElement(XElement element)
         {
-            var collector = new InnerContentCollector();
-
-            if (collector.CollectInnerTextAndCommentsForAttributeValue(element, out string value) &&
+            if (TryGetInnerText(element, out var text, out var comments) &&
                 this.OnInformation(ConverterTestType.InnerTextDeprecated, element, "Using {0} element text is deprecated. Use the 'Condition' attribute instead.", element.Name.LocalName))
             {
                 using (var lab = new ConversionLab(element))
                 {
-                    if ("1" == value)
+                    if ("1" == text)
                     {
                         this.OnInformation(ConverterTestType.PublishConditionOneUnnecessary, element, "Adding Condition='1' on {0} elements is no longer necessary. Remove the Condition attribute.", element.Name.LocalName);
                     }
                     else
                     {
-                        element.Add(new XAttribute("Condition", value));
+                        element.Add(new XAttribute("Condition", text));
                     }
 
                     lab.RemoveOrphanTextNodes();
-                    lab.AddCommentsAsSiblings(collector.Comments);
+                    lab.AddCommentsAsSiblings(comments);
                 }
             }
 
-            var eventName = element.Attribute("Event")?.Value;
-            var eventValue = element.Attribute("Value")?.Value;
+            var evnt = element.Attribute("Event")?.Value;
+            var value = element.Attribute("Value")?.Value;
 
-            if (eventName?.Equals("DoAction", StringComparison.OrdinalIgnoreCase) == true
-                && eventValue?.StartsWith("WixUI", StringComparison.OrdinalIgnoreCase) == true
+            if (evnt?.Equals("DoAction", StringComparison.OrdinalIgnoreCase) == true
+                && value?.StartsWith("WixUI", StringComparison.OrdinalIgnoreCase) == true
                 && this.OnInformation(ConverterTestType.CustomActionIdsIncludePlatformSuffix, element, "Custom action ids have changed in WiX v4 extensions to support platform-specific custom actions. For more information, see https://wixtoolset.org/docs/fourthree/#converting-custom-wixui-dialog-sets."))
             {
-                element.Attribute("Value").Value = eventValue + "_$(sys.BUILDARCHSHORT)";
+                element.Attribute("Value").Value = value + "_$(sys.BUILDARCHSHORT)";
             }
         }
 
@@ -1996,9 +1982,8 @@ namespace WixToolset.Converters
             }
 
             var xScript = xCustomAction.Attribute("Script");
-            var collector = new InnerContentCollector();
 
-            if (xScript != null && collector.CollectInnerTextWithTrailingWhitespaceAndCommentsForScriptFile(xCustomAction, out string value))
+            if (xScript != null && TryGetInnerText(xCustomAction, out var scriptText, out var comments))
             {
                 if (this.OnInformation(ConverterTestType.InnerTextDeprecated, xCustomAction, "Using {0} element text is deprecated. Extract the text to a file and use the 'ScriptSourceFile' attribute to reference it.", xCustomAction.Name.LocalName))
                 {
@@ -2007,12 +1992,12 @@ namespace WixToolset.Converters
                     var ext = (xScript.Value == "jscript") ? ".js" : (xScript.Value == "vbscript") ? ".vbs" : ".txt";
 
                     var scriptFile = Path.Combine(scriptFolder, id + ext);
-                    File.WriteAllText(scriptFile, value);
+                    File.WriteAllText(scriptFile, scriptText);
 
                     RemoveChildren(xCustomAction);
                     xCustomAction.Add(new XAttribute("ScriptSourceFile", scriptFile));
 
-                    if (collector.Comments.Any())
+                    if (comments.Any())
                     {
                         var remainingNodes = xCustomAction.NodesAfterSelf().ToList();
                         var replacementNodes = remainingNodes.Where(e => XmlNodeType.Text != e.NodeType);
@@ -2020,7 +2005,7 @@ namespace WixToolset.Converters
                         {
                             node.Remove();
                         }
-                        foreach (var comment in collector.Comments)
+                        foreach (var comment in comments)
                         {
                             xCustomAction.Add(comment);
                             xCustomAction.Add("\n");
@@ -2159,23 +2144,24 @@ namespace WixToolset.Converters
 
         private void ConvertInnerTextToAttribute(XElement element, string attributeName)
         {
-            var collector = new InnerContentCollector();
-
-            if (collector.CollectInnerTextAndCommentsForAttributeValue(element, out string value))
+            if (TryGetInnerText(element, out var text, out var comments))
             {
                 // If the target attribute already exists, error if we have anything more than whitespace.
                 var attribute = element.Attribute(attributeName);
                 if (attribute != null)
                 {
-                    this.OnError(ConverterTestType.InnerTextDeprecated, attribute, "Using {0} element text is deprecated. Remove the element's text and use only the '{1}' attribute. See the conversion FAQ for more information: https://wixtoolset.org/docs/fourthree/faqs/#converting-packages", element.Name.LocalName, attributeName);
+                    if (!String.IsNullOrWhiteSpace(text))
+                    {
+                        this.OnError(ConverterTestType.InnerTextDeprecated, attribute, "Using {0} element text is deprecated. Remove the element's text and use only the '{1}' attribute. See the conversion FAQ for more information: https://wixtoolset.org/docs/fourthree/faqs/#converting-packages", element.Name.LocalName, attributeName);
+                    }
                 }
                 else if (this.OnInformation(ConverterTestType.InnerTextDeprecated, element, "Using {0} element text is deprecated. Use the '{1}' attribute instead.", element.Name.LocalName, attributeName))
                 {
                     using (var lab = new ConversionLab(element))
                     {
                         lab.RemoveOrphanTextNodes();
-                        element.Add(new XAttribute(attributeName, value));
-                        lab.AddCommentsAsSiblings(collector.Comments);
+                        element.Add(new XAttribute(attributeName, text));
+                        lab.AddCommentsAsSiblings(comments);
                     }
                 }
             }
@@ -2868,6 +2854,42 @@ namespace WixToolset.Converters
             }
         }
 
+        private static bool TryGetInnerText(XElement element, out string value, out List<XNode> comments)
+        {
+            return TryGetInnerText(element, out value, out comments, new List<XNode>());
+        }
+
+        private static bool TryGetInnerText(XElement element, out string value, out List<XNode> comments, List<XNode> initialComments)
+        {
+            value = null;
+            comments = null;
+            var found = false;
+
+            var nodes = element.Nodes().ToList();
+            comments = initialComments;
+            var nonCommentNodes = new List<XNode>();
+
+            foreach (var node in nodes)
+            {
+                if (XmlNodeType.Comment == node.NodeType)
+                {
+                    comments.Add(node);
+                }
+                else
+                {
+                    nonCommentNodes.Add(node);
+                }
+            }
+
+            if (nonCommentNodes.Any() && nonCommentNodes.All(e => e.NodeType == XmlNodeType.Text || e.NodeType == XmlNodeType.CDATA))
+            {
+                value = String.Join(String.Empty, nonCommentNodes.Cast<XText>().Select(TrimTextValue));
+                found = true;
+            }
+
+            return found;
+        }
+
         private static bool IsTextNode(XNode node, out XText text)
         {
             text = null;
@@ -2886,6 +2908,22 @@ namespace WixToolset.Converters
             {
                 text.Remove();
             }
+        }
+
+        private static string TrimTextValue(XText text)
+        {
+            var value = text.Value;
+
+            if (String.IsNullOrEmpty(value))
+            {
+                return String.Empty;
+            }
+            else if (text.NodeType == XmlNodeType.CDATA && String.IsNullOrWhiteSpace(value))
+            {
+                return " ";
+            }
+
+            return value.Trim();
         }
 
         private static void RemoveChildren(XElement element)
@@ -2935,250 +2973,6 @@ namespace WixToolset.Converters
             }
 
             return true;
-        }
-
-        // This class encapsulates methods for extraving text and comments from XElements. Multiple calls can be made to the collection
-        // methods to processs multiple XElements. The Comments property is used to extract the list of comments accumulated during the collection process.
-        private class InnerContentCollector
-        {
-            public InnerContentCollector()
-            {
-                this.Comments = new List<XNode>();
-            }
-
-            public List<XNode> Comments { get; private set; }
-
-            public bool CollectInnerTextAndCommentsForAttributeValue(XElement element, out string collectedText)
-            {
-                char[] whitespaceChars = { ' ', '\t', '\r', '\n' };
-                var nodes = element.Nodes().ToList();
-                var inWhitespace = false;
-                var cDataFound = false;
-                var sb = new StringBuilder();
-
-                foreach (var node in nodes)
-                {
-                    if (XmlNodeType.Comment == node.NodeType)
-                    {
-                        this.Comments.Add(node);
-                    }
-                    else if (XmlNodeType.CDATA == node.NodeType || XmlNodeType.Text == node.NodeType)
-                    {
-                        var isCData = XmlNodeType.CDATA == node.NodeType;
-
-                        if (isCData)
-                        {
-                            cDataFound = true;
-                        }
-
-                        var text = node is XText xtext ? xtext.Value : String.Empty;
-                        var nodeSB = new StringBuilder();
-
-                        foreach (var c in text)
-                        {
-                            char? emit = c;
-
-                            // Replace contiguous whitespace with a single space.
-                            if (' ' == c || '\r' == c || '\n' == c || '\t' == c)
-                            {
-                                if (!inWhitespace)
-                                {
-                                    inWhitespace = true;
-                                    emit = ' ';
-                                }
-                                else
-                                {
-                                    emit = null;
-                                }
-                            }
-                            else
-                            {
-                                inWhitespace = false;
-                            }
-
-                            if (emit.HasValue)
-                            {
-                                nodeSB.Append(emit);
-                            }
-                        }
-
-                        text = nodeSB.ToString().Trim(whitespaceChars);
-                        sb.Append(text);
-                    }
-                }
-                var found = false;
-                collectedText = sb.ToString();
-
-                if (0 < collectedText.Length)
-                {
-                    found = true;
-                }
-
-                collectedText = collectedText.Trim(whitespaceChars);
-
-                if (cDataFound)
-                {
-                    found = true;
-
-                    if (0 == collectedText.Length)
-                    {
-                        collectedText = " ";
-                    }
-                }
-
-                return found;
-            }
-
-            public bool CollectInnerTextWithTrailingWhitespaceAndCommentsForAttributeValue(XElement element, out string collectedText)
-            {
-                char[] whitespaceChars = { ' ', '\t', '\r', '\n' };
-                var nodes = element.Nodes().ToList();
-                var inWhitespace = false;
-                var cDataFound = false;
-                var whitespaceFound = false;
-                var sb = new StringBuilder();
-
-                foreach (var node in nodes)
-                {
-                    if (XmlNodeType.Comment == node.NodeType)
-                    {
-                        this.Comments.Add(node);
-                    }
-                    else if (XmlNodeType.CDATA == node.NodeType || XmlNodeType.Text == node.NodeType)
-                    {
-                        var isCData = XmlNodeType.CDATA == node.NodeType;
-
-                        if (isCData)
-                        {
-                            cDataFound = true;
-                        }
-
-                        var text = node is XText xtext ? xtext.Value : String.Empty;
-                        var nodeSB = new StringBuilder();
-
-                        foreach (var c in text)
-                        {
-                            char? emit = c;
-
-                            // Replace contiguous whitespace with a single space.
-                            if (' ' == c || '\r' == c || '\n' == c || '\t' == c)
-                            {
-                                if (!inWhitespace)
-                                {
-                                    inWhitespace = true;
-                                    whitespaceFound = true;
-                                    emit = ' ';
-                                }
-                                else
-                                {
-                                    emit = null;
-                                }
-                            }
-                            else
-                            {
-                                inWhitespace = false;
-                            }
-
-                            if (emit.HasValue)
-                            {
-                                nodeSB.Append(emit);
-                            }
-                        }
-
-                        text = nodeSB.ToString();
-
-                        if (0 < text.Length)
-                        {
-                            text = text.Trim(whitespaceChars);
-
-                            if (0 == text.Length)
-                            {
-                                text = " ";
-                            }
-                        }
-
-                        sb.Append(text);
-                    }
-                }
-                var found = false;
-                collectedText = sb.ToString();
-
-                if (0 < collectedText.Length)
-                {
-                    found = true;
-                }
-
-                collectedText = collectedText.Trim(whitespaceChars);
-
-                if (whitespaceFound)
-                {
-                    found = true;
-                }
-
-                if (cDataFound)
-                {
-                    found = true;
-
-                    if (0 == collectedText.Length)
-                    {
-                        collectedText = " ";
-                    }
-                }
-
-                return found;
-            }
-
-            public bool CollectInnerTextWithTrailingWhitespaceAndCommentsForScriptFile(XElement element, out string collectedText)
-            {
-                var value = String.Empty;
-                char[] whitespaceChars = { ' ', '\t', '\r', '\n' };
-                var nodes = element.Nodes().ToList();
-                var cDataFound = false;
-                var sb = new StringBuilder();
-
-                foreach (var node in nodes)
-                {
-                    if (XmlNodeType.Comment == node.NodeType)
-                    {
-                        this.Comments.Add(node);
-                    }
-                    else if (XmlNodeType.CDATA == node.NodeType || XmlNodeType.Text == node.NodeType)
-                    {
-                        var isCData = XmlNodeType.CDATA == node.NodeType;
-
-                        if (isCData)
-                        {
-                            cDataFound = true;
-                        }
-
-                        var text = node is XText xtext ? xtext.Value.Trim(whitespaceChars) : String.Empty;
-                        sb.Append(text);
-                    }
-                }
-
-                var found = false;
-
-                collectedText = sb.ToString();
-
-                if (0 < collectedText.Length)
-                {
-                    found = true;
-                }
-
-                collectedText = collectedText.Trim(whitespaceChars);
-
-                if (cDataFound)
-                {
-                    found = true;
-
-                    if (0 == collectedText.Length)
-                    {
-                        collectedText = " ";
-                    }
-                }
-
-                return found;
-            }
         }
 
         /// <summary>

@@ -323,6 +323,21 @@ namespace WixToolset.Data
             return Message(null, Ids.DuplicateSourcesForOutput, "Multiple source files ({0}) have resulted in the same output file '{1}'. This is likely because the source files only differ in extension or path. Rename the source files to avoid this problem.", sourceList, outputFile);
         }
 
+        public static Message DuplicateSymbol(SourceLineNumber sourceLineNumbers, string symbolName)
+        {
+            return Message(sourceLineNumbers, Ids.DuplicateSymbol, "Duplicate symbol '{0}' found. This typically means that an Id is duplicated. Access modifiers (internal, protected, private) cannot prevent these conflicts. Ensure all your identifiers of a given type (File, Component, Feature) are unique.", symbolName);
+        }
+
+        public static Message DuplicateSymbol(SourceLineNumber sourceLineNumbers, string symbolName, string referencingSourceLineNumber)
+        {
+            return Message(sourceLineNumbers, Ids.DuplicateSymbol, "Duplicate symbol '{0}' referenced by {1}. This typically means that an Id is duplicated. Ensure all your identifiers of a given type (File, Component, Feature) are unique or use an access modifier to scope the identfier.", symbolName, referencingSourceLineNumber);
+        }
+
+        public static Message DuplicateSymbol2(SourceLineNumber sourceLineNumbers)
+        {
+            return Message(sourceLineNumbers, Ids.DuplicateSymbol2, "Location of symbol related to previous error.");
+        }
+
         public static Message DuplicateTransform(string transform)
         {
             return Message(null, Ids.DuplicateTransform, "The transform {0} was included twice on the command line. Each transform can be applied to a patch only once.", transform);
@@ -1780,7 +1795,7 @@ namespace WixToolset.Data
 
         public static Message ReservedNamespaceViolation(SourceLineNumber sourceLineNumbers, string element, string attribute, string prefix)
         {
-            return Message(sourceLineNumbers, Ids.ReservedNamespaceViolation, "The {0}/@{1} attribute's value begins with the reserved prefix '{2}'. Some prefixes are reserved by the Windows Installer and WiX Toolset for well-known values. Change your attribute's value to not begin with the same prefix.", element, attribute, prefix);
+            return Message(sourceLineNumbers, Ids.ReservedNamespaceViolation, "The {0}/@{1} attribute's value begins with the reserved prefix '{2}'. Some prefixes are reserved by the Windows Installer and WiX toolset for well-known values. Change your attribute's value to not begin with the same prefix.", element, attribute, prefix);
         }
 
         public static Message RootFeatureCannotFollowParent(SourceLineNumber sourceLineNumbers)
@@ -2263,11 +2278,6 @@ namespace WixToolset.Data
             return Message(sourceLineNumbers, Ids.IllegalInnerText, "The {0} element contains inner text which is obsolete. Use the {1} attribute instead.", elementName, attributeName);
         }
 
-        public static Message IllegalAttributeWhenNested(SourceLineNumber sourceLineNumbers, string attributeName)
-        {
-            return Message(sourceLineNumbers, Ids.IllegalAttributeWhenNested, "The File element contains an attribute '{0}' that cannot be used in a File element that is a child of a Component element.", attributeName);
-        }
-
         private static Message Message(SourceLineNumber sourceLineNumber, Ids id, string format, params object[] args)
         {
             return new Message(sourceLineNumber, MessageLevel.Error, (int)id, format, args);
@@ -2381,6 +2391,8 @@ namespace WixToolset.Data
             InvalidDateTimeFormat = 88,
             MultipleEntrySections = 89,
             MultipleEntrySections2 = 90,
+            DuplicateSymbol = 91,
+            DuplicateSymbol2 = 92,
             MissingEntrySection = 93,
             UnresolvedReference = 94,
             MultiplePrimaryReferences = 95,

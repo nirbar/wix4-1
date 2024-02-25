@@ -27,9 +27,9 @@ namespace WixToolset.Core.Link
             this.BuildingMergeModule = (SectionType.Module == entrySection.Type);
         }
 
-        public IReadOnlyCollection<SymbolWithSection> ReferencedSymbolWithSections => this.referencedSymbols;
+        public IEnumerable<SymbolWithSection> ReferencedSymbolWithSections => this.referencedSymbols;
 
-        public ISet<IntermediateSection> ResolvedSections => this.resolvedSections;
+        public IEnumerable<IntermediateSection> ResolvedSections => this.resolvedSections;
 
         private bool BuildingMergeModule { get; }
 
@@ -63,25 +63,22 @@ namespace WixToolset.Core.Link
             // symbols provided.  Then recursively call this method to process the
             // located symbol's section.  All in all this is a very simple depth-first
             // search of the references per-section.
-            foreach (var reference in section.Symbols.OfType<WixSimpleReferenceSymbol>())
+            foreach (var wixSimpleReferenceRow in section.Symbols.OfType<WixSimpleReferenceSymbol>())
             {
                 // If we're building a Merge Module, ignore all references to the Media table
                 // because Merge Modules don't have Media tables.
-                if (this.BuildingMergeModule && reference.Table == "Media")
+                if (this.BuildingMergeModule && wixSimpleReferenceRow.Table == "Media")
                 {
                     continue;
                 }
 
                 // See if the symbol (and any of its duplicates) are appropriately accessible.
-                if (this.symbolsWithSections.TryGetValue(reference.SymbolicName, out var symbolWithSection))
+                if (this.symbolsWithSections.TryGetValue(wixSimpleReferenceRow.SymbolicName, out var symbolWithSection))
                 {
                     var accessible = this.DetermineAccessibleSymbols(section, symbolWithSection);
                     if (accessible.Count == 1)
                     {
                         var accessibleSymbol = accessible[0];
-
-                        accessibleSymbol.AddDirectReference(reference);
-
                         if (this.referencedSymbols.Add(accessibleSymbol) && null != accessibleSymbol.Section)
                         {
                             this.RecursivelyResolveReferences(accessibleSymbol.Section);
@@ -89,34 +86,32 @@ namespace WixToolset.Core.Link
                     }
                     else if (accessible.Count == 0)
                     {
-                        this.Messaging.Write(ErrorMessages.UnresolvedReference(reference.SourceLineNumbers, reference.SymbolicName, symbolWithSection.Access));
+                        this.Messaging.Write(ErrorMessages.UnresolvedReference(wixSimpleReferenceRow.SourceLineNumbers, wixSimpleReferenceRow.SymbolicName, symbolWithSection.Access));
                     }
-                    else // multiple symbols referenced creates conflicting symbols.
+                    else // display errors for the duplicate symbols.
                     {
-                        // Remember the direct reference to the symbol for the error reporting later,
-                        // but do NOT continue resolving references found in these conflicting symbols.
-                        foreach (var conflict in accessible)
+                        var accessibleSymbol = accessible[0];
+                        var accessibleFullName = accessibleSymbol.GetFullName();
+                        var referencingSourceLineNumber = wixSimpleReferenceRow.SourceLineNumbers?.ToString();
+
+                        if (String.IsNullOrEmpty(referencingSourceLineNumber))
                         {
-                            // This should NEVER happen.
-                            if (!conflict.PossiblyConflicts.Any())
+                            this.Messaging.Write(ErrorMessages.DuplicateSymbol(accessibleSymbol.Symbol.SourceLineNumbers, accessibleFullName));
+                        }
+                        else
                         {
-                                throw new InvalidOperationException("If a reference can reference multiple symbols, those symbols MUST have already been recognized as possible conflicts.");
+                            this.Messaging.Write(ErrorMessages.DuplicateSymbol(accessibleSymbol.Symbol.SourceLineNumbers, accessibleFullName, referencingSourceLineNumber));
                         }
 
-                            conflict.AddDirectReference(reference);
-
-                            this.referencedSymbols.Add(conflict);
-
-                            if (conflict.Section != null)
+                        foreach (var accessibleDuplicate in accessible.Skip(1))
                         {
-                                this.resolvedSections.Add(conflict.Section);
+                            this.Messaging.Write(ErrorMessages.DuplicateSymbol2(accessibleDuplicate.Symbol.SourceLineNumbers));
                         }
                     }
-                }
                 }
                 else
                 {
-                    this.Messaging.Write(ErrorMessages.UnresolvedReference(reference.SourceLineNumbers, reference.SymbolicName));
+                    this.Messaging.Write(ErrorMessages.UnresolvedReference(wixSimpleReferenceRow.SourceLineNumbers, wixSimpleReferenceRow.SymbolicName));
                 }
             }
         }
@@ -138,6 +133,14 @@ namespace WixToolset.Core.Link
 
             foreach (var dupe in symbolWithSection.PossiblyConflicts)
             {
+                // don't count overridable WixActionSymbols
+                var symbolAction = symbolWithSection.Symbol as WixActionSymbol;
+                var dupeAction = dupe.Symbol as WixActionSymbol;
+                if (symbolAction?.Overridable != dupeAction?.Overridable)
+                {
+                    continue;
+                }
+
                 if (this.AccessibleSymbol(referencingSection, dupe))
                 {
                     accessibleSymbols.Add(dupe);
@@ -158,8 +161,6 @@ namespace WixToolset.Core.Link
             switch (symbolWithSection.Access)
             {
                 case AccessModifier.Global:
-                case AccessModifier.Virtual:
-                case AccessModifier.Override:
                     return true;
                 case AccessModifier.Library:
                     return symbolWithSection.Section.CompilationId == referencingSection.CompilationId || (null != symbolWithSection.Section.LibraryId && symbolWithSection.Section.LibraryId == referencingSection.LibraryId);

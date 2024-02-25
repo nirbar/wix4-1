@@ -28,21 +28,11 @@ namespace WixToolset.Data
         Protected = File,
 
         /// <summary>
-        /// Indicates the identifier is visible only to the section where it is defined.
+        /// Indicates the identifiers is visible only to the section where it is defined.
         /// </summary>
         Section,
         [Obsolete]
         Private = Section,
-
-        /// <summary>
-        /// Indicates the identifier can be overridden by another symbol.
-        /// </summary>
-        Virtual,
-
-        /// <summary>
-        /// Indicates the identifier overrides a virtual symbol.
-        /// </summary>
-        Override,
     }
 
     /// <summary>
@@ -75,12 +65,6 @@ namespace WixToolset.Data
                 case "private":
                     return AccessModifier.Section;
 
-                case "virtual":
-                    return AccessModifier.Virtual;
-
-                case "override":
-                    return AccessModifier.Override;
-
                 default:
                     throw new ArgumentException($"Unknown AccessModifier: {access}", nameof(access));
             }
@@ -106,12 +90,6 @@ namespace WixToolset.Data
 
                 case AccessModifier.Section:
                     return "section";
-
-                case AccessModifier.Virtual:
-                    return "virtual";
-
-                case AccessModifier.Override:
-                    return "override";
 
                 default:
                     throw new ArgumentException($"Unknown AccessModifier: {access}", nameof(access));

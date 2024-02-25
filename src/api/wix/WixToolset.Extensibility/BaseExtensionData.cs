@@ -2,7 +2,6 @@
 
 namespace WixToolset.Extensibility
 {
-    using System;
     using WixToolset.Data;
 
     /// <summary>
@@ -11,9 +10,8 @@ namespace WixToolset.Extensibility
     public abstract class BaseExtensionData : IExtensionData
     {
         /// <summary>
-        /// Obsolete in WiX v5. Use the WixLocalization/@ExtensionDefaultCulture attribute in the wxl file instead.
+        /// See <see cref="IExtensionData.DefaultCulture"/>
         /// </summary>
-        [Obsolete("Set the ExtensionDefaultCulture attribute in the WixLocalization source file instead.")]
         public virtual string DefaultCulture => null;
 
         /// <summary>

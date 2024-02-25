@@ -216,9 +216,6 @@
     <ClCompile Include="deputil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pipeutil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\aclutil.h">
@@ -401,13 +398,11 @@
     <ClInclude Include="inc\deputil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="inc\pipeutil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="xsd\thmutil.xsd">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

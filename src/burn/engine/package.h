@@ -370,7 +370,6 @@ typedef struct _BURN_PACKAGE
             BURN_EXE_DETECTION_TYPE detectionType;
 
             BOOL fArpWin64;
-            BOOL fArpUseUninstallString;
             LPWSTR sczArpKeyPath;
             VERUTIL_VERSION* pArpDisplayVersion;
 

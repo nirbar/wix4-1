@@ -1,3 +1,0 @@
-<WixLocalization Culture="en-us" ExtensionDefaultCulture="yes" xmlns="http://wixtoolset.org/schemas/v4/wxl">
-  <String Id="ExampleString" Overridable="yes" Value="en-us" />
-</WixLocalization>

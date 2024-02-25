@@ -38,7 +38,6 @@
 #include <memutil.h>
 #include <osutil.h>
 #include <pathutil.h>
-#include <pipeutil.h>
 #include <polcutil.h>
 #include <procutil.h>
 #include <queutil.h>
@@ -86,7 +85,7 @@
 #include "detect.h"
 #include "plan.h"
 #include "logging.h"
-#include "burnpipe.h"
+#include "pipe.h"
 #include "cache.h"
 #include "dependency.h"
 #include "core.h"

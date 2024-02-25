@@ -10,6 +10,12 @@ namespace WixToolset.Msmq
     /// </summary>
     public sealed class MsmqExtensionData : BaseExtensionData
     {
+        /// <summary>
+        /// Gets the default culture.
+        /// </summary>
+        /// <value>The default culture.</value>
+        public override string DefaultCulture => "en-US";
+
         public override bool TryGetSymbolDefinitionByName(string name, out IntermediateSymbolDefinition symbolDefinition)
         {
             symbolDefinition = MsmqSymbolDefinitions.ByName(name);

@@ -550,11 +550,11 @@ namespace WixToolset.Core.WindowsInstaller.Bind
                 }
                 else
                 {
-                    foreach (var standardDirectoryId in WindowsInstallerStandard.StandardDirectoryIds())
+                    foreach (var standardDirectory in WindowsInstallerStandard.StandardDirectories())
                     {
-                        if (directoryId.StartsWith(standardDirectoryId, StringComparison.Ordinal))
+                        if (directoryId.StartsWith(standardDirectory.Id.Id, StringComparison.Ordinal))
                         {
-                            this.Messaging.Write(WarningMessages.StandardDirectoryConflictInMergeModule(symbol.SourceLineNumbers, directoryId, standardDirectoryId));
+                            this.Messaging.Write(WarningMessages.StandardDirectoryConflictInMergeModule(symbol.SourceLineNumbers, directoryId, standardDirectory.Id.Id));
                         }
                     }
                 }

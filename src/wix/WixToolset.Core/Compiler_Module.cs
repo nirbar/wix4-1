@@ -175,9 +175,6 @@ namespace WixToolset.Core
                         case "Exclusion":
                             this.ParseExclusionElement(child);
                             break;
-                        case "File":
-                            this.ParseNakedFileElement(child, ComplexReferenceParentType.Module, this.activeName, null, null);
-                            break;
                         case "Icon":
                             this.ParseIconElement(child);
                             break;
@@ -288,8 +285,6 @@ namespace WixToolset.Core
                     }
 
                     this.ValidateAndAddCommonSummaryInformationSymbols(sourceLineNumbers, msiVersion, platform, this.activeLanguage);
-
-                    this.Core.CreateSimpleReference(sourceLineNumbers, SymbolDefinitions.WixFragment, WixStandardLibraryIdentifiers.WixStandardModuleReferences);
                 }
             }
             finally

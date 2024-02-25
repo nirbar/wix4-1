@@ -11,13 +11,13 @@
 
     <Fragment>
         <CustomAction Id="$(var.Prefix)QueryDirectXCaps$(var.Suffix)" DllEntry="WixQueryDirectXCaps" Return="ignore" BinaryRef="$(var.Prefix)DXCA$(var.Suffix)" />
-
+        
         <InstallUISequence>
-            <Custom Action="virtual $(var.Prefix)QueryDirectXCaps$(var.Suffix)" Before="LaunchConditions" />
+            <Custom Action="$(var.Prefix)QueryDirectXCaps$(var.Suffix)" Before="LaunchConditions" Overridable="yes" />
         </InstallUISequence>
 
         <InstallExecuteSequence>
-            <Custom Action="virtual $(var.Prefix)QueryDirectXCaps$(var.Suffix)" Before="LaunchConditions" />
+            <Custom Action="$(var.Prefix)QueryDirectXCaps$(var.Suffix)" Before="LaunchConditions" Overridable="yes" />
         </InstallExecuteSequence>
     </Fragment>
 </Include>

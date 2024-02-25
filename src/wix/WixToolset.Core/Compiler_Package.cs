@@ -41,7 +41,6 @@ namespace WixToolset.Core
             var isPackageNameSet = false;
             var isKeywordsSet = false;
             var isPackageAuthorSet = false;
-            var upgradeStrategy = WixPackageUpgradeStrategy.MajorUpgrade;
 
             this.GetDefaultPlatformAndInstallerVersion(out var platform, out var msiVersion);
 
@@ -111,21 +110,6 @@ namespace WixToolset.Core
                         break;
                     case "UpgradeCode":
                         upgradeCode = this.Core.GetAttributeGuidValue(sourceLineNumbers, attrib, false);
-                        break;
-                    case "UpgradeStrategy":
-                        var strategy = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
-                        switch (strategy)
-                        {
-                            case "majorUpgrade":
-                                upgradeStrategy = WixPackageUpgradeStrategy.MajorUpgrade;
-                                break;
-                            case "none":
-                                upgradeStrategy = WixPackageUpgradeStrategy.None;
-                                break;
-                            default:
-                                this.Core.Write(ErrorMessages.IllegalAttributeValue(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, strategy, "majorUpgrade", "none"));
-                                break;
-                        }
                         break;
                     case "Version":
                         version = this.Core.GetAttributeVersionValue(sourceLineNumbers, attrib);
@@ -256,16 +240,10 @@ namespace WixToolset.Core
                             this.ParseComplianceCheckElement(child);
                             break;
                         case "Component":
-                            this.ParseComponentElement(child, ComplexReferenceParentType.Product, null, null, CompilerConstants.IntegerNotSet, null, null);
-                            break;
-                        case "ComponentRef":
-                            this.ParseComponentRefElement(child, ComplexReferenceParentType.Product, null, null);
+                            this.ParseComponentElement(child, ComplexReferenceParentType.Unknown, null, null, CompilerConstants.IntegerNotSet, null, null);
                             break;
                         case "ComponentGroup":
-                            this.ParseComponentGroupElement(child, ComplexReferenceParentType.Product, null);
-                            break;
-                        case "ComponentGroupRef":
-                            this.ParseComponentGroupRefElement(child, ComplexReferenceParentType.Product, null, null);
+                            this.ParseComponentGroupElement(child, ComplexReferenceParentType.Unknown, null);
                             break;
                         case "CustomAction":
                             this.ParseCustomActionElement(child);
@@ -302,9 +280,6 @@ namespace WixToolset.Core
                             break;
                         case "FeatureGroupRef":
                             this.ParseFeatureGroupRefElement(child, ComplexReferenceParentType.Product, productCode);
-                            break;
-                        case "File":
-                            this.ParseNakedFileElement(child, ComplexReferenceParentType.Product, productCode, null, null);
                             break;
                         case "Icon":
                             this.ParseIconElement(child);
@@ -401,7 +376,6 @@ namespace WixToolset.Core
                         Manufacturer = manufacturer,
                         Attributes = isPerMachine ? WixPackageAttributes.PerMachine : WixPackageAttributes.None,
                         Codepage = codepage,
-                        UpgradeStrategy = upgradeStrategy,
                     });
 
                     if (!isCommentsSet)
@@ -449,8 +423,6 @@ namespace WixToolset.Core
                             SymbolPaths = symbols,
                         });
                     }
-
-                    this.Core.CreateSimpleReference(sourceLineNumbers, SymbolDefinitions.WixFragment, WixStandardLibraryIdentifiers.WixStandardPackageReferences);
                 }
             }
             finally
@@ -2497,7 +2469,6 @@ namespace WixToolset.Core
             foreach (var child in node.Elements())
             {
                 var childSourceLineNumbers = Preprocessor.GetSourceLineNumbers(child);
-                Identifier actionIdentifier = null;
                 var actionName = child.Name.LocalName;
                 string afterAction = null;
                 string beforeAction = null;
@@ -2520,9 +2491,8 @@ namespace WixToolset.Core
                         case "Action":
                             if (customAction)
                             {
-                                actionIdentifier = this.Core.GetAttributeIdentifier(childSourceLineNumbers, attrib);
-                                actionName = actionIdentifier.Id;
-                                this.Core.CreateSimpleReference(childSourceLineNumbers, SymbolDefinitions.CustomAction, actionIdentifier.Id);
+                                actionName = this.Core.GetAttributeIdentifierValue(childSourceLineNumbers, attrib);
+                                this.Core.CreateSimpleReference(childSourceLineNumbers, SymbolDefinitions.CustomAction, actionName);
                             }
                             else
                             {
@@ -2557,8 +2527,7 @@ namespace WixToolset.Core
                         case "Dialog":
                             if (showDialog)
                             {
-                                actionIdentifier = this.Core.GetAttributeIdentifier(childSourceLineNumbers, attrib);
-                                actionName = actionIdentifier.Id;
+                                actionName = this.Core.GetAttributeIdentifierValue(childSourceLineNumbers, attrib);
                                 this.Core.CreateSimpleReference(childSourceLineNumbers, SymbolDefinitions.Dialog, actionName);
                             }
                             else
@@ -2682,17 +2651,7 @@ namespace WixToolset.Core
                     }
                     else
                     {
-                        var access = AccessModifier.Global;
-                        if (overridable)
-                        {
-                            access = AccessModifier.Virtual;
-                        }
-                        else if (actionIdentifier != null)
-                        {
-                            access = actionIdentifier.Access;
-                        }
-
-                        var symbol = this.Core.AddSymbol(new WixActionSymbol(childSourceLineNumbers, new Identifier(access, sequenceTable, actionName))
+                        var symbol = this.Core.AddSymbol(new WixActionSymbol(childSourceLineNumbers, new Identifier(AccessModifier.Global, sequenceTable, actionName))
                         {
                             SequenceTable = sequenceTable,
                             Action = actionName,

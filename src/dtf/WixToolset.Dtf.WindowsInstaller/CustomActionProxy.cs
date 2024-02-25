@@ -201,7 +201,7 @@ namespace WixToolset.Dtf.WindowsInstaller
             }
             else
             {
-#if NETFRAMEWORK
+#if NET20
                 IDictionary config;
                 try
                 {

@@ -230,6 +230,21 @@ namespace WixToolset.Core
 
             AddFilteredLocalizations(result, filter, localizations);
 
+            // Filter localizations provided by extensions with data.
+            var creator = context.ServiceProvider.GetService<ISymbolDefinitionCreator>();
+
+            foreach (var data in context.ExtensionData)
+            {
+                var library = data.GetLibrary(creator);
+
+                if (library?.Localizations != null && library.Localizations.Any())
+                {
+                    var extensionFilter = (!filter.Any() && data.DefaultCulture != null) ? new[] { data.DefaultCulture } : filter;
+
+                    AddFilteredLocalizations(result, extensionFilter, library.Localizations);
+                }
+            }
+
             return result;
         }
 
@@ -250,15 +265,10 @@ namespace WixToolset.Core
 
         private static void AddFilteredLocalizations(List<Localization> result, IEnumerable<string> filter, IEnumerable<Localization> localizations)
         {
-            // If there is no filter, return all localizations provided by the user (either as a .wxl or from a .wixlib on the command-line)
-            // **and only** the extension's default culture localizations.
+            // If there is no filter, return all localizations.
             if (!filter.Any())
             {
-                // The filter turns out to be really simple, skip localizations that came from an extension (LocalizationLocation.Extension)
-                // but keep those that are marked as the extension's default culture (LocalizationLocation.ExtensionDefaultCulture).
-                var filtered = localizations.Where(l => l.Location != LocalizationLocation.Extension);
-
-                result.AddRange(filtered);
+                result.AddRange(localizations);
             }
             else // filter localizations in order specified by the filter
             {

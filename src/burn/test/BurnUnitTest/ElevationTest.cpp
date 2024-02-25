@@ -16,12 +16,12 @@ static DWORD CALLBACK ElevateTest_ThreadProc(
     __in LPVOID lpThreadParameter
     );
 static HRESULT ProcessParentMessages(
-    __in PIPE_MESSAGE* pMsg,
+    __in BURN_PIPE_MESSAGE* pMsg,
     __in_opt LPVOID pvContext,
     __out DWORD* pdwResult
     );
 static HRESULT ProcessChildMessages(
-    __in PIPE_MESSAGE* pMsg,
+    __in BURN_PIPE_MESSAGE* pMsg,
     __in_opt LPVOID pvContext,
     __out DWORD* pdwResult
     );
@@ -63,7 +63,7 @@ namespace Bootstrapper
                 ShelFunctionOverride(ElevateTest_ShellExecuteExW);
                 CoreFunctionOverride(NULL, ThrdWaitForCompletion);
 
-                BurnPipeConnectionInitialize(pConnection);
+                PipeConnectionInitialize(pConnection);
 
                 //
                 // per-user side setup
@@ -72,13 +72,13 @@ namespace Bootstrapper
                 TestThrowOnFailure(hr, L"Failed to elevate.");
 
                 // post execute message
-                hr = BurnPipeSendMessage(pConnection->hPipe, TEST_PARENT_SENT_MESSAGE_ID, NULL, 0, ProcessParentMessages, NULL, &dwResult);
+                hr = PipeSendMessage(pConnection->hPipe, TEST_PARENT_SENT_MESSAGE_ID, NULL, 0, ProcessParentMessages, NULL, &dwResult);
                 TestThrowOnFailure(hr, "Failed to post execute message to per-machine process.");
 
                 //
                 // initiate termination
                 //
-                hr = BurnPipeTerminateChildProcess(pConnection, 666, FALSE);
+                hr = PipeTerminateChildProcess(pConnection, 666, FALSE);
                 TestThrowOnFailure(hr, L"Failed to terminate elevated process.");
 
                 // check flags
@@ -86,7 +86,7 @@ namespace Bootstrapper
             }
             finally
             {
-                BurnPipeConnectionUninitialize(pConnection);
+                PipeConnectionUninitialize(pConnection);
             }
         }
     };
@@ -127,7 +127,7 @@ static DWORD CALLBACK ElevateTest_ThreadProc(
     BURN_PIPE_CONNECTION connection = { };
     BURN_PIPE_RESULT result = { };
 
-    BurnPipeConnectionInitialize(&connection);
+    PipeConnectionInitialize(&connection);
 
     StrAlloc(&connection.sczName, MAX_PATH);
     StrAlloc(&connection.sczSecret, MAX_PATH);
@@ -140,22 +140,22 @@ static DWORD CALLBACK ElevateTest_ThreadProc(
     }
 
     // set up connection with per-user process
-    hr = BurnPipeChildConnect(&connection, TRUE);
+    hr = PipeChildConnect(&connection, TRUE);
     ExitOnFailure(hr, "Failed to connect to per-user process.");
 
     // pump messages
-    hr = BurnPipePumpMessages(connection.hPipe, ProcessChildMessages, static_cast<LPVOID>(connection.hPipe), &result);
+    hr = PipePumpMessages(connection.hPipe, ProcessChildMessages, static_cast<LPVOID>(connection.hPipe), &result);
     ExitOnFailure(hr, "Failed while pumping messages in child 'process'.");
 
 LExit:
-    BurnPipeConnectionUninitialize(&connection);
+    PipeConnectionUninitialize(&connection);
     ReleaseStr(sczArguments);
 
     return FAILED(hr) ? (DWORD)hr : result.dwResult;
 }
 
 static HRESULT ProcessParentMessages(
-    __in PIPE_MESSAGE* pMsg,
+    __in BURN_PIPE_MESSAGE* pMsg,
     __in_opt LPVOID /*pvContext*/,
     __out DWORD* pdwResult
     )
@@ -164,7 +164,7 @@ static HRESULT ProcessParentMessages(
     HRESULT hrResult = E_INVALIDDATA;
 
     // Process the message.
-    switch (pMsg->dwMessageType)
+    switch (pMsg->dwMessage)
     {
     case TEST_CHILD_SENT_MESSAGE_ID:
         if (sizeof(TEST_MESSAGE_DATA) == pMsg->cbData && 0 == memcmp(TEST_MESSAGE_DATA, pMsg->pvData, sizeof(TEST_MESSAGE_DATA)))
@@ -175,7 +175,7 @@ static HRESULT ProcessParentMessages(
 
     default:
         hr = E_INVALIDARG;
-        ExitOnRootFailure(hr, "Unexpected elevated message sent to parent process, msg: %u", pMsg->dwMessageType);
+        ExitOnRootFailure(hr, "Unexpected elevated message sent to parent process, msg: %u", pMsg->dwMessage);
     }
 
     *pdwResult = static_cast<DWORD>(hrResult);
@@ -185,7 +185,7 @@ LExit:
 }
 
 static HRESULT ProcessChildMessages(
-    __in PIPE_MESSAGE* pMsg,
+    __in BURN_PIPE_MESSAGE* pMsg,
     __in_opt LPVOID pvContext,
     __out DWORD* pdwResult
     )
@@ -195,17 +195,17 @@ static HRESULT ProcessChildMessages(
     DWORD dwResult = 0;
 
     // Process the message.
-    switch (pMsg->dwMessageType)
+    switch (pMsg->dwMessage)
     {
     case TEST_PARENT_SENT_MESSAGE_ID:
         // send test message
-        hr = BurnPipeSendMessage(hPipe, TEST_CHILD_SENT_MESSAGE_ID, (LPVOID)TEST_MESSAGE_DATA, sizeof(TEST_MESSAGE_DATA), NULL, NULL, &dwResult);
+        hr = PipeSendMessage(hPipe, TEST_CHILD_SENT_MESSAGE_ID, (LPVOID)TEST_MESSAGE_DATA, sizeof(TEST_MESSAGE_DATA), NULL, NULL, &dwResult);
         ExitOnFailure(hr, "Failed to send message to per-machine process.");
         break;
 
     default:
         hr = E_INVALIDARG;
-        ExitOnRootFailure(hr, "Unexpected elevated message sent to child process, msg: %u", pMsg->dwMessageType);
+        ExitOnRootFailure(hr, "Unexpected elevated message sent to child process, msg: %u", pMsg->dwMessage);
     }
 
     *pdwResult = dwResult;

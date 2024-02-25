@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net462</TargetFramework>
+    <TargetFramework>net35</TargetFramework>
     <Description>Sample managed embedded external UI</Description>
     <UseWPF>true</UseWPF>
   </PropertyGroup>

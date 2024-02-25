@@ -14,7 +14,7 @@ struct BURN_EMBEDDED_CALLBACK_CONTEXT
 // internal function declarations
 
 static HRESULT ProcessEmbeddedMessages(
-    __in PIPE_MESSAGE* pMsg,
+    __in BURN_PIPE_MESSAGE* pMsg,
     __in_opt LPVOID pvContext,
     __out DWORD* pdwResult
     );
@@ -36,7 +36,7 @@ static HRESULT OnEmbeddedProgress(
 // function definitions
 
 /*******************************************************************
- EmbeddedRunBundle -
+ EmbeddedRunBundle - 
 
 *******************************************************************/
 extern "C" HRESULT EmbeddedRunBundle(
@@ -55,16 +55,16 @@ extern "C" HRESULT EmbeddedRunBundle(
     PROCESS_INFORMATION pi = { };
     BURN_PIPE_RESULT result = { };
 
-    BurnPipeConnectionInitialize(pConnection);
+    PipeConnectionInitialize(pConnection);
 
     BURN_EMBEDDED_CALLBACK_CONTEXT context = { };
     context.pfnGenericMessageHandler = pfnGenericMessageHandler;
     context.pvContext = pvContext;
 
-    hr = BurnPipeCreateNameAndSecret(&pConnection->sczName, &pConnection->sczSecret);
+    hr = PipeCreateNameAndSecret(&pConnection->sczName, &pConnection->sczSecret);
     ExitOnFailure(hr, "Failed to create embedded pipe name and client token.");
 
-    hr = BurnPipeCreatePipes(pConnection, FALSE);
+    hr = PipeCreatePipes(pConnection, FALSE);
     ExitOnFailure(hr, "Failed to create embedded pipe.");
 
     hr = StrAllocFormatted(&sczCommand, L"%ls -%ls %ls %ls %u", sczBaseCommand, BURN_COMMANDLINE_SWITCH_EMBEDDED, pConnection->sczName, pConnection->sczSecret, dwCurrentProcessId);
@@ -84,10 +84,10 @@ extern "C" HRESULT EmbeddedRunBundle(
     pConnection->hProcess = pi.hProcess;
     pi.hProcess = NULL;
 
-    hr = BurnPipeWaitForChildConnect(pConnection);
+    hr = PipeWaitForChildConnect(pConnection);
     ExitOnFailure(hr, "Failed to wait for embedded process to connect to pipe.");
 
-    hr = BurnPipePumpMessages(pConnection->hPipe, ProcessEmbeddedMessages, &context, &result);
+    hr = PipePumpMessages(pConnection->hPipe, ProcessEmbeddedMessages, &context, &result);
     ExitOnFailure(hr, "Failed to process messages from embedded message.");
 
     // Get the return code from the embedded process.
@@ -99,7 +99,7 @@ LExit:
     ReleaseHandle(pi.hProcess);
 
     StrSecureZeroFreeString(sczCommand);
-    BurnPipeConnectionUninitialize(pConnection);
+    PipeConnectionUninitialize(pConnection);
 
     return hr;
 }
@@ -108,7 +108,7 @@ LExit:
 // internal function definitions
 
 static HRESULT ProcessEmbeddedMessages(
-    __in PIPE_MESSAGE* pMsg,
+    __in BURN_PIPE_MESSAGE* pMsg,
     __in_opt LPVOID pvContext,
     __out DWORD* pdwResult
     )
@@ -118,7 +118,7 @@ static HRESULT ProcessEmbeddedMessages(
     DWORD dwResult = 0;
 
     // Process the message.
-    switch (pMsg->dwMessageType)
+    switch (pMsg->dwMessage)
     {
     case BURN_EMBEDDED_MESSAGE_TYPE_ERROR:
         hr = OnEmbeddedErrorMessage(pContext->pfnGenericMessageHandler, pContext->pvContext, static_cast<BYTE*>(pMsg->pvData), pMsg->cbData, &dwResult);
@@ -131,7 +131,7 @@ static HRESULT ProcessEmbeddedMessages(
         break;
 
     default:
-        LogStringLine(REPORT_DEBUG, "Unexpected embedded message received from child process, msg: %u", pMsg->dwMessageType);
+        LogStringLine(REPORT_DEBUG, "Unexpected embedded message received from child process, msg: %u", pMsg->dwMessage);
         dwResult = (DWORD)E_NOTIMPL;
     }
 

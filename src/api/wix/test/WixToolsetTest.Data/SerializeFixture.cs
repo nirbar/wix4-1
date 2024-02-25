@@ -31,12 +31,6 @@ namespace WixToolsetTest.Data
                 KeyPath = null,
             });
 
-            section.AddSymbol(new DirectorySymbol(sln, new Identifier(AccessModifier.Virtual, "TestFolder"))
-            {
-                ParentDirectoryRef = String.Empty,
-                Name = "Test Folder",
-            });
-
             var intermediate = new Intermediate("TestIntermediate", IntermediateLevels.Compiled, new[] { section }, null);
 
             intermediate.UpdateLevel(IntermediateLevels.Linked);
@@ -53,21 +47,14 @@ namespace WixToolsetTest.Data
                 Assert.True(loaded.HasLevel(IntermediateLevels.Linked));
                 Assert.True(loaded.HasLevel(IntermediateLevels.Resolved));
 
-                var componentSymbol = loaded.Sections.Single().Symbols.OfType<ComponentSymbol>().Single();
+                var symbol = (ComponentSymbol)loaded.Sections.Single().Symbols.Single();
 
-                Assert.Equal("TestComponent", componentSymbol.Id.Id);
-                Assert.Equal(AccessModifier.Global, componentSymbol.Id.Access);
-                Assert.Equal(String.Empty, componentSymbol.ComponentId);
-                Assert.Equal("TestFolder", componentSymbol.DirectoryRef);
-                Assert.Equal(ComponentLocation.Either, componentSymbol.Location);
-                Assert.Null(componentSymbol.KeyPath);
-
-                var directorySymbol = loaded.Sections.Single().Symbols.OfType<DirectorySymbol>().Single();
-
-                Assert.Equal("TestFolder", directorySymbol.Id.Id);
-                Assert.Equal(AccessModifier.Virtual, directorySymbol.Id.Access);
-                Assert.Equal(String.Empty, directorySymbol.ParentDirectoryRef);
-                Assert.Equal("Test Folder", directorySymbol.Name);
+                Assert.Equal("TestComponent", symbol.Id.Id);
+                Assert.Equal(AccessModifier.Global, symbol.Id.Access);
+                Assert.Equal(String.Empty, symbol.ComponentId);
+                Assert.Equal("TestFolder", symbol.DirectoryRef);
+                Assert.Equal(ComponentLocation.Either, symbol.Location);
+                Assert.Null(symbol.KeyPath);
             }
             finally
             {

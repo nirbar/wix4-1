@@ -13,13 +13,13 @@
     <projectUrl>$projectUrl$</projectUrl>
     <repository type="$repositorytype$" url="$repositoryurl$" commit="$repositorycommit$" />
     <dependencies>
-      <group targetFramework=".NETFramework4.6.2" />
+      <group targetFramework=".NETFramework2.0" />
     </dependencies>
   </metadata>
 
   <files>
     <file src="$projectFolder$\..\..\..\internal\images\wix.png" />
-    <file src="net462\$wixid$.config" target="samples" />
-    <file src="net462\$wixid$.dll" target="lib\net462" />
+    <file src="net20\$wixid$.config" target="samples" />
+    <file src="net20\$wixid$.dll" target="lib\net20" />
   </files>
 </package>

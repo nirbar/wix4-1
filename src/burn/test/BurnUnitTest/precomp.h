@@ -24,7 +24,6 @@
 #include <logutil.h>
 #include <memutil.h>
 #include <pathutil.h>
-#include <pipeutil.h>
 #include <polcutil.h>
 #include <regutil.h>
 #include <resrutil.h>
@@ -60,7 +59,7 @@
 #include "registration.h"
 #include "relatedbundle.h"
 #include "plan.h"
-#include "burnpipe.h"
+#include "pipe.h"
 #include "logging.h"
 #include "cache.h"
 #include "dependency.h"

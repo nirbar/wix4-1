@@ -264,7 +264,7 @@ namespace TestExe
                                 t = new DeleteManifestsTask(args[i + 1]);
                                 tasks.Add(t);
                                 break;
-#if NETFRAMEWORK
+#if NET35
                             case "/pinfo":
                                 t = new ProcessInfoTask(args[i + 1]);
                                 tasks.Add(t);

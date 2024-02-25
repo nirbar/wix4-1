@@ -192,6 +192,12 @@ namespace WixToolset.Core.ExtensibilityServices
 
                 return false;
             }
+            else if (variableName.StartsWith("Wix", StringComparison.OrdinalIgnoreCase))
+            {
+                this.Messaging.Write(ErrorMessages.ReservedBurnNamespaceViolation(sourceLineNumbers, elementName, attributeName, "Wix"));
+
+                return false;
+            }
             else
             {
                 return true;
@@ -236,6 +242,16 @@ namespace WixToolset.Core.ExtensibilityServices
 
                 return allowed;
             }
+            else if (variableName.StartsWith("Wix", StringComparison.OrdinalIgnoreCase))
+            {
+                var allowed = nameRule.HasFlag(BundleVariableNameRule.CanHaveReservedPrefix);
+                if (!allowed)
+                {
+                    this.Messaging.Write(ErrorMessages.ReservedBurnNamespaceViolation(sourceLineNumbers, elementName, attributeName, "Wix"));
+                }
+
+                return allowed;
+            }
             else
             {
                 return true;
@@ -273,6 +289,12 @@ namespace WixToolset.Core.ExtensibilityServices
             }
             else if (WellKnownBundleVariables.Contains(variableName))
             {
+                return true;
+            }
+            else if (variableName.StartsWith("Wix", StringComparison.OrdinalIgnoreCase))
+            {
+                this.Messaging.Write(CompilerWarnings.ReservedBurnNamespaceWarning(sourceLineNumbers, elementName, attributeName, "Wix"));
+
                 return true;
             }
             else

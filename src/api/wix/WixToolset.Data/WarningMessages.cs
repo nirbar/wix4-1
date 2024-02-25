@@ -719,11 +719,6 @@ namespace WixToolset.Data
             return Message(sourceLineNumbers, Ids.MissingContainerExtension, "Container '{0}' has BundleExtensionRef set to '{1}', which could not be resolved to a container extension. To extract this container add the missing extension to the extraction command line", containerId, bundleExtensionRef);
         }
 
-        public static Message VBScriptIsDeprecated(SourceLineNumber sourceLineNumbers)
-        {
-            return Message(sourceLineNumbers, Ids.VBScriptIsDeprecated, "VBScript is a deprecated Windows component: https://learn.microsoft.com/en-us/windows/whats-new/deprecated-features. VBScript custom actions might fail on some Windows systems. Rewrite or eliminate VBScript custom actions for best compatibility.");
-        }
-
         private static Message Message(SourceLineNumber sourceLineNumber, Ids id, string format, params object[] args)
         {
             return new Message(sourceLineNumber, MessageLevel.Warning, (int)id, format, args);
@@ -865,8 +860,7 @@ namespace WixToolset.Data
             DiscardedRollbackBoundary2 = 1160,
             ExePackageDetectInformationRecommended = 1161,
             InvalidWixVersion = 1162,
-            VBScriptIsDeprecated = 1163,
-            MissingContainerExtension = 1164,
+            MissingContainerExtension = 1163,
         }
     }
 }

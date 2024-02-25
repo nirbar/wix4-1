@@ -1,3 +1,0 @@
-<WixLocalization Culture="ja-jp" xmlns="http://wixtoolset.org/schemas/v4/wxl">
-  <String Id="ExampleString" Overridable="yes" Value="ja-jp" />
-</WixLocalization>

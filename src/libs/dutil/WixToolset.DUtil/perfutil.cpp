@@ -39,9 +39,7 @@ extern "C" void DAPI PerfInitialize(
         vdFrequency = 1000;  // ticks are measured in milliseconds
     }
     else
-    {
         vdFrequency = static_cast<double>(liFrequency.QuadPart);
-    }
 }
 
 
@@ -59,23 +57,15 @@ extern "C" void DAPI PerfClickTime(
     LARGE_INTEGER* pli = pliElapsed;
 
     if (!pli)  // if elapsed time time was not requested, reset the start time
-    {
         pli = &liStart;
-    }
 
     if (vfHighPerformanceCounter)
-    {
         ::QueryPerformanceCounter(pli);
-    }
     else
-    {
         pli->QuadPart = ::GetTickCount();
-    }
 
     if (pliElapsed)
-    {
         pliElapsed->QuadPart -= liStart.QuadPart;
-    }
 }
 
 
