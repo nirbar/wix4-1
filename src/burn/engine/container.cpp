@@ -300,7 +300,7 @@ extern "C" HRESULT ContainerOpen(
 
         pContext->Bex.pExtension = pContainer->pExtension;
 
-        if (pContainer->fActuallyAttached)
+        if (pContainer->fAttached)
         {
             hr = BurnExtensionContainerOpenAttached(pContainer->pExtension, pContainer->sczId, pContext->hFile, pContext->qwOffset, pContext->qwSize, pContext);
             if (FAILED(hr))
