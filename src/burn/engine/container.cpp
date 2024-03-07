@@ -328,7 +328,11 @@ extern "C" HRESULT ContainerOpen(
     ExitOnFailure(hr, "Failed to open container.");
 
 LExit:
-    ReleaseStr(szTempFile);
+    if (szTempFile && *szTempFile)
+    {
+        FileEnsureDelete(szTempFile);
+        ReleaseStr(szTempFile);
+    }
 
     return hr;
 }
@@ -436,17 +440,17 @@ extern "C" HRESULT ContainerClose(
         break;
     case BURN_CONTAINER_TYPE_EXTENSION:
         hr = BurnExtensionContainerClose(pContext->Bex.pExtension, pContext);
-        if (pContext->Bex.szTempContainerPath && *pContext->Bex.szTempContainerPath)
-        {
-            FileEnsureDelete(pContext->Bex.szTempContainerPath);
-            ReleaseNullStr(pContext->Bex.szTempContainerPath);
-        }
         ExitOnFailure(hr, "Failed to close cabinet.");
         break;
     }
 
 LExit:
     ReleaseFile(pContext->hFile);
+    if ((pContext->type == BURN_CONTAINER_TYPE_EXTENSION) && pContext->Bex.szTempContainerPath && *pContext->Bex.szTempContainerPath)
+    {
+        FileEnsureDelete(pContext->Bex.szTempContainerPath);
+        ReleaseNullStr(pContext->Bex.szTempContainerPath);
+    }
 
     if (SUCCEEDED(hr))
     {
