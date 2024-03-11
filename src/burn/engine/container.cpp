@@ -307,6 +307,8 @@ extern "C" HRESULT ContainerOpen(
             {
                 LogId(REPORT_STANDARD, MSG_EXT_ATTACHED_CONTAINER_FAILED, pContainer->sczId);
 
+                BurnExtensionContainerClose(pContext->Bex.pExtension, pContext);
+
                 hr = FileCreateTemp(L"CNTNR", L"dat", &szTempFile, NULL);
                 ExitOnFailure(hr, "Failed to create temporary container file");
 

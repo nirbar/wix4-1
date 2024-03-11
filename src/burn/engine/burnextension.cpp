@@ -268,9 +268,8 @@ EXTERN_C BEEAPI BurnExtensionContainerOpen(
     results.cbSize = sizeof(results);
 
     hr = SendRequiredBextMessage(pExtension, BUNDLE_EXTENSION_MESSAGE_CONTAINER_OPEN, &args, &results);
-    ExitOnFailure(hr, "BundleExtension '%ls' open container '%ls' failed.", pExtension->sczId, wzFilePath);
-
     pContext->Bex.pExtensionContext = results.pContext;
+    ExitOnFailure(hr, "BundleExtension '%ls' open container '%ls' failed.", pExtension->sczId, wzFilePath);
 
 LExit:
     return hr;
@@ -298,9 +297,8 @@ EXTERN_C BEEAPI BurnExtensionContainerOpenAttached(
     results.cbSize = sizeof(results);
 
     hr = SendRequiredBextMessage(pExtension, BUNDLE_EXTENSION_MESSAGE_CONTAINER_OPEN_ATTACHED, &args, &results);
-    ExitOnFailure(hr, "BundleExtension '%ls' open attached container failed.", pExtension->sczId);
-
     pContext->Bex.pExtensionContext = results.pContext;
+    ExitOnFailure(hr, "BundleExtension '%ls' open attached container failed.", pExtension->sczId);
 
 LExit:
     return hr;
