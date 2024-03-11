@@ -231,7 +231,7 @@ namespace WixToolsetTest.CoreIntegration
             }
         }
 
-        [Fact]
+        [Fact(Skip="Pending WiX5 release")]
         public void CanManipulateExtensionCache()
         {
             var currentFolder = Environment.CurrentDirectory;
@@ -260,7 +260,7 @@ namespace WixToolsetTest.CoreIntegration
 
                     result.AssertSuccess();
                     var output = result.Messages.Select(m => m.ToString()).Single();
-                    Assert.StartsWith("WixToolset.UI.wixext 4.", output);
+                    Assert.StartsWith("WixToolset.UI.wixext 5.", output);
                     Assert.DoesNotContain("damaged", output);
 
                     result = WixRunner.Execute(new[]

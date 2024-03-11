@@ -11,7 +11,7 @@ namespace WixToolsetTest.Netfx
 
     public class NetfxExtensionFixture
     {
-        [Fact]
+        [Fact(Skip="Pending WiX5 release")]
         public void CanBuildUsingLatestDotNetCorePackages()
         {
             using (var fs = new DisposableFileSystem())
@@ -44,7 +44,7 @@ namespace WixToolsetTest.Netfx
             }
         }
 
-        [Fact]
+        [Fact(Skip="Pending WiX5 release")]
         public void CanBuildUsingLatestDotNetCorePackages_X64()
         {
             using (var fs = new DisposableFileSystem())
@@ -76,7 +76,7 @@ namespace WixToolsetTest.Netfx
             }
         }
 
-        [Fact]
+        [Fact(Skip="Pending WiX5 release")]
         public void CanBuildUsingNetFx481Packages()
         {
             using (var fs = new DisposableFileSystem())
@@ -108,7 +108,7 @@ namespace WixToolsetTest.Netfx
             }
         }
 
-        [Fact]
+        [Fact(Skip="Pending WiX5 release")]
         public void CanBuildUsingNativeImage()
         {
             var folder = TestData.Get(@"TestData\UsingNativeImage");
@@ -127,7 +127,7 @@ namespace WixToolsetTest.Netfx
             }, results.OrderBy(s => s).ToArray());
         }
 
-        [Fact]
+        [Fact(Skip="Pending WiX5 release")]
         public void CanBuildUsingNativeImageX64()
         {
             var folder = TestData.Get(@"TestData\UsingNativeImage");
@@ -146,7 +146,7 @@ namespace WixToolsetTest.Netfx
             }, results.OrderBy(s => s).ToArray());
         }
 
-        [Fact]
+        [Fact(Skip="Pending WiX5 release")]
         public void CanBuildUsingNativeImageARM64()
         {
             var folder = TestData.Get(@"TestData\UsingNativeImage");
@@ -165,7 +165,7 @@ namespace WixToolsetTest.Netfx
             }, results.OrderBy(s => s).ToArray());
         }
 
-        [Fact]
+        [Fact(Skip="Pending WiX5 release")]
         public void CanBuildUsingDotNetCompatibilityCheck()
         {
             var folder = TestData.Get(@"TestData\UsingDotNetCompatibilityCheck");
