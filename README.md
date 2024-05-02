@@ -16,3 +16,4 @@ This repository contains the PanelSwWix4: A custom WiX Toolset codebase
 - [4889](https://github.com/wixtoolset/issues/issues/4889): Support custom container compressions using bundle extensions
 - Un-plan MSI transaction if it contains less than 2 packages
 - Add BA methods OnPlanMsiTransaction, OnPlanMsiTransactionComplete: Let BA opt-out of MSI transactions.
+- Not overwriting log files when retrying to execute a package

@@ -954,6 +954,6 @@
   <ImportGroup>
     <Import Project="$(MSBuildUserExtensionsPath)\WixToolset\$(WixToolsetMajorMinorVersion)\Imports\WixToolset.targets\ImportAfter\*" Condition="'$(ImportUserLocationsByWildcardAfterWixToolsetTargets)' != 'false' and Exists('$(MSBuildUserExtensionsPath)\WixToolset\$(WixToolsetMajorMinorVersion)\Imports\WixToolset.targets\ImportAfter')" />
     <Import Project="$(MSBuildExtensionsPath)\WixToolset\$(WixToolsetMajorMinorVersion)\Imports\WixToolset.targets\ImportAfter\*" Condition="'$(ImportByWildcardAfterWixToolsetTargets)' != 'false' and Exists('$(MSBuildExtensionsPath)\WixToolset\$(WixToolsetMajorMinorVersion)\Imports\WixToolset.targets\ImportAfter')" />
-    <Import Project="$(MSBuildExtensionsPath)\FireGiant\HeatWave\FireGiant.HeatWave.DesignTime.targets" Condition="'$(ImportByWildcardAfterWixToolsetTargets)' != 'false' and Exists('$(MSBuildExtensionsPath)\FireGiant\HeatWave\FireGiant.HeatWave.DesignTime.targets')" />
+    <Import Project="$(MSBuildExtensionsPath)\FireGiant\HeatWave\FireGiant.HeatWave.DesignTime.targets" Condition="'$(ImportByWildcardAfterWixToolsetTargets)' != 'false' and Exists('$(MSBuildExtensionsPath)\FireGiant\HeatWave\FireGiant.HeatWave.DesignTime.targets') and ('$(FireGiantHeatWaveBuildTasksAssembly)' == '' or !Exists('$(FireGiantHeatWaveBuildTasksAssembly)'))" />
   </ImportGroup>
 </Project>
