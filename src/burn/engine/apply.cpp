@@ -2477,6 +2477,10 @@ static HRESULT DoExecuteAction(
     do
     {
         fInsideMsiTransaction = ppMsiTransaction && *ppMsiTransaction && (*ppMsiTransaction)->fActive;
+        if (fRetry)
+        {
+            LoggingPromoteLogFile(pExecuteAction, &pEngineState->variables);
+        }
         fRetry = FALSE;
 
         switch (pExecuteAction->type)
