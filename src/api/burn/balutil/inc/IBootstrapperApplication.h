@@ -542,6 +542,16 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __inout int* pResult
         ) = 0;
 
+    // OnEmbeddedCustomMessage - called when an embedded burn package send a SendEmbeddedCustomMessage(...).
+    //
+    // Return any code that the sender and recipient agree on.
+    STDMETHOD(OnEmbeddedCustomMessage)(
+        __in_z LPCWSTR wzPackageId,
+        __in DWORD dwCode,
+        __in_z LPCWSTR wzMessage,
+        __inout int* pResult
+        ) = 0;
+
     // OnExecutePackageComplete - called when a package execution is complete.
     //
     STDMETHOD(OnExecutePackageComplete)(

@@ -1664,6 +1664,35 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI UserExperienceOnEmbeddedCustomMessage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in DWORD dwCode,
+    __in_z LPCWSTR wzMessage,
+    __inout int* pnResult
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEMBEDDEDCUSTOMMESSAGE_ARGS args = { };
+    BA_ONEMBEDDEDCUSTOMMESSAGE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.dwCode = dwCode;
+    args.wzMessage = wzMessage;
+
+    results.cbSize = sizeof(results);
+    results.nResult = *pnResult;
+
+    hr = SendBAMessage(pUserExperience, BOOTSTRAPPER_APPLICATION_MESSAGE_ONEMBEDDEDCUSTOMMESSAGE, &args, &results);
+    ExitOnFailure(hr, "BA OnEmbeddedCustomMessage failed.");
+
+    *pnResult = results.nResult;
+
+LExit:
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnExecuteMsiMessage(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,

@@ -239,6 +239,11 @@ namespace WixToolset.Mba.Core
         event EventHandler<ExecuteFilesInUseEventArgs> ExecuteFilesInUse;
 
         /// <summary>
+        /// Fired when an embedded burn package sends a SendEmbeddedCustomMessage(...).
+        /// </summary>
+        event EventHandler<EmbeddedCustomMessageEventArgs> EmbeddedCustomMessage;
+
+        /// <summary>
         /// Fired when Windows Installer sends an installation message.
         /// </summary>
         event EventHandler<ExecuteMsiMessageEventArgs> ExecuteMsiMessage;

@@ -197,6 +197,9 @@ namespace WixToolset.Mba.Core
         public event EventHandler<ExecuteFilesInUseEventArgs> ExecuteFilesInUse;
 
         /// <inheritdoc/>
+        public event EventHandler<EmbeddedCustomMessageEventArgs> EmbeddedCustomMessage;
+
+        /// <inheritdoc/>
         public event EventHandler<ExecutePackageCompleteEventArgs> ExecutePackageComplete;
 
         /// <inheritdoc/>
@@ -1014,6 +1017,19 @@ namespace WixToolset.Mba.Core
         protected virtual void OnExecuteFilesInUse(ExecuteFilesInUseEventArgs args)
         {
             EventHandler<ExecuteFilesInUseEventArgs> handler = this.ExecuteFilesInUse;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
+        /// Called when an embedded burn package sends a SendEmbeddedCustomMessage(...).
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnEmbeddedCustomMessage(EmbeddedCustomMessageEventArgs args)
+        {
+            EventHandler<EmbeddedCustomMessageEventArgs> handler = this.EmbeddedCustomMessage;
             if (null != handler)
             {
                 handler(this, args);
@@ -1913,6 +1929,15 @@ namespace WixToolset.Mba.Core
         {
             ExecuteFilesInUseEventArgs args = new ExecuteFilesInUseEventArgs(wzPackageId, rgwzFiles, nRecommendation, source, pResult);
             this.OnExecuteFilesInUse(args);
+
+            pResult = args.Result;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnEmbeddedCustomMessage(string wzPackageId, int dwCode, string wzMessage, ref Result pResult)
+        {
+            EmbeddedCustomMessageEventArgs args = new EmbeddedCustomMessageEventArgs(wzPackageId, dwCode, wzMessage);
+            this.OnEmbeddedCustomMessage(args);
 
             pResult = args.Result;
             return args.HResult;

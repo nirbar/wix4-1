@@ -1164,7 +1164,7 @@ extern "C" HRESULT CoreCreateCleanRoomCommandLine(
 
     if (pEngineState->embeddedConnection.sczName)
     {
-        hr = StrAllocConcatFormatted(psczCommandLine, L" -%ls %ls %ls %u", BURN_COMMANDLINE_SWITCH_EMBEDDED, pEngineState->embeddedConnection.sczName, pEngineState->embeddedConnection.sczSecret, pEngineState->embeddedConnection.dwProcessId);
+        hr = StrAllocConcatFormatted(psczCommandLine, L" -%ls %ls %ls %u -%ls %u", BURN_COMMANDLINE_SWITCH_EMBEDDED, pEngineState->embeddedConnection.sczName, pEngineState->embeddedConnection.sczSecret, pEngineState->embeddedConnection.dwProcessId, BURN_COMMANDLINE_SWITCH_EMBEDDED_CAPABILITIES, pEngineState->embeddedConnection.dwCapabilities);
         ExitOnFailure(hr, "Failed to allocate embedded command.");
     }
 
@@ -1743,6 +1743,17 @@ extern "C" HRESULT CoreParseCommandLine(
                 }
 
                 i += 2;
+            }
+            else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, &argv[i][1], -1, BURN_COMMANDLINE_SWITCH_EMBEDDED_CAPABILITIES, -1))
+            {
+                if (i + 1 >= argc)
+                {
+                    ExitOnRootFailure(hr = E_INVALIDARG, "Must specify the embedded capabilities.");
+                }
+                ++i;
+
+                hr = StrStringToUInt32(argv[i], 0, reinterpret_cast<UINT*>(&pEmbeddedConnection->dwCapabilities));
+                ExitOnFailure(hr, "Failed to parse parent pipe capabilities.");
             }
             else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, &argv[i][1], -1, BURN_COMMANDLINE_SWITCH_RELATED_DETECT, -1))
             {

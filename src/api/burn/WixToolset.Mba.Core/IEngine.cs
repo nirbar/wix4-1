@@ -221,6 +221,13 @@ namespace WixToolset.Mba.Core
         int SendEmbeddedProgress(int progressPercentage, int overallPercentage);
 
         /// <summary>
+        /// Send a custom embedded message.
+        /// </summary>
+        /// <param name="code">Message code.</param>
+        /// <param name="message">Error text.</param>
+        int SendEmbeddedCustomMessage(int code, string message);
+
+        /// <summary>
         /// Shuts down the engine.
         /// </summary>
         /// <param name="exitCode">Exit code indicating reason for shut down.</param>

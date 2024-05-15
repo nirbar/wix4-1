@@ -477,6 +477,15 @@ static HRESULT BalBaseBAProcOnExecuteFilesInUse(
     return pBA->OnExecuteFilesInUse(pArgs->wzPackageId, pArgs->cFiles, pArgs->rgwzFiles, pArgs->nRecommendation, pArgs->source, &pResults->nResult);
 }
 
+static HRESULT BalBaseBAProcOnEmbeddedCustomMessage(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONEMBEDDEDCUSTOMMESSAGE_ARGS* pArgs,
+    __inout BA_ONEMBEDDEDCUSTOMMESSAGE_RESULTS* pResults
+    )
+{
+    return pBA->OnEmbeddedCustomMessage(pArgs->wzPackageId, pArgs->dwCode, pArgs->wzMessage, &pResults->nResult);
+}
+
 static HRESULT BalBaseBAProcOnExecutePackageComplete(
     __in IBootstrapperApplication* pBA,
     __in BA_ONEXECUTEPACKAGECOMPLETE_ARGS* pArgs,
@@ -928,6 +937,9 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEFILESINUSE:
             hr = BalBaseBAProcOnExecuteFilesInUse(pBA, reinterpret_cast<BA_ONEXECUTEFILESINUSE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEFILESINUSE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEMBEDDEDCUSTOMMESSAGE:
+            hr = BalBaseBAProcOnEmbeddedCustomMessage(pBA, reinterpret_cast<BA_ONEMBEDDEDCUSTOMMESSAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEMBEDDEDCUSTOMMESSAGE_RESULTS*>(pvResults));
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGECOMPLETE:
             hr = BalBaseBAProcOnExecutePackageComplete(pBA, reinterpret_cast<BA_ONEXECUTEPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPACKAGECOMPLETE_RESULTS*>(pvResults));

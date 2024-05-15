@@ -372,6 +372,13 @@ BAAPI UserExperienceOnError(
     __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
     __inout int* pnResult
     );
+BAAPI UserExperienceOnEmbeddedCustomMessage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageId,
+    __in DWORD dwCode,
+    __in_z_opt LPCWSTR wzMessage,
+    __inout int* pnResult
+    );
 BAAPI UserExperienceOnExecuteBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cExecutingPackages

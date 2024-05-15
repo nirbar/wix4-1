@@ -171,6 +171,22 @@ LExit:
     return hr;
 }
 
+static HRESULT BAEngineSendEmbeddedCustomMessage(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in const LPVOID pvArgs,
+    __inout LPVOID pvResults
+    )
+{
+    HRESULT hr = S_OK;
+    ValidateMessageArgs(hr, pvArgs, BAENGINE_SENDEMBEDDEDCUSTOMMESSAGE_ARGS, pArgs);
+    ValidateMessageResults(hr, pvResults, BAENGINE_SENDEMBEDDEDCUSTOMMESSAGE_RESULTS, pResults);
+
+    hr = ExternalEngineSendEmbeddedCustomMessage(pContext->pEngineState, pArgs->dwCode, pArgs->wzMessage, &pResults->nResult);
+
+LExit:
+    return hr;
+}
+
 static HRESULT BAEngineSendEmbeddedProgress(
     __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
     __in const LPVOID pvArgs,
@@ -489,6 +505,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_SENDEMBEDDEDPROGRESS:
         hr = BAEngineSendEmbeddedProgress(pContext, pvArgs, pvResults);
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_SENDEMBEDDEDCUSTOMMESSAGE:
+        hr = BAEngineSendEmbeddedCustomMessage(pContext, pvArgs, pvResults);
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_SETUPDATE:
         hr = BAEngineSetUpdate(pContext, pvArgs, pvResults);

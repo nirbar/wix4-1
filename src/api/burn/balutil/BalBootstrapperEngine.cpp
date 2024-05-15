@@ -335,6 +335,32 @@ public: // IBootstrapperEngine
         return hr;
     }
 
+    virtual STDMETHODIMP SendEmbeddedCustomMessage(
+        __in DWORD dwCode,
+        __in_z_opt LPCWSTR wzMessage,
+        __out int* pnResult
+        )
+    {
+        HRESULT hr = S_OK;
+        BAENGINE_SENDEMBEDDEDCUSTOMMESSAGE_ARGS args = { };
+        BAENGINE_SENDEMBEDDEDCUSTOMMESSAGE_RESULTS results = { };
+
+        ExitOnNull(pnResult, hr, E_INVALIDARG, "pnResult is required");
+
+        args.cbSize = sizeof(args);
+        args.dwCode = dwCode;
+        args.wzMessage = wzMessage;
+
+        results.cbSize = sizeof(results);
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SENDEMBEDDEDCUSTOMMESSAGE, &args, &results, m_pvBAEngineProcContext);
+
+        *pnResult = results.nResult;
+
+    LExit:
+        return hr;
+    }
+
     virtual STDMETHODIMP SetUpdate(
         __in_z_opt LPCWSTR wzLocalSource,
         __in_z_opt LPCWSTR wzDownloadSource,

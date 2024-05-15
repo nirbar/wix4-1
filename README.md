@@ -22,3 +22,4 @@ This repository contains the PanelSwWix4: A custom WiX Toolset codebase
 - [7778](https://github.com/wixtoolset/issues/issues/7778): Bundle/@Wix3DependencyMode=yes/no. If yes, then default MSI/MSP provider key uses the ProductCode/PatchCode. Use only if a WiX4 bundle chains packages of a WiX3 bundle.
 - [4889](https://github.com/wixtoolset/issues/issues/4889): Support custom container compressions using bundle extensions
 - Not overwriting log files when retrying to execute a package
+- Support sending custom messages on embedded pipe
