@@ -704,6 +704,18 @@ namespace WixToolset.BootstrapperApplicationApi
             );
 
         /// <summary>
+        /// See <see cref="IDefaultBootstrapperApplication.EmbeddedCustomMessage"/>.
+        /// </summary>
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnEmbeddedCustomMessage(
+            [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
+            [MarshalAs(UnmanagedType.U4)] int dwCode,
+            [MarshalAs(UnmanagedType.LPWStr)] string wzMessage,
+            [MarshalAs(UnmanagedType.I4)] ref Result pResult
+            );
+
+        /// <summary>
         /// See <see cref="IDefaultBootstrapperApplication.ExecutePackageComplete"/>.
         /// </summary>
         [PreserveSig]

@@ -68,6 +68,13 @@ HRESULT ExternalEngineSendEmbeddedError(
     __out int* pnResult
     );
 
+HRESULT ExternalEngineSendEmbeddedCustomMessage(
+    __in BURN_ENGINE_STATE* pEngineState,
+    __in const DWORD dwCode,
+    __in_z LPCWSTR wzMessage,
+    __out int* pnResult
+    );
+
 HRESULT ExternalEngineSendEmbeddedProgress(
     __in BURN_ENGINE_STATE* pEngineState,
     __in const DWORD dwProgressPercentage,

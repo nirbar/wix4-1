@@ -108,6 +108,15 @@ namespace WixToolset.BootstrapperApplicationApi
             );
 
         /// <summary>
+        /// See <see cref="IEngine.SendEmbeddedCustomMessage(int, string)"/>.
+        /// </summary>
+        void SendEmbeddedCustomMessage(
+            [MarshalAs(UnmanagedType.U4)] int dwCode,
+            [MarshalAs(UnmanagedType.LPWStr)] string wzMessage,
+            [MarshalAs(UnmanagedType.I4)] out int pnResult
+            );
+
+        /// <summary>
         /// See <see cref="IEngine.SetUpdate(string, string, long, UpdateHashType, string, string)"/>.
         /// </summary>
         void SetUpdate(

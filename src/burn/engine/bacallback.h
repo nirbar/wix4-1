@@ -290,6 +290,13 @@ HRESULT BACallbackOnError(
     __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
     __inout int* pnResult
     );
+HRESULT BACallbackOnEmbeddedCustomMessage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in DWORD dwCode,
+    __in_z_opt LPCWSTR wzMessage,
+    __inout int* pnResult
+    );
 HRESULT BACallbackOnExecuteBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cExecutingPackages

@@ -638,6 +638,50 @@ LExit:
     return hr;
 }
 
+static HRESULT BAEngineSendEmbeddedCustomMessage(
+    __in BAENGINE_CONTEXT* pContext,
+    __in BUFF_READER* pReaderArgs,
+    __in BUFF_READER* pReaderResults,
+    __in BUFF_BUFFER* pBuffer
+    )
+{
+    HRESULT hr = S_OK;
+    BAENGINE_SENDEMBEDDEDCUSTOMMESSAGE_ARGS args = { };
+    BAENGINE_SENDEMBEDDEDCUSTOMMESSAGE_RESULTS results = { };
+    LPWSTR sczMessage = NULL;
+
+    // Read args.
+    hr = BuffReaderReadNumber(pReaderArgs, &args.dwApiVersion);
+    ExitOnFailure(hr, "Failed to read API version of BAEngineSendEmbeddedCustomMessage args.");
+
+    hr = BuffReaderReadNumber(pReaderArgs, &args.dwCode);
+    ExitOnFailure(hr, "Failed to read error code of BAEngineSendEmbeddedCustomMessage args.");
+
+    hr = BuffReaderReadString(pReaderArgs, &sczMessage);
+    ExitOnFailure(hr, "Failed to read condition of BAEngineSendEmbeddedCustomMessage args.");
+
+    args.wzMessage = sczMessage;
+
+    // Read results.
+    hr = BuffReaderReadNumber(pReaderResults, &results.dwApiVersion);
+    ExitOnFailure(hr, "Failed to read API version of BAEngineSendEmbeddedCustomMessage results.");
+
+    // Execute.
+    hr = ExternalEngineSendEmbeddedCustomMessage(pContext->pEngineState, args.dwCode, args.wzMessage, &results.nResult);
+    ExitOnFailure(hr, "Failed to send embedded custom message.");
+
+    // Write results.
+    hr = BuffWriteNumberToBuffer(pBuffer, sizeof(results));
+    ExitOnFailure(hr, "Failed to write size of BAEngineSendEmbeddedCustomMessage struct.");
+
+    hr = BuffWriteNumberToBuffer(pBuffer, results.nResult);
+    ExitOnFailure(hr, "Failed to result of BAEngineSendEmbeddedCustomMessage struct.");
+
+LExit:
+    ReleaseStr(sczMessage);
+    return hr;
+}
+
 static HRESULT BAEngineSendEmbeddedProgress(
     __in BAENGINE_CONTEXT* pContext,
     __in BUFF_READER* pReaderArgs,
@@ -665,7 +709,7 @@ static HRESULT BAEngineSendEmbeddedProgress(
 
     // Execute.
     hr = ExternalEngineSendEmbeddedProgress(pContext->pEngineState, args.dwProgressPercentage, args.dwOverallProgressPercentage, &results.nResult);
-    ExitOnFailure(hr, "Failed to send embedded error.");
+    ExitOnFailure(hr, "Failed to send embedded progress.");
 
     // Write results.
     hr = BuffWriteNumberToBuffer(pBuffer, sizeof(results));
@@ -1426,6 +1470,9 @@ HRESULT WINAPI EngineForApplicationProc(
             break;
         case BOOTSTRAPPER_ENGINE_MESSAGE_SENDEMBEDDEDERROR:
             hr = BAEngineSendEmbeddedError(pContext, &readerArgs, &readerResults, &bufferResponse);
+            break;
+        case BOOTSTRAPPER_ENGINE_MESSAGE_SENDEMBEDDEDCUSTOMMESSAGE:
+            hr = BAEngineSendEmbeddedCustomMessage(pContext, &readerArgs, &readerResults, &bufferResponse);
             break;
         case BOOTSTRAPPER_ENGINE_MESSAGE_SENDEMBEDDEDPROGRESS:
             hr = BAEngineSendEmbeddedProgress(pContext, &readerArgs, &readerResults, &bufferResponse);

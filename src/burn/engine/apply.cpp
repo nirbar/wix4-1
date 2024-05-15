@@ -3666,6 +3666,10 @@ static int GenericExecuteMessageHandler(
         BACallbackOnError(pContext->pUX, BOOTSTRAPPER_ERROR_TYPE_EXE_PACKAGE, pContext->wzExecutingPackageId, pMessage->error.dwErrorCode, pMessage->error.wzMessage, pMessage->dwUIHint, 0, NULL, &nResult); // ignore return value.
         break;
 
+    case GENERIC_EXECUTE_MESSAGE_CUSTOM:
+        BACallbackOnEmbeddedCustomMessage(pContext->pUX, pContext->wzExecutingPackageId, pMessage->custom.dwCode, pMessage->custom.wzMessage, &nResult);
+        break;
+
     case GENERIC_EXECUTE_MESSAGE_NETFX_FILES_IN_USE:
         BACallbackOnExecuteFilesInUse(pContext->pUX, pContext->wzExecutingPackageId, pMessage->filesInUse.cFiles, pMessage->filesInUse.rgwzFiles, BOOTSTRAPPER_FILES_IN_USE_TYPE_NETFX, &nResult); // ignore return value.
         fPassthrough = TRUE;

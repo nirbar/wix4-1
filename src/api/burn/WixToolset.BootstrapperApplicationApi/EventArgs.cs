@@ -2001,6 +2001,55 @@ namespace WixToolset.BootstrapperApplicationApi
     }
 
     /// <summary>
+    /// Additional arugments used for embedded custom messages.
+    /// </summary>
+    [Serializable]
+    public class EmbeddedCustomMessageEventArgs : ResultEventArgs
+    {
+        private string packageId;
+        private int code;
+        private string message;
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="EmbeddedCustomMessageEventArgs"/> class.
+        /// </summary>
+        /// <param name="packageId">The identity of the package that yielded the files in use message.</param>
+        /// <param name="code">Message code.</param>
+        /// <param name="message">Message text.</param>
+        public EmbeddedCustomMessageEventArgs(string packageId, int code, string message)
+            : base(Result.None, Result.None)
+        {
+            this.packageId = packageId;
+            this.code = code;
+            this.message = message;
+        }
+
+        /// <summary>
+        /// Gets the identity of the package that yielded the files in use message.
+        /// </summary>
+        public string PackageId
+        {
+            get { return this.packageId; }
+        }
+
+        /// <summary>
+        /// Gets the message code.
+        /// </summary>
+        public int Code
+        {
+            get { return this.code; }
+        }
+
+        /// <summary>
+        /// Gets the message text.
+        /// </summary>
+        public string Message
+        {
+            get { return this.message; }
+        }
+    }
+
+    /// <summary>
     /// Event arguments for <see cref="IDefaultBootstrapperApplication.ExecutePackageComplete"/>
     /// </summary>
     [Serializable]

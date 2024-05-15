@@ -647,6 +647,16 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
+    virtual STDMETHODIMP OnEmbeddedCustomMessage(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in DWORD /*dwCode*/,
+        __in_z LPCWSTR /*wzMessage*/,
+        __inout int* /*pResult*/
+        )
+    {
+        return S_OK;
+    }
+
     virtual STDMETHODIMP OnExecutePackageComplete(
         __in_z LPCWSTR /*wzPackageId*/,
         __in HRESULT /*hrStatus*/,

@@ -341,6 +341,14 @@ namespace WixToolset.BootstrapperApplicationApi
         }
 
         /// <inheritdoc/>
+        public int SendEmbeddedCustomMessage(int code, string message)
+        {
+            int result = 0;
+            this.engine.SendEmbeddedCustomMessage(code, message, out result);
+            return result;
+        }
+
+        /// <inheritdoc/>
         public void Quit(int exitCode)
         {
             this.engine.Quit(exitCode);

@@ -16,6 +16,7 @@ enum GENERIC_EXECUTE_MESSAGE_TYPE
     GENERIC_EXECUTE_MESSAGE_PROCESS_CANCEL,
     GENERIC_EXECUTE_MESSAGE_PROCESS_STARTED,
     GENERIC_EXECUTE_MESSAGE_PROCESS_COMPLETED,
+    GENERIC_EXECUTE_MESSAGE_CUSTOM,
 };
 
 typedef struct _APPLY_AUTHENTICATION_REQUIRED_DATA
@@ -50,6 +51,11 @@ typedef struct _GENERIC_EXECUTE_MESSAGE
         {
             DWORD dwProcessId;
         } processCancel;
+        struct
+        {
+            DWORD dwCode;
+            LPCWSTR wzMessage;
+        } custom;
     };
 } GENERIC_EXECUTE_MESSAGE;
 

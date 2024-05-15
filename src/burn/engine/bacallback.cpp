@@ -3147,6 +3147,77 @@ LExit:
     return hr;
 }
 
+EXTERN_C HRESULT BACallbackOnEmbeddedCustomMessage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in DWORD dwCode,
+    __in_z_opt LPCWSTR wzMessage,
+    __inout int* pnResult
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEMBEDDEDCUSTOMMESSAGE_ARGS args = { };
+    BA_ONEMBEDDEDCUSTOMMESSAGE_RESULTS results = { };
+    BUFF_BUFFER bufferArgs = { };
+    BUFF_BUFFER bufferResults = { };
+    PIPE_RPC_RESULT rpc = { };
+    SIZE_T iBuffer = 0;
+
+    // Init structs.
+    args.dwApiVersion = WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION;
+    args.wzPackageId = wzPackageId;
+    args.dwCode = dwCode;
+    args.wzMessage = wzMessage;
+
+    results.dwApiVersion = WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION;
+    results.nResult = *pnResult;
+
+    // Send args.
+    hr = BuffWriteNumberToBuffer(&bufferArgs, args.dwApiVersion);
+    ExitOnFailure(hr, "Failed to write API version of OnEmbeddedCustomMessage args.");
+
+    hr = BuffWriteStringToBuffer(&bufferArgs, args.wzPackageId);
+    ExitOnFailure(hr, "Failed to write package id of OnEmbeddedCustomMessage args.");
+
+    hr = BuffWriteNumberToBuffer(&bufferArgs, args.dwCode);
+    ExitOnFailure(hr, "Failed to write error type OnEmbeddedCustomMessage args.");
+
+    hr = BuffWriteStringToBuffer(&bufferArgs, args.wzMessage);
+    ExitOnFailure(hr, "Failed to write package id of OnEmbeddedCustomMessage args.");
+
+    // Send results.
+    hr = BuffWriteNumberToBuffer(&bufferResults, results.dwApiVersion);
+    ExitOnFailure(hr, "Failed to write API version of OnEmbeddedCustomMessage results.");
+
+    hr = BuffWriteNumberToBuffer(&bufferResults, results.nResult);
+    ExitOnFailure(hr, "Failed to write result of OnEmbeddedCustomMessage results.");
+
+    // Callback.
+    hr = SendBAMessage(pUserExperience, BOOTSTRAPPER_APPLICATION_MESSAGE_ONEMBEDDEDCUSTOMMESSAGE, &bufferArgs, &bufferResults, &rpc);
+    ExitOnFailure(hr, "BA OnEmbeddedCustomMessage failed.");
+
+    if (S_FALSE == hr)
+    {
+        ExitFunction();
+    }
+
+    // Read results.
+    hr = BuffReadNumber(rpc.pbData, rpc.cbData, &iBuffer, &results.dwApiVersion);
+    ExitOnFailure(hr, "Failed to read size of OnEmbeddedCustomMessage result.");
+
+    hr = BuffReadNumber(rpc.pbData, rpc.cbData, &iBuffer, reinterpret_cast<DWORD*>(&results.nResult));
+    ExitOnFailure(hr, "Failed to read result of OnEmbeddedCustomMessage result.");
+
+    *pnResult = results.nResult;
+
+LExit:
+    PipeFreeRpcResult(&rpc);
+    ReleaseBuffer(bufferResults);
+    ReleaseBuffer(bufferArgs);
+
+    return hr;
+}
+
 EXTERN_C HRESULT BACallbackOnExecuteBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cExecutingPackages

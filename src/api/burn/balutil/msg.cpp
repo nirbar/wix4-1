@@ -2645,6 +2645,67 @@ LExit:
     return hr;
 }
 
+static HRESULT OnEmbeddedCustomMessage(
+    __in IBootstrapperApplication* pApplication,
+    __in BUFF_READER* pReaderArgs,
+    __in BUFF_READER* pReaderResults,
+    __in BUFF_BUFFER* pBuffer
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEMBEDDEDCUSTOMMESSAGE_ARGS args = { };
+    BA_ONEMBEDDEDCUSTOMMESSAGE_RESULTS results = { };
+    LPWSTR sczPackageId = NULL;
+    LPWSTR sczMessage = NULL;
+
+    // Read args.
+    hr = BuffReaderReadNumber(pReaderArgs, &args.dwApiVersion);
+    ExitOnFailure(hr, "Failed to read API version of OnEmbeddedCustomMessage args.");
+
+    hr = BuffReaderReadString(pReaderArgs, &sczPackageId);
+    ExitOnFailure(hr, "Failed to read package id of OnEmbeddedCustomMessage args.");
+
+    args.wzPackageId = sczPackageId;
+
+    hr = BuffReaderReadNumber(pReaderArgs, &args.dwCode);
+    ExitOnFailure(hr, "Failed to read code of OnEmbeddedCustomMessage args.");
+
+    hr = BuffReaderReadString(pReaderArgs, &sczMessage);
+    ExitOnFailure(hr, "Failed to read error of OnEmbeddedCustomMessage args.");
+
+    args.wzMessage = sczMessage;
+
+    // Read results.
+    hr = BuffReaderReadNumber(pReaderResults, &results.dwApiVersion);
+    ExitOnFailure(hr, "Failed to read API version of OnEmbeddedCustomMessage results.");
+
+    hr = BuffReaderReadNumber(pReaderResults, reinterpret_cast<DWORD*>(&results.nResult));
+    ExitOnFailure(hr, "Failed to read cancel of OnEmbeddedCustomMessage results.");
+
+    // Callback.
+    hr = pApplication->BAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEMBEDDEDCUSTOMMESSAGE, &args, &results);
+
+    if (E_NOTIMPL == hr)
+    {
+        hr = pApplication->OnEmbeddedCustomMessage(args.wzPackageId, args.dwCode, args.wzMessage, &results.nResult);
+    }
+
+    pApplication->BAProcFallback(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEMBEDDEDCUSTOMMESSAGE, &args, &results, &hr);
+    BalExitOnFailure(hr, "BA OnEmbeddedCustomMessage failed.");
+
+    // Write results.
+    hr = BuffWriteNumberToBuffer(pBuffer, results.dwApiVersion);
+    ExitOnFailure(hr, "Failed to write size of OnEmbeddedCustomMessage struct.");
+
+    hr = BuffWriteNumberToBuffer(pBuffer, results.nResult);
+    ExitOnFailure(hr, "Failed to write result of OnEmbeddedCustomMessage struct.");
+
+LExit:
+    ReleaseStr(sczMessage);
+    ReleaseStr(sczPackageId);
+    return hr;
+}
+
 static HRESULT OnExecuteBegin(
     __in IBootstrapperApplication* pApplication,
     __in BUFF_READER* pReaderArgs,
@@ -5037,6 +5098,10 @@ static HRESULT ProcessMessage(
 
             case BOOTSTRAPPER_APPLICATION_MESSAGE_ONERROR:
                 hr = OnError(pApplication, &readerArgs, &readerResults, &bufferResponse);
+                break;
+
+            case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEMBEDDEDCUSTOMMESSAGE:
+                hr = OnEmbeddedCustomMessage(pApplication, &readerArgs, &readerResults, &bufferResponse);
                 break;
 
             case BOOTSTRAPPER_APPLICATION_MESSAGE_ONREGISTERBEGIN:

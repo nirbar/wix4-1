@@ -54,6 +54,8 @@ typedef enum _BURN_ELEVATION_MESSAGE_TYPE
     BURN_ELEVATION_MESSAGE_TYPE_LAUNCH_APPROVED_EXE_PROCESSID,
     BURN_ELEVATION_MESSAGE_TYPE_PROGRESS_ROUTINE,
     BURN_ELEVATION_MESSAGE_TYPE_EXECUTE_ACTION_COMPLETE,
+
+    BURN_ELEVATION_MESSAGE_TYPE_EMBEDDED_CUSTOM_MESSAGE,
 } BURN_ELEVATION_MESSAGE_TYPE;
 
 
@@ -1935,6 +1937,18 @@ static HRESULT ProcessGenericExecuteMessages(
         message.error.wzMessage = sczMessage;
         break;
 
+    case BURN_ELEVATION_MESSAGE_TYPE_EMBEDDED_CUSTOM_MESSAGE:
+        message.type = GENERIC_EXECUTE_MESSAGE_CUSTOM;
+
+        hr = BuffReadNumber((BYTE*)pMsg->pvData, pMsg->cbData, &iData, &message.custom.dwCode);
+        ExitOnFailure(hr, "Failed to read custom code from buffer.");
+
+        hr = BuffReadString((BYTE*)pMsg->pvData, pMsg->cbData, &iData, &sczMessage);
+        ExitOnFailure(hr, "Failed to read custom message from buffer.");
+
+        message.custom.wzMessage = sczMessage;
+        break;
+
     case BURN_ELEVATION_MESSAGE_TYPE_EXECUTE_NETFX_FILES_IN_USE:
         message.type = GENERIC_EXECUTE_MESSAGE_NETFX_FILES_IN_USE;
 
@@ -3647,6 +3661,17 @@ static int GenericExecuteMessageHandler(
         ExitOnFailure(hr, "Failed to write message to message buffer.");
 
         dwMessage = BURN_ELEVATION_MESSAGE_TYPE_EXECUTE_ERROR;
+        break;
+
+    case GENERIC_EXECUTE_MESSAGE_CUSTOM:
+        // serialize message data
+        hr = BuffWriteNumber(&pbData, &cbData, pMessage->custom.dwCode);
+        ExitOnFailure(hr, "Failed to write code to message buffer.");
+
+        hr = BuffWriteString(&pbData, &cbData, pMessage->custom.wzMessage);
+        ExitOnFailure(hr, "Failed to write message to message buffer.");
+
+        dwMessage = BURN_ELEVATION_MESSAGE_TYPE_EMBEDDED_CUSTOM_MESSAGE;
         break;
 
     case GENERIC_EXECUTE_MESSAGE_NETFX_FILES_IN_USE:

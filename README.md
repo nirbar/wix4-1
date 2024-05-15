@@ -17,3 +17,4 @@ This repository contains the PanelSwWix4: A custom WiX Toolset codebase
 - Un-plan MSI transaction if it contains less than 2 packages
 - Add BA methods OnPlanMsiTransaction, OnPlanMsiTransactionComplete: Let BA opt-out of MSI transactions.
 - Not overwriting log files when retrying to execute a package
+- Support sending custom messages on embedded pipe

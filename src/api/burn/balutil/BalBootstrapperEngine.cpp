@@ -790,6 +790,64 @@ public: // IBootstrapperEngine
         return hr;
     }
 
+    virtual STDMETHODIMP SendEmbeddedCustomMessage(
+        __in DWORD dwCode,
+        __in_z_opt LPCWSTR wzMessage,
+        __out int* pnResult
+        )
+    {
+        HRESULT hr = S_OK;
+        BAENGINE_SENDEMBEDDEDCUSTOMMESSAGE_ARGS args = { };
+        BAENGINE_SENDEMBEDDEDCUSTOMMESSAGE_RESULTS results = { };
+        BUFF_BUFFER bufferArgs = { };
+        BUFF_BUFFER bufferResults = { };
+        PIPE_RPC_RESULT rpc = { };
+        SIZE_T iBuffer = 0;
+
+        ExitOnNull(pnResult, hr, E_INVALIDARG, "pnResult is required");
+
+        // Init send structs.
+        args.dwApiVersion = WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION;
+        args.dwCode = dwCode;
+        args.wzMessage = wzMessage;
+
+        results.dwApiVersion = WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION;
+
+        // Send args.
+        hr = BuffWriteNumberToBuffer(&bufferArgs, args.dwApiVersion);
+        ExitOnFailure(hr, "Failed to write API version of SendEmbeddedCustomMessage args.");
+
+        hr = BuffWriteNumberToBuffer(&bufferArgs, args.dwCode);
+        ExitOnFailure(hr, "Failed to write progress of SendEmbeddedCustomMessage args.");
+
+        hr = BuffWriteStringToBuffer(&bufferArgs, args.wzMessage);
+        ExitOnFailure(hr, "Failed to write overall progress of SendEmbeddedCustomMessage args.");
+
+        // Send results.
+        hr = BuffWriteNumberToBuffer(&bufferResults, results.dwApiVersion);
+        ExitOnFailure(hr, "Failed to write API version of SendEmbeddedCustomMessage results.");
+
+        // Get results.
+        hr = SendRequest(BOOTSTRAPPER_ENGINE_MESSAGE_SENDEMBEDDEDCUSTOMMESSAGE, &bufferArgs, &bufferResults, &rpc);
+        ExitOnFailure(hr, "BA SendEmbeddedCustomMessage failed.");
+
+        // Read results.
+        hr = BuffReadNumber(rpc.pbData, rpc.cbData, &iBuffer, &results.dwApiVersion);
+        ExitOnFailure(hr, "Failed to read size from SendEmbeddedCustomMessage results.");
+
+        hr = BuffReadNumber(rpc.pbData, rpc.cbData, &iBuffer, reinterpret_cast<DWORD*>(&results.nResult));
+        ExitOnFailure(hr, "Failed to read result from SendEmbeddedCustomMessage results.");
+
+        *pnResult = results.nResult;
+
+    LExit:
+        PipeFreeRpcResult(&rpc);
+        ReleaseBuffer(bufferResults);
+        ReleaseBuffer(bufferArgs);
+
+        return hr;
+    }
+
     virtual STDMETHODIMP SetUpdate(
         __in_z_opt LPCWSTR wzLocalSource,
         __in_z_opt LPCWSTR wzDownloadSource,
