@@ -487,7 +487,7 @@ extern "C" HRESULT MsiEngineDetectPackage(
         // Report related MSI package to BA.
         if (BOOTSTRAPPER_RELATED_OPERATION_NONE != pPackage->Msi.operation)
         {
-            LogId(REPORT_STANDARD, MSG_DETECTED_RELATED_PACKAGE, pPackage->Msi.sczProductCode, LoggingPerMachineToString(pPackage->fPerMachine), pVersion->sczVersion, pPackage->Msi.dwLanguage, LoggingRelatedOperationToString(pPackage->Msi.operation));
+            LogId(REPORT_STANDARD, MSG_DETECTED_RELATED_PACKAGE, pPackage->sczId, pPackage->Msi.sczProductCode, LoggingPerMachineToString(pPackage->fPerMachine), pVersion->sczVersion, pPackage->Msi.dwLanguage, LoggingRelatedOperationToString(pPackage->Msi.operation));
 
             hr = BACallbackOnDetectRelatedMsiPackage(pUserExperience, pPackage->sczId, pPackage->Msi.sczUpgradeCode, pPackage->Msi.sczProductCode, pPackage->fPerMachine, pVersion, pPackage->Msi.operation);
             ExitOnRootFailure(hr, "BA aborted detect related MSI package.");
@@ -648,7 +648,7 @@ extern "C" HRESULT MsiEngineDetectPackage(
                 pPackage->Msi.operation = BOOTSTRAPPER_RELATED_OPERATION_MAJOR_UPGRADE;
             }
 
-            LogId(REPORT_STANDARD, MSG_DETECTED_RELATED_PACKAGE, wzProductCode, LoggingPerMachineToString(fPerMachine), pVersion->sczVersion, uLcid, LoggingRelatedOperationToString(relatedMsiOperation));
+            LogId(REPORT_STANDARD, MSG_DETECTED_RELATED_PACKAGE, pPackage->sczId, wzProductCode, LoggingPerMachineToString(fPerMachine), pVersion->sczVersion, uLcid, LoggingRelatedOperationToString(relatedMsiOperation));
 
             // Pass to BA.
             hr = BACallbackOnDetectRelatedMsiPackage(pUserExperience, pPackage->sczId, pRelatedMsi->sczUpgradeCode, wzProductCode, fPerMachine, pVersion, relatedMsiOperation);
