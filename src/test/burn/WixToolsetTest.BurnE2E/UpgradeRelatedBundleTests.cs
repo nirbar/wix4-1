@@ -102,8 +102,8 @@ namespace WixToolsetTest.BurnE2E
             bundleAv2x64.VerifyRegisteredAndInPackageCache();
 
             bundleAv1.VerifyUnregisteredAndRemovedFromPackageCache();
-            
-            Assert.True(LogVerifier.MessageInLogFileRegex(bundleAv2x64InstallLogFilePath, @"Detected related package: \{[0-9A-Za-z\-]{36}\}, scope: PerMachine, version: 1.0.0.0, language: 1033 operation: MajorUpgrade"));
+
+            Assert.True(LogVerifier.MessageInLogFileRegex(bundleAv2x64InstallLogFilePath, @"Detected related package for PackageA: \{[0-9A-Za-z\-]{36}\}, scope: PerMachine, version: 1.0.0.0, language: 1033 operation: MajorUpgrade"));
         }
 
         [RuntimeFact]
@@ -119,7 +119,7 @@ namespace WixToolsetTest.BurnE2E
 
             bundleAv2.Install();
             bundleAv2.VerifyRegisteredAndInPackageCache();
-             
+
             bundleAv1x64.VerifyUnregisteredAndRemovedFromPackageCache();
         }
     }
