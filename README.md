@@ -23,3 +23,4 @@ This repository contains the PanelSwWix4: A custom WiX Toolset codebase
 - [4889](https://github.com/wixtoolset/issues/issues/4889): Support custom container compressions using bundle extensions
 - Not overwriting log files when retrying to execute a package
 - Support sending custom messages on embedded pipe
+- Best effort to log premature termination of companion process
