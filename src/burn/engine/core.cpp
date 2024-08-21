@@ -81,6 +81,9 @@ static void LogRelatedBundles(
 static void LogRollbackBoundary(
     __in const BURN_ROLLBACK_BOUNDARY* pRollbackBoundary
     );
+static DWORD WINAPI MonitorCompanionProcessThreadProc(
+    __in LPVOID lpParameter
+    );
 
 
 // function definitions
@@ -605,10 +608,50 @@ extern "C" HRESULT CoreElevate(
 
         pEngineState->hUnelevatedLoggingThread = ::CreateThread(NULL, 0, LoggingThreadProc, pEngineState, 0, NULL);
         ExitOnNullWithLastError(pEngineState->hUnelevatedLoggingThread, hr, "Failed to create unelevated logging thread.");
+
+        // Best effort to log premature termination of the elevated process
+        pEngineState->companionConnection.hProcess = ::OpenProcess(SYNCHRONIZE, FALSE, pEngineState->companionConnection.dwProcessId);
+        if (pEngineState->companionConnection.hProcess)
+        {
+            pEngineState->companionConnection.hQuitRequested = ::CreateEvent(NULL, TRUE, FALSE, NULL);
+            if (pEngineState->companionConnection.hQuitRequested)
+            {
+                pEngineState->companionConnection.hQuitMonitorThread = ::CreateThread(NULL, 0, MonitorCompanionProcessThreadProc, &pEngineState->companionConnection, 0, NULL);
+            }
+        }
     }
 
 LExit:
     return hr;
+}
+
+static DWORD WINAPI MonitorCompanionProcessThreadProc(
+    __in LPVOID lpParameter
+    )
+{
+    BURN_PIPE_CONNECTION* pConnection = (BURN_PIPE_CONNECTION*)lpParameter;
+    HANDLE rghHandles[2] = { pConnection->hQuitRequested, pConnection->hProcess };
+    DWORD dwRes = ERROR_SUCCESS;
+    HRESULT hr = S_OK;
+
+    dwRes = ::WaitForMultipleObjects(ARRAYSIZE(rghHandles), rghHandles, FALSE, INFINITE);
+    switch (dwRes)
+    {
+        case WAIT_OBJECT_0:
+            hr = S_OK;
+            break;
+        case WAIT_OBJECT_0 + 1:
+            LogRedirect(NULL, NULL);
+            hr = E_SUSPECTED_AV_INTERFERENCE;
+            ExitOnFailure(hr, "Companion elevated process has been terminated prematurely.");
+            break;
+        default:
+            ExitWithLastError(hr, "Failed to monitor proper termination of companion process.");
+            break;
+    }
+
+LExit:
+    return HRESULT_CODE(hr);
 }
 
 extern "C" HRESULT CoreApply(

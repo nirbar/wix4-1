@@ -37,6 +37,8 @@ void BurnPipeConnectionUninitialize(
     ReleasePipeHandle(pConnection->hLoggingPipe);
     ReleasePipeHandle(pConnection->hCachePipe);
     ReleasePipeHandle(pConnection->hPipe);
+    ReleaseHandle(pConnection->hQuitRequested);
+    ReleaseHandle(pConnection->hQuitMonitorThread);
     ReleaseHandle(pConnection->hProcess);
     ReleaseStr(pConnection->sczSecret);
     ReleaseStr(pConnection->sczName);
@@ -375,6 +377,11 @@ extern "C" HRESULT BurnPipeTerminateChildProcess(
     SIZE_T cbData = 0;
     BOOL fTimedOut = FALSE;
 
+    if (pConnection->hQuitRequested)
+    {
+        ::SetEvent(pConnection->hQuitRequested);
+    }
+
     // Prepare the exit message.
     hr = BuffWriteNumber(&pbData, &cbData, dwParentExitCode);
     ExitOnFailure(hr, "Failed to write exit code to message buffer.");
@@ -436,7 +443,6 @@ extern "C" HRESULT BurnPipeChildConnect(
 {
     Assert(pConnection->sczName);
     Assert(pConnection->sczSecret);
-    Assert(!pConnection->hProcess);
     Assert(INVALID_HANDLE_VALUE == pConnection->hPipe);
     Assert(INVALID_HANDLE_VALUE == pConnection->hCachePipe);
     Assert(INVALID_HANDLE_VALUE == pConnection->hLoggingPipe);
@@ -477,8 +483,11 @@ extern "C" HRESULT BurnPipeChildConnect(
         ExitOnFailure(hr, "Failed to verify parent logging pipe: %ls", sczPipeName);
     }
 
-    pConnection->hProcess = ::OpenProcess(SYNCHRONIZE, FALSE, pConnection->dwProcessId);
-    ExitOnNullWithLastError(pConnection->hProcess, hr, "Failed to open companion process with PID: %u", pConnection->dwProcessId);
+    if (!pConnection->hProcess)
+    {
+        pConnection->hProcess = ::OpenProcess(SYNCHRONIZE, FALSE, pConnection->dwProcessId);
+        ExitOnNullWithLastError(pConnection->hProcess, hr, "Failed to open companion process with PID: %u", pConnection->dwProcessId);
+    }
 
 LExit:
     ReleaseStr(sczPipeName);

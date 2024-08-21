@@ -26,6 +26,8 @@ typedef struct _BURN_PIPE_CONNECTION
     HANDLE hPipe;
     HANDLE hCachePipe;
     HANDLE hLoggingPipe;
+    HANDLE hQuitRequested;
+    HANDLE hQuitMonitorThread;
 } BURN_PIPE_CONNECTION;
 
 typedef enum _BURN_PIPE_MESSAGE_TYPE : DWORD
