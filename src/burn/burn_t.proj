@@ -7,6 +7,10 @@
     <ProjectReference Include="stub\stub.vcxproj" Properties="Platform=x64" />
     <ProjectReference Include="stub\stub.vcxproj" Properties="Platform=ARM64" />
 
-    <ProjectReference Include="stub\stub.vcxproj" Targets="PackNative" />
+    <ProjectReference Include="stub\stub.vcxproj" Properties="Platform=x86;RunAsAdmin=true" BuildInParallel="false" />
+    <ProjectReference Include="stub\stub.vcxproj" Properties="Platform=x64;RunAsAdmin=true" BuildInParallel="false" />
+    <ProjectReference Include="stub\stub.vcxproj" Properties="Platform=ARM64;RunAsAdmin=true" BuildInParallel="false" />
+
+    <ProjectReference Include="stub\stub.vcxproj" Targets="PackNative" BuildInParallel="false" />
   </ItemGroup>
 </Project>

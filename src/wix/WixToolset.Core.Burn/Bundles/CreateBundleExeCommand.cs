@@ -54,7 +54,8 @@ namespace WixToolset.Core.Burn.Bundles
             // Copy the burn.exe to a writable location then mark it to be moved to its final build location.
 
             var stubPlatform = this.BundleSymbol.Platform.ToString();
-            var stubFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), stubPlatform, "burn.exe");
+            var stubFileName = this.BundleSymbol.RunAsAdmin ? "burn-admin.exe" : "burn.exe";
+            var stubFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), stubPlatform, stubFileName);
             var bundleTempPath = Path.Combine(this.IntermediateFolder, bundleFilename);
 
             this.Messaging.Write(VerboseMessages.GeneratingBundle(bundleTempPath, stubFile));

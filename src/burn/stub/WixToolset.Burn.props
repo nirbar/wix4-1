@@ -4,6 +4,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <ItemGroup>
     <BurnExes Include="$(MSBuildThisFileDirectory)..\tools\**\burn.exe" />
+    <BurnExes Include="$(MSBuildThisFileDirectory)..\tools\**\burn-admin.exe" />
     <None Include="@(BurnExes)">
       <Link>%(RecursiveDir)%(FileName)%(Extension)</Link>
       <Visible>False</Visible>

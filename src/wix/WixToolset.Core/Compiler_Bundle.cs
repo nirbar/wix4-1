@@ -119,6 +119,7 @@ namespace WixToolset.Core
             string aboutUrl = null;
             var modifyType = WixBundleModifyType.Allowed;
             var compressed = YesNoDefaultType.Default;
+            var runAsAdmin = YesNoType.No;
             WixBundleAttributes attributes = 0;
             string helpTelephone = null;
             string helpUrl = null;
@@ -203,6 +204,9 @@ namespace WixToolset.Core
                             break;
                         case "ProviderKey":
                             // This can't be processed until we create the section.
+                            break;
+                        case "RunAsAdmin":
+                            runAsAdmin = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
                         case "SplashScreenSourceFile":
                             splashScreenSourceFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
@@ -422,6 +426,7 @@ namespace WixToolset.Core
                     Tag = tag,
                     Platform = this.CurrentPlatform,
                     ParentName = parentName,
+                    RunAsAdmin = (runAsAdmin == YesNoType.Yes),
                 });
 
                 if (!String.IsNullOrEmpty(logVariablePrefixAndExtension))

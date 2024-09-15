@@ -77,6 +77,7 @@ namespace WixToolset.Data.Symbols
         None = 0x0,
         DisableRemove = 0x1,
         PerMachine = 0x2,
+        RunAsAdmin = 0x4,
     }
 
     public enum WixBundleModifyType
@@ -280,6 +281,22 @@ namespace WixToolset.Data.Symbols
                 else
                 {
                     this.Attributes &= ~WixBundleAttributes.PerMachine;
+                }
+            }
+        }
+
+        public bool RunAsAdmin
+        {
+            get { return this.Attributes.HasFlag(WixBundleAttributes.RunAsAdmin); }
+            set
+            {
+                if (value)
+                {
+                    this.Attributes |= WixBundleAttributes.RunAsAdmin;
+                }
+                else
+                {
+                    this.Attributes &= ~WixBundleAttributes.RunAsAdmin;
                 }
             }
         }
