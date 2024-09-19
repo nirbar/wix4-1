@@ -48,8 +48,7 @@ namespace WixToolset.Extensibility
 
         /// <summary>
         /// Called during bind phase to create a container
-        /// Implementors must set <see cref="WixBundleContainerSymbol.Hash"/> to the container file's SHA512, and <see cref="WixBundleContainerSymbol.Size"/> after creating the container.
-        /// This method may be called multiple times concurrently. If your implementation does not support concurrency then, you must apply a synchronization mechanism.
+        /// Implementors must set <see cref="WixBundleContainerSymbol.Hash"/> to the container file's SHA512, and <see cref="WixBundleContainerSymbol.Size"/> after creating the container
         /// </summary>
         /// <param name="container">The container symbol.</param>
         /// <param name="containerPayloads">Collection of payloads that should be compressed in the container.</param>
