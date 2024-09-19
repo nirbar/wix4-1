@@ -7,7 +7,6 @@ namespace WixToolset.Core.Burn.Bundles
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
-    using System.Threading.Tasks;
     using WixToolset.Data;
     using WixToolset.Data.Burn;
     using WixToolset.Data.Symbols;
@@ -129,13 +128,10 @@ namespace WixToolset.Core.Burn.Bundles
 
             if (!this.Messaging.EncounteredError)
             {
-                List<Task> containerTasks = new List<Task>();
                 foreach (var container in this.Containers.Where(c => !String.IsNullOrEmpty(c.WorkingPath) && c.Id.Id != BurnConstants.BurnUXContainerName))
                 {
-                    Task task = Task.Run(() => this.CreateContainer(container, payloadsByContainer[container.Id.Id]));
-                    containerTasks.Add(task);
+                    this.CreateContainer(container, payloadsByContainer[container.Id.Id]);
                 }
-                Task.WaitAll(containerTasks.ToArray());
             }
 
             this.UXContainerPayloads = uxPayloadSymbols;
