@@ -143,7 +143,7 @@ namespace WixToolset.Core.Burn.Bundles
                 return;
             }
 
-            containerExtension.CreateContainer(container, containerPayloads, out string sha512, out long size);
+            containerExtension.CreateContainer(container, containerPayloads, this.DefaultCompressionLevel, out string sha512, out long size);
 
             container.Hash = sha512;
             container.Size = size;
