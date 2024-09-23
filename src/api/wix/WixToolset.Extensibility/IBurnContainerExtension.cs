@@ -4,6 +4,7 @@ namespace WixToolset.Extensibility
 {
     using System.Collections.Generic;
     using System.Xml;
+    using WixToolset.Data;
     using WixToolset.Data.Symbols;
     using WixToolset.Extensibility.Data;
 
@@ -28,9 +29,10 @@ namespace WixToolset.Extensibility
         /// </summary>
         /// <param name="container">The container symbol.</param>
         /// <param name="containerPayloads">Collection of payloads that should be compressed in the container.</param>
+        /// <param name="level">Compression level. It is up to extension developers to map CompressionLevel values to a relevant compression level of their extension.</param>
         /// <param name="sha512">SHA512 hash of the container file.</param>
         /// <param name="size">File size of the container file.</param>
-        void CreateContainer(WixBundleContainerSymbol container, IEnumerable<WixBundlePayloadSymbol> containerPayloads, out string sha512, out long size);
+        void CreateContainer(WixBundleContainerSymbol container, IEnumerable<WixBundlePayloadSymbol> containerPayloads, CompressionLevel? level, out string sha512, out long size);
 
         /// <summary>
         /// Extract the container to a folder. Called on 'burn extract' command.
