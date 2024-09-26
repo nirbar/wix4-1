@@ -1442,6 +1442,7 @@ namespace WixToolset.Core
             var secure = false;
             var suppressModularization = YesNoType.NotSet;
             string value = null;
+            bool hasExtensionChild = false;
 
             foreach (var attrib in node.Attributes())
             {
@@ -1477,6 +1478,7 @@ namespace WixToolset.Core
                 }
                 else
                 {
+                    hasExtensionChild = true;
                     this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
@@ -1504,18 +1506,20 @@ namespace WixToolset.Core
             {
                 if (CompilerCore.WixNamespace == child.Name.Namespace)
                 {
+                    switch (child.Name.LocalName)
                     {
-                        switch (child.Name.LocalName)
-                        {
-                        case "ProductSearch":
-                            this.ParseProductSearchElement(child, id.Id);
-                            secure = true;
-                            break;
-                        default:
-                            // let ParseSearchSignatures handle standard AppSearch children and unknown elements
-                            break;
-                        }
+                    case "ProductSearch":
+                        this.ParseProductSearchElement(child, id.Id);
+                        secure = true;
+                        break;
+                    default:
+                        // let ParseSearchSignatures handle standard AppSearch children and unknown elements
+                        break;
                     }
+                }
+                else
+                {
+                    hasExtensionChild = true;
                 }
             }
 
@@ -1549,7 +1553,7 @@ namespace WixToolset.Core
             {
                 // If the property value is empty and none of the flags are set, print out a warning that we're ignoring
                 // the element.
-                if (String.IsNullOrEmpty(value) && !admin && !secure && !hidden)
+                if (String.IsNullOrEmpty(value) && !admin && !secure && !hidden && !hasExtensionChild)
                 {
                     this.Core.Write(WarningMessages.PropertyUseless(sourceLineNumbers, id.Id));
                 }
