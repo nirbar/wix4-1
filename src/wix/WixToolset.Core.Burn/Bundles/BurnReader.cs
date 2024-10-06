@@ -317,7 +317,7 @@ namespace WixToolset.Core.Burn.Bundles
                 extensionManifestDocument.Load(extensionManifestPath);
                 var extensionNsmgr = new XmlNamespaceManager(extensionManifestDocument.NameTable);
                 extensionNsmgr.AddNamespace("ed", BurnConstants.BootstrapperExtensionDataNamespace);
-                var extensionDataNode = extensionManifestDocument.SelectSingleNode($"/ed:BundleExtensionData/ed:BundleExtension[@Id='{containerExtensionId}']", extensionNsmgr) as XmlElement;
+                var extensionDataNode = extensionManifestDocument.SelectSingleNode($"/ed:BootstrapperExtensionData/ed:BootstrapperExtension[@Id='{containerExtensionId}']", extensionNsmgr) as XmlElement;
 
                 try
                 {
