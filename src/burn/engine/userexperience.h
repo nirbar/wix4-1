@@ -122,7 +122,9 @@ BAAPI UserExperienceOnBeginMsiTransactionBegin(
 BAAPI UserExperienceOnBeginMsiTransactionComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in LPCWSTR wzTransactionId,
-    __in HRESULT hrStatus
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_APPLY_RESTART restart,
+    __inout BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION* pAction
     );
 BAAPI UserExperienceOnCacheAcquireBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,

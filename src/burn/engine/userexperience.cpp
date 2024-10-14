@@ -397,7 +397,9 @@ LExit:
 EXTERN_C BAAPI UserExperienceOnBeginMsiTransactionComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in LPCWSTR wzTransactionId,
-    __in HRESULT hrStatus
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_APPLY_RESTART restart,
+    __inout BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION* pAction
     )
 {
     HRESULT hr = S_OK;
@@ -407,11 +409,16 @@ EXTERN_C BAAPI UserExperienceOnBeginMsiTransactionComplete(
     args.cbSize = sizeof(args);
     args.wzTransactionId = wzTransactionId;
     args.hrStatus = hrStatus;
+    args.restart = restart;
+    args.recommendation = *pAction;
 
     results.cbSize = sizeof(results);
+    results.action = *pAction;
 
     hr = SendBAMessage(pUserExperience, BOOTSTRAPPER_APPLICATION_MESSAGE_ONBEGINMSITRANSACTIONCOMPLETE, &args, &results);
     ExitOnFailure(hr, "BA OnBeginMsiTransactionComplete failed.");
+
+    *pAction = results.action;
 
 LExit:
     return hr;

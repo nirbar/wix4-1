@@ -368,7 +368,8 @@ static HRESULT OnLaunchApprovedExe(
 static HRESULT OnMsiBeginTransaction(
     __in BURN_PACKAGES* pPackages,
     __in BYTE* pbData,
-    __in SIZE_T cbData
+    __in SIZE_T cbData,
+    __out BOOTSTRAPPER_APPLY_RESTART *pRestart
     );
 static HRESULT OnMsiCommitTransaction(
     __in BURN_PACKAGES* pPackages,
@@ -1023,12 +1024,16 @@ LExit:
 
 extern "C" HRESULT ElevationMsiBeginTransaction(
     __in HANDLE hPipe,
-    __in BURN_MSI_TRANSACTION* pMsiTransaction
+    __in BURN_MSI_TRANSACTION* pMsiTransaction,
+    __in PFN_MSIEXECUTEMESSAGEHANDLER pfnMessageHandler,
+    __in LPVOID pvContext,
+    __out BOOTSTRAPPER_APPLY_RESTART *pRestart
     )
 {
     HRESULT hr = S_OK;
     BYTE* pbData = NULL;
     SIZE_T cbData = 0;
+    BURN_ELEVATION_MSI_MESSAGE_CONTEXT context = { };
     DWORD dwResult = ERROR_SUCCESS;
 
     // serialize message data
@@ -1038,10 +1043,15 @@ extern "C" HRESULT ElevationMsiBeginTransaction(
     hr = BuffWriteString(&pbData, &cbData, pMsiTransaction->sczLogPath);
     ExitOnFailure(hr, "Failed to write transaction log path to message buffer.");
 
-    hr = PipeSendMessage(hPipe, BURN_ELEVATION_MESSAGE_TYPE_BEGIN_MSI_TRANSACTION, pbData, cbData, NULL, NULL, &dwResult);
+    // send message
+    context.pfnMessageHandler = pfnMessageHandler;
+    context.pvContext = pvContext;
+
+    hr = PipeSendMessage(hPipe, BURN_ELEVATION_MESSAGE_TYPE_BEGIN_MSI_TRANSACTION, pbData, cbData, ProcessMsiPackageMessages, &context, &dwResult);
     ExitOnFailure(hr, "Failed to send BURN_ELEVATION_MESSAGE_TYPE_BEGIN_MSI_TRANSACTION message to per-machine process.");
 
     hr = static_cast<HRESULT>(dwResult);
+    *pRestart = context.restart;
 
 LExit:
     ReleaseBuffer(pbData);
@@ -2184,7 +2194,7 @@ static HRESULT ProcessElevatedChildMessage(
     switch (pMsg->dwMessage)
     {
     case BURN_ELEVATION_MESSAGE_TYPE_BEGIN_MSI_TRANSACTION:
-        hrResult = OnMsiBeginTransaction(pContext->pPackages, (BYTE*)pMsg->pvData, pMsg->cbData);
+        hrResult = OnMsiBeginTransaction(pContext->pPackages, (BYTE*)pMsg->pvData, pMsg->cbData, &restart);
         break;
 
     case BURN_ELEVATION_MESSAGE_TYPE_COMMIT_MSI_TRANSACTION:
@@ -3928,7 +3938,8 @@ LExit:
 static HRESULT OnMsiBeginTransaction(
     __in BURN_PACKAGES* pPackages,
     __in BYTE* pbData,
-    __in SIZE_T cbData
+    __in SIZE_T cbData,
+    __out BOOTSTRAPPER_APPLY_RESTART *pRestart
     )
 {
     HRESULT hr = S_OK;
@@ -3952,7 +3963,7 @@ static HRESULT OnMsiBeginTransaction(
         pMsiTransaction->sczLogPath = sczLogPath;
     }
 
-    hr = MsiEngineBeginTransaction(pMsiTransaction);
+    hr = MsiEngineBeginTransaction(pMsiTransaction, pRestart);
     ExitOnFailure(hr, "Failed to begin MSI transaction '%ls'", sczId);
     pMsiTransaction->fActive = TRUE;
 

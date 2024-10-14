@@ -579,10 +579,10 @@ static HRESULT BalBaseBAProcOnBeginMsiTransactionBegin(
 static HRESULT BalBaseBAProcOnBeginMsiTransactionComplete(
     __in IBootstrapperApplication* pBA,
     __in BA_ONBEGINMSITRANSACTIONCOMPLETE_ARGS* pArgs,
-    __inout BA_ONBEGINMSITRANSACTIONCOMPLETE_RESULTS* /*pResults*/
+    __inout BA_ONBEGINMSITRANSACTIONCOMPLETE_RESULTS* pResults
     )
 {
-    return pBA->OnBeginMsiTransactionComplete(pArgs->wzTransactionId, pArgs->hrStatus);
+    return pBA->OnBeginMsiTransactionComplete(pArgs->wzTransactionId, pArgs->hrStatus, pArgs->restart, pArgs->recommendation, &pResults->action);
 }
 
 static HRESULT BalBaseBAProcOnCommitMsiTransactionBegin(

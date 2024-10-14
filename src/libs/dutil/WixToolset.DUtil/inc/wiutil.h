@@ -387,7 +387,8 @@ HRESULT DAPI WiuBeginTransaction(
     __out MSIHANDLE* phTransactionHandle,
     __out HANDLE* phChangeOfOwnerEvent,
     __in DWORD dwLogMode,
-    __in_z LPCWSTR szLogPath
+    __in_z LPCWSTR szLogPath,
+    __out WIU_RESTART *pRestart
     );
 HRESULT DAPI WiuEndTransaction(
     __in DWORD dwTransactionState,
