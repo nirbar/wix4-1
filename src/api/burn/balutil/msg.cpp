@@ -218,16 +218,25 @@ static HRESULT OnBeginMsiTransactionComplete(
     hr = BuffReaderReadNumber(pReaderArgs, reinterpret_cast<DWORD*>(&args.hrStatus));
     ExitOnFailure(hr, "Failed to read status of OnBeginMsiTransactionComplete args.");
 
+    hr = BuffReaderReadNumber(pReaderArgs, reinterpret_cast<DWORD*>(&args.restart));
+    ExitOnFailure(hr, "Failed to read restart of OnBeginMsiTransactionComplete args.");
+
+    hr = BuffReaderReadNumber(pReaderArgs, reinterpret_cast<DWORD*>(&args.recommendation));
+    ExitOnFailure(hr, "Failed to read recommendation of OnBeginMsiTransactionComplete args.");
+
     // Read results.
     hr = BuffReaderReadNumber(pReaderResults, &results.dwApiVersion);
     ExitOnFailure(hr, "Failed to read API version of OnBeginMsiTransactionComplete results.");
+
+    hr = BuffReaderReadNumber(pReaderResults, reinterpret_cast<DWORD*>(&results.action));
+    ExitOnFailure(hr, "Failed to read action of OnBeginMsiTransactionComplete results.");
 
     // Callback.
     hr = pApplication->BAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONBEGINMSITRANSACTIONCOMPLETE, &args, &results);
 
     if (E_NOTIMPL == hr)
     {
-        hr = pApplication->OnBeginMsiTransactionComplete(args.wzTransactionId, args.hrStatus);
+        hr = pApplication->OnBeginMsiTransactionComplete(args.wzTransactionId, args.hrStatus, args.restart, args.recommendation, &results.action);
     }
 
     pApplication->BAProcFallback(BOOTSTRAPPER_APPLICATION_MESSAGE_ONBEGINMSITRANSACTIONCOMPLETE, &args, &results, &hr);
@@ -236,6 +245,9 @@ static HRESULT OnBeginMsiTransactionComplete(
     // Write results.
     hr = BuffWriteNumberToBuffer(pBuffer, sizeof(results));
     ExitOnFailure(hr, "Failed to write size of OnBeginMsiTransactionComplete struct.");
+
+    hr = BuffWriteNumberToBuffer(pBuffer, results.action);
+    ExitOnFailure(hr, "Failed to write action of OnBeginMsiTransactionComplete struct.");
 
 LExit:
     ReleaseStr(sczTransactionId);

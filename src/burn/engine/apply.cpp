@@ -296,7 +296,9 @@ static HRESULT ExecuteDependencyAction(
 static HRESULT ExecuteMsiBeginTransaction(
     __in BURN_ENGINE_STATE* pEngineState,
     __in BURN_MSI_TRANSACTION* pMsiTransaction,
-    __in BURN_EXECUTE_CONTEXT* pContext
+    __in BURN_EXECUTE_CONTEXT* pContext,
+    __out BOOL *pfRetry,
+    __out BOOTSTRAPPER_APPLY_RESTART *pRestart
     );
 static HRESULT ExecuteMsiCommitTransaction(
     __in BURN_ENGINE_STATE* pEngineState,
@@ -2527,7 +2529,7 @@ static HRESULT DoExecuteAction(
             break;
 
         case BURN_EXECUTE_ACTION_TYPE_BEGIN_MSI_TRANSACTION:
-            hr = ExecuteMsiBeginTransaction(pEngineState, pExecuteAction->msiTransaction.pMsiTransaction, pContext);
+            hr = ExecuteMsiBeginTransaction(pEngineState, pExecuteAction->msiTransaction.pMsiTransaction, pContext, &fRetry, &restart);
             *ppMsiTransaction = pExecuteAction->msiTransaction.pMsiTransaction;
             ExitOnFailure(hr, "Failed to execute begin MSI transaction action.");
             break;
@@ -3348,11 +3350,15 @@ LExit:
 static HRESULT ExecuteMsiBeginTransaction(
     __in BURN_ENGINE_STATE* pEngineState,
     __in BURN_MSI_TRANSACTION* pMsiTransaction,
-    __in BURN_EXECUTE_CONTEXT* /*pContext*/
+    __in BURN_EXECUTE_CONTEXT* pContext,
+    __out BOOL *pfRetry,
+    __out BOOTSTRAPPER_APPLY_RESTART *pRestart
     )
 {
     HRESULT hr = S_OK;
     BOOL fBeginCalled = FALSE;
+    BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION action = BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION_NONE;
+    BOOTSTRAPPER_APPLY_RESTART restart = BOOTSTRAPPER_APPLY_RESTART_NONE;
 
     if (pMsiTransaction->fActive)
     {
@@ -3365,12 +3371,17 @@ static HRESULT ExecuteMsiBeginTransaction(
 
     if (pEngineState->plan.fPerMachine)
     {
-        hr = ElevationMsiBeginTransaction(pEngineState->companionConnection.hPipe, pMsiTransaction);
+        hr = ElevationMsiBeginTransaction(pEngineState->companionConnection.hPipe, pMsiTransaction, MsiExecuteMessageHandler, pContext, &restart);
         ExitOnFailure(hr, "Failed to begin an elevated MSI transaction.");
     }
     else
     {
-        hr = MsiEngineBeginTransaction(pMsiTransaction);
+        hr = MsiEngineBeginTransaction(pMsiTransaction, &restart);
+    }
+
+    if (*pRestart < restart)
+    {
+        *pRestart = restart;
     }
 
     if (SUCCEEDED(hr))
@@ -3383,7 +3394,16 @@ static HRESULT ExecuteMsiBeginTransaction(
 LExit:
     if (fBeginCalled)
     {
-        BACallbackOnBeginMsiTransactionComplete(&pEngineState->userExperience, pMsiTransaction->sczId, hr);
+        BACallbackOnBeginMsiTransactionComplete(&pEngineState->userExperience, pMsiTransaction->sczId, hr, *pRestart, &action);
+
+        if (action == BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION_RESTART)
+        {
+            *pRestart = BOOTSTRAPPER_APPLY_RESTART_INITIATED;
+        }
+        else if (pfRetry && (action == BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION_RETRY))
+        {
+            *pfRetry = TRUE;
+        }
     }
 
     return hr;

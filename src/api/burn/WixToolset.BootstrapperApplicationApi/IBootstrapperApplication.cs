@@ -804,7 +804,10 @@ namespace WixToolset.BootstrapperApplicationApi
         [return: MarshalAs(UnmanagedType.I4)]
         int OnBeginMsiTransactionComplete(
             [MarshalAs(UnmanagedType.LPWStr)] string wzTransactionId,
-            int hrStatus
+            int hrStatus,
+            [MarshalAs(UnmanagedType.U4)] ApplyRestart restart,
+            [MarshalAs(UnmanagedType.I4)] BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION recommendation,
+            [MarshalAs(UnmanagedType.I4)] ref BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION pAction
             );
 
         /// <summary>
@@ -1810,6 +1813,28 @@ namespace WixToolset.BootstrapperApplicationApi
         /// </summary>
         Suspend,
     }
+
+    /// <summary>
+    /// The available actions for <see cref="IDefaultBootstrapperApplication.BeginMsiTransactionComplete"/>.
+    /// </summary>
+    public enum BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION
+    {
+        /// <summary>
+        /// Instructs the engine to not take any special action.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// Instructs the engine to stop processing the chain and restart.
+        /// The engine will launch again after the machine is restarted.
+        /// </summary>
+        Restart,
+
+        /// <summary>
+        /// Instructs the engine to retry starting the transaction.
+        /// </summary>
+        Retry,
+    };
 
     /// <summary>
     /// The available actions for <see cref="IDefaultBootstrapperApplication.CommitMsiTransactionComplete"/> and <see cref="IDefaultBootstrapperApplication.RollbackMsiTransactionComplete"/>.

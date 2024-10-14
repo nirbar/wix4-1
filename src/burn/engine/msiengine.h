@@ -56,7 +56,8 @@ HRESULT MsiEnginePlanAddPackage(
     __in BURN_VARIABLES* pVariables
     );
 HRESULT MsiEngineBeginTransaction(
-    __in BURN_MSI_TRANSACTION* pMsiTransaction
+    __in BURN_MSI_TRANSACTION* pMsiTransaction,
+    __out BOOTSTRAPPER_APPLY_RESTART* pRestart
     );
 HRESULT MsiEngineCommitTransaction(
     __in BURN_MSI_TRANSACTION* pMsiTransaction,

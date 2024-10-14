@@ -623,7 +623,10 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     STDMETHOD(OnBeginMsiTransactionComplete)(
         __in_z LPCWSTR wzTransactionId,
-        __in HRESULT hrStatus
+        __in HRESULT hrStatus,
+        __in BOOTSTRAPPER_APPLY_RESTART restart,
+        __in BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION* pAction
         ) = 0;
 
     STDMETHOD(OnCommitMsiTransactionBegin)(

@@ -284,7 +284,9 @@ LExit:
 EXTERN_C HRESULT BACallbackOnBeginMsiTransactionComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in LPCWSTR wzTransactionId,
-    __in HRESULT hrStatus
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_APPLY_RESTART restart,
+    __inout BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION* pAction
     )
 {
     HRESULT hr = S_OK;
@@ -293,13 +295,17 @@ EXTERN_C HRESULT BACallbackOnBeginMsiTransactionComplete(
     BUFF_BUFFER bufferArgs = { };
     BUFF_BUFFER bufferResults = { };
     PIPE_RPC_RESULT rpc = { };
+    SIZE_T iBuffer = 0;
 
     // Init structs.
     args.dwApiVersion = WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION;
     args.wzTransactionId = wzTransactionId;
     args.hrStatus = hrStatus;
+    args.restart = restart;
+    args.recommendation = *pAction;
 
     results.dwApiVersion = WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION;
+    results.action = *pAction;
 
     // Send args.
     hr = BuffWriteNumberToBuffer(&bufferArgs, args.dwApiVersion);
@@ -311,9 +317,18 @@ EXTERN_C HRESULT BACallbackOnBeginMsiTransactionComplete(
     hr = BuffWriteNumberToBuffer(&bufferArgs, args.hrStatus);
     ExitOnFailure(hr, "Failed to write status of OnBeginMsiTransactionComplete args.");
 
+    hr = BuffWriteNumberToBuffer(&bufferArgs, args.restart);
+    ExitOnFailure(hr, "Failed to write restart of OnBeginMsiTransactionComplete args.");
+
+    hr = BuffWriteNumberToBuffer(&bufferArgs, args.recommendation);
+    ExitOnFailure(hr, "Failed to write recommendation of OnBeginMsiTransactionComplete args.");
+
     // Send results.
     hr = BuffWriteNumberToBuffer(&bufferResults, results.dwApiVersion);
     ExitOnFailure(hr, "Failed to write API version of OnBeginMsiTransactionComplete results.");
+
+    hr = BuffWriteNumberToBuffer(&bufferResults, results.action);
+    ExitOnFailure(hr, "Failed to write action of OnBeginMsiTransactionComplete results.");
 
     // Callback.
     hr = SendBAMessage(pUserExperience, BOOTSTRAPPER_APPLICATION_MESSAGE_ONBEGINMSITRANSACTIONCOMPLETE, &bufferArgs, &bufferResults, &rpc);
@@ -322,6 +337,21 @@ EXTERN_C HRESULT BACallbackOnBeginMsiTransactionComplete(
     if (S_FALSE == hr)
     {
         ExitFunction();
+    }
+
+    // Read results.
+    hr = BuffReadNumber(rpc.pbData, rpc.cbData, &iBuffer, &results.dwApiVersion);
+    ExitOnFailure(hr, "Failed to read size of OnBeginMsiTransactionComplete result.");
+
+    hr = BuffReadNumber(rpc.pbData, rpc.cbData, &iBuffer, reinterpret_cast<DWORD*>(&results.action));
+    ExitOnFailure(hr, "Failed to read action of OnBeginMsiTransactionComplete result.");
+
+    // Verify the BA requested an action that is possible.
+    if (BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION_RESTART == results.action ||
+        BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION_RETRY == results.action ||
+        BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION_NONE == results.action)
+    {
+        *pAction = results.action;
     }
 
 LExit:

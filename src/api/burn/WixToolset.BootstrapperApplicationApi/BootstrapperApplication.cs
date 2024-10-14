@@ -2036,11 +2036,12 @@ namespace WixToolset.BootstrapperApplicationApi
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnBeginMsiTransactionComplete(string transactionId, int hrStatus)
+        int IBootstrapperApplication.OnBeginMsiTransactionComplete(string transactionId, int hrStatus, ApplyRestart restart, BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION recommendation, ref BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION pAction)
         {
-            BeginMsiTransactionCompleteEventArgs args = new BeginMsiTransactionCompleteEventArgs(transactionId, hrStatus);
+            BeginMsiTransactionCompleteEventArgs args = new BeginMsiTransactionCompleteEventArgs(transactionId, hrStatus, restart, recommendation, pAction);
             this.OnBeginMsiTransactionComplete(args);
 
+            pAction = args.Action;
             return args.HResult;
         }
 

@@ -969,7 +969,8 @@ extern "C" HRESULT DAPI WiuBeginTransaction(
     __out MSIHANDLE * phTransactionHandle,
     __out HANDLE * phChangeOfOwnerEvent,
     __in DWORD dwLogMode,
-    __in_z LPCWSTR szLogPath
+    __in_z LPCWSTR szLogPath,
+    __out WIU_RESTART *pRestart
     )
 {
     HRESULT hr = S_OK;
@@ -984,6 +985,7 @@ extern "C" HRESULT DAPI WiuBeginTransaction(
     WiuExitOnFailure(hr, "Failed to enable logging for MSI transaction");
 
     er = vpfnMsiBeginTransaction(szName, dwTransactionAttributes, phTransactionHandle, phChangeOfOwnerEvent);
+    er = CheckForRestartErrorCode(er, pRestart);
     WiuExitOnWin32Error(er, hr, "Failed to begin transaction.");
 
 LExit:

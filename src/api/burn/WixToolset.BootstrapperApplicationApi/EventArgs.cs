@@ -2367,22 +2367,28 @@ namespace WixToolset.BootstrapperApplicationApi
     /// Event arguments for <see cref="IDefaultBootstrapperApplication.BeginMsiTransactionComplete"/>.
     /// </summary>
     [Serializable]
-    public class BeginMsiTransactionCompleteEventArgs : StatusEventArgs
+    public class BeginMsiTransactionCompleteEventArgs : ActionEventArgs<BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION>
     {
         /// <summary>
         /// This class is for events raised by the engine.
         /// It is not intended to be instantiated by user code.
         /// </summary>
-        public BeginMsiTransactionCompleteEventArgs(string transactionId, int hrStatus)
-            : base(hrStatus)
+        public BeginMsiTransactionCompleteEventArgs(string transactionId, int hrStatus, ApplyRestart restart, BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION recommendation, BOOTSTRAPPER_BEGINMSITRANSACTIONCOMPLETE_ACTION action)
+            : base(hrStatus, recommendation, action)
         {
             this.TransactionId = transactionId;
+            this.Restart = restart;
         }
 
         /// <summary>
         /// Gets the MSI transaction Id.
         /// </summary>
         public string TransactionId { get; private set; }
+
+        /// <summary>
+        /// Gets the package restart state after being applied.
+        /// </summary>
+        public ApplyRestart Restart { get; private set; }
     }
 
     /// <summary>

@@ -1119,16 +1119,18 @@ LExit:
 }
 
 extern "C" HRESULT MsiEngineBeginTransaction(
-    __in BURN_MSI_TRANSACTION* pMsiTransaction
+    __in BURN_MSI_TRANSACTION* pMsiTransaction,
+    __out BOOTSTRAPPER_APPLY_RESTART* pRestart
     )
 {
     HRESULT hr = S_OK;
     MSIHANDLE hTransactionHandle = NULL;
     HANDLE hChangeOfOwnerEvent = NULL;
+    WIU_RESTART restart = WIU_RESTART_NONE;
 
     LogId(REPORT_STANDARD, MSG_MSI_TRANSACTION_BEGIN, pMsiTransaction->sczId);
 
-    hr = WiuBeginTransaction(pMsiTransaction->sczId, 0, &hTransactionHandle, &hChangeOfOwnerEvent, WIU_LOG_DEFAULT | INSTALLLOGMODE_VERBOSE, pMsiTransaction->sczLogPath);
+    hr = WiuBeginTransaction(pMsiTransaction->sczId, 0, &hTransactionHandle, &hChangeOfOwnerEvent, WIU_LOG_DEFAULT | INSTALLLOGMODE_VERBOSE, pMsiTransaction->sczLogPath, &restart);
 
     if (HRESULT_FROM_WIN32(ERROR_ROLLBACK_DISABLED) == hr)
     {
@@ -1139,6 +1141,20 @@ extern "C" HRESULT MsiEngineBeginTransaction(
 
 LExit:
     // Assume that MsiEndTransaction cleans up the handles.
+    switch (restart)
+    {
+        case WIU_RESTART_NONE:
+            *pRestart = BOOTSTRAPPER_APPLY_RESTART_NONE;
+            break;
+
+        case WIU_RESTART_REQUIRED:
+            *pRestart = BOOTSTRAPPER_APPLY_RESTART_REQUIRED;
+            break;
+
+        case WIU_RESTART_INITIATED:
+            *pRestart = BOOTSTRAPPER_APPLY_RESTART_INITIATED;
+            break;
+    }
 
     return hr;
 }
