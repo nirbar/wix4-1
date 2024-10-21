@@ -35,6 +35,7 @@ extern "C" {
 // Forward declarations
 typedef struct _BURN_EXTENSION BURN_EXTENSION;
 typedef struct _BURN_EXTENSIONS BURN_EXTENSIONS;
+typedef struct _BURN_ENGINE_STATE BURN_ENGINE_STATE;
 
 // constants
 
@@ -179,6 +180,9 @@ void ContainersUninitialize(
 HRESULT ContainerOpenUX(
     __in BURN_SECTION* pSection,
     __in BURN_CONTAINER_CONTEXT* pContext
+    );
+HRESULT ContainerReextractUX(
+    __in BURN_ENGINE_STATE* pEngineState
     );
 HRESULT ContainerOpen(
     __in BURN_CONTAINER_CONTEXT* pContext,

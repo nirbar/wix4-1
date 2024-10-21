@@ -99,6 +99,12 @@ namespace WixToolset.Mba.Core
         event EventHandler<CachePackageNonVitalValidationFailureEventArgs> CachePackageNonVitalValidationFailure;
 
         /// <summary>
+        /// Fired when the engine detects that a UX payloads was deleted. This may happen for example, when a cleaning tool deletes files from %TEMP% folder.
+        /// Note that, the event might be fired multiple times for each missing payload.
+        /// </summary>
+        event EventHandler<UxPayloadDeletedEventArgs> UxPayloadDeleted;
+
+        /// <summary>
         /// Fired when the engine begins the extraction of the payload from the container.
         /// </summary>
         event EventHandler<CachePayloadExtractBeginEventArgs> CachePayloadExtractBegin;

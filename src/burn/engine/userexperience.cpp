@@ -31,6 +31,15 @@ static HRESULT SendBAMessageFromInactiveEngine(
     __inout LPVOID pvResults
     );
 
+typedef struct _MONITOR_UX_FOLDER_PARAMS
+{
+    BURN_USER_EXPERIENCE* pUserExperience;
+    BURN_ENGINE_STATE* pEngineState;
+} MONITOR_UX_FOLDER_PARAMS;
+
+static DWORD WINAPI MonitorUxFolderThreadProc(
+    _In_ LPVOID lpParameter
+);
 
 // function definitions
 
@@ -99,6 +108,11 @@ extern "C" HRESULT UserExperienceLoad(
     HRESULT hr = S_OK;
     BOOTSTRAPPER_CREATE_ARGS args = { };
     BOOTSTRAPPER_CREATE_RESULTS results = { };
+    MONITOR_UX_FOLDER_PARAMS monitorContxet = { };
+    HANDLE rghWait[2] = { NULL,NULL };
+    DWORD dwWait = ERROR_SUCCESS;
+    DWORD dwMonitorThreadExitCode = ERROR_SUCCESS;
+    BOOL bRes = TRUE;
     LPCWSTR wzPath = pUserExperience->payloads.rgPayloads[0].sczLocalFilePath;
 
     args.cbSize = sizeof(BOOTSTRAPPER_CREATE_ARGS);
@@ -108,6 +122,40 @@ extern "C" HRESULT UserExperienceLoad(
     args.qwEngineAPIVersion = MAKEQWORDVERSION(2022, 6, 10, 0);
 
     results.cbSize = sizeof(BOOTSTRAPPER_CREATE_RESULTS);
+
+    // Monitor UX folder for file deletions
+    pUserExperience->hUxFolderMonitorStarted = ::CreateEventW(NULL, TRUE, FALSE, NULL);
+    ExitOnNullWithLastError(pUserExperience->hUxFolderMonitorStarted, hr, "Failed to create event");
+
+    pUserExperience->hUxFolderStopMonitor = ::CreateEventW(NULL, TRUE, FALSE, NULL);
+    ExitOnNullWithLastError(pUserExperience->hUxFolderStopMonitor, hr, "Failed to create event");
+
+    monitorContxet.pEngineState = pEngineContext->pEngineState;
+    monitorContxet.pUserExperience = pUserExperience;
+
+    pUserExperience->hUxFolderMonitorThread = ::CreateThread(NULL, 0, MonitorUxFolderThreadProc, &monitorContxet, 0, NULL);
+    ExitOnNullWithLastError(pUserExperience->hUxFolderMonitorThread, hr, "Failed to create thread");
+
+    // Wait for thread termination (error) / hUxFolderMonitorStarted set (success)
+    rghWait[0] = pUserExperience->hUxFolderMonitorStarted;
+    rghWait[1] = pUserExperience->hUxFolderMonitorThread;
+    dwWait = ::WaitForMultipleObjects(2, rghWait, FALSE, INFINITE);
+    switch (dwWait)
+    {
+    case WAIT_OBJECT_0:
+        break;
+    case WAIT_OBJECT_0 + 1:
+        bRes = ::GetExitCodeThread(pUserExperience->hUxFolderMonitorThread, &dwMonitorThreadExitCode);
+        ExitOnNullWithLastError(bRes, hr, "UX folder monitor thread has exited prematurely. Failed to get thread exit code.");
+        ExitOnNull(dwMonitorThreadExitCode, hr, E_FAIL, "UX folder monitor thread has exited prematurely");
+        ExitOnWin32Error(dwMonitorThreadExitCode, hr, "UX folder monitor thread has exited prematurely");
+    case WAIT_FAILED:
+        ExitOnLastError(hr, "Failed to wait for UX folder monitor thread");
+    default:
+        hr = E_FAIL;
+        ExitOnFailure(hr, "Failed to wait for UX folder monitor thread");
+        break;
+    }
 
     // Load BA DLL.
     pUserExperience->hUXModule = ::LoadLibraryExW(wzPath, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
@@ -138,6 +186,7 @@ extern "C" HRESULT UserExperienceUnload(
     )
 {
     HRESULT hr = S_OK;
+    BOOL bRes = TRUE;
     BOOTSTRAPPER_DESTROY_ARGS args = { };
     BOOTSTRAPPER_DESTROY_RESULTS results = { };
 
@@ -164,7 +213,23 @@ extern "C" HRESULT UserExperienceUnload(
         pUserExperience->hUXModule = NULL;
     }
 
-//LExit:
+    if (pUserExperience->hUxFolderMonitorThread)
+    {
+        if (pUserExperience->hUxFolderStopMonitor)
+        {
+            bRes = ::SetEvent(pUserExperience->hUxFolderStopMonitor);
+            if (!bRes)
+            {
+                ::TerminateThread(pUserExperience->hUxFolderMonitorThread, ::GetLastError());
+            }
+        }
+        ::WaitForSingleObject(pUserExperience->hUxFolderMonitorThread, INFINITE);
+    }
+
+    ReleaseHandle(pUserExperience->hUxFolderMonitorStarted);
+    ReleaseHandle(pUserExperience->hUxFolderStopMonitor);
+    ReleaseHandle(pUserExperience->hUxFolderMonitorThread);
+
     return hr;
 }
 
@@ -820,6 +885,40 @@ EXTERN_C BAAPI UserExperienceOnCachePackageNonVitalValidationFailure(
     {
     case BOOTSTRAPPER_CACHEPACKAGENONVITALVALIDATIONFAILURE_ACTION_NONE: __fallthrough;
     case BOOTSTRAPPER_CACHEPACKAGENONVITALVALIDATIONFAILURE_ACTION_ACQUIRE:
+        *pAction = results.action;
+        break;
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnUxPayloadDeleted(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPayloadId,
+    __in_z LPCWSTR wzPayloadPath,
+    __inout BOOTSTRAPPER_UXPAYLOADDELETED_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONUXPAYLOADDELETED_ARGS args = { };
+    BA_ONUXPAYLOADDELETED_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPayloadId = wzPayloadId;
+    args.wzPayloadPath = wzPayloadPath;
+    args.recommendation = *pAction;
+
+    results.cbSize = sizeof(results);
+    results.action = *pAction;
+
+    hr = SendBAMessage(pUserExperience, BOOTSTRAPPER_APPLICATION_MESSAGE_ONUXPAYLOADDELETED, &args, &results);
+    ExitOnFailure(hr, "BA OnUxPayloadDeleted failed.");
+
+    switch (results.action)
+    {
+    case BOOTSTRAPPER_UXPAYLOADDELETED_ACTION_NONE: __fallthrough;
+    case BOOTSTRAPPER_UXPAYLOADDELETED_ACTION_REACQUIRE:
         *pAction = results.action;
         break;
     }
@@ -3078,4 +3177,60 @@ static HRESULT SendBAMessageFromInactiveEngine(
 
 LExit:
     return hr;
+}
+
+static DWORD WINAPI MonitorUxFolderThreadProc(
+    _In_ LPVOID lpParameter
+)
+{
+    HRESULT hr = S_OK;
+    BOOL bRes = TRUE;
+    HANDLE hChangeNotification = NULL;
+    HANDLE rghWait[2];
+    MONITOR_UX_FOLDER_PARAMS *pMonitorContxet = (MONITOR_UX_FOLDER_PARAMS*)lpParameter;
+    BURN_USER_EXPERIENCE* pUserExperience = pMonitorContxet->pUserExperience;
+    BURN_ENGINE_STATE* pEngineState = pMonitorContxet->pEngineState;
+    pMonitorContxet = NULL;
+
+    hChangeNotification = ::FindFirstChangeNotificationW(pUserExperience->sczTempDirectory, TRUE, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME);
+    ExitOnNullWithLastError(hChangeNotification, hr, "Failed to create a change notification");
+
+    bRes = ::SetEvent(pUserExperience->hUxFolderMonitorStarted);
+    ExitOnNullWithLastError(bRes, hr, "Failed to signal monitor start");
+
+    rghWait[0] = pUserExperience->hUxFolderStopMonitor;
+    rghWait[1] = hChangeNotification;
+
+    while (true)
+    {
+        DWORD dwWait = ::WaitForMultipleObjects(2, rghWait, FALSE, INFINITE);
+        switch (dwWait)
+        {
+        case WAIT_OBJECT_0:
+            ExitFunction();
+        case WAIT_OBJECT_0 + 1:
+            break;
+        case WAIT_FAILED:
+            ExitOnLastError(hr, "Failed to wait for change notification");
+        default:
+            hr = E_FAIL;
+            ExitOnFailure(hr, "Failed to wait for change notification");
+            break;
+        }
+
+        hr = ContainerReextractUX(pEngineState);
+        ExitOnFailure(hr, "Failed to re-extract UX container missing payloads");
+
+        bRes = ::FindNextChangeNotification(hChangeNotification);
+        ExitOnNullWithLastError(bRes, hr, "Failed to create a next-change notification");
+    }
+
+LExit:
+    if (hChangeNotification)
+    {
+        ::FindCloseChangeNotification(hChangeNotification);
+        hChangeNotification = NULL;
+    }
+
+    return HRESULT_CODE(hr);
 }

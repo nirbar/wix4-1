@@ -1664,6 +1664,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGENONVITALVALIDATIONFAILURE:
             OnCachePackageNonVitalValidationFailureFallback(reinterpret_cast<BA_ONCACHEPACKAGENONVITALVALIDATIONFAILURE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEPACKAGENONVITALVALIDATIONFAILURE_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONUXPAYLOADDELETED:
+            OnUxPayloadDeletedFallback(reinterpret_cast<BA_ONUXPAYLOADDELETED_ARGS*>(pvArgs), reinterpret_cast<BA_ONUXPAYLOADDELETED_RESULTS*>(pvResults));
+            break;
         default:
 #ifdef DEBUG
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
@@ -2368,6 +2371,13 @@ private: // privates
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEPACKAGENONVITALVALIDATIONFAILURE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
+    void OnUxPayloadDeletedFallback(
+        __in BA_ONUXPAYLOADDELETED_ARGS* pArgs,
+        __inout BA_ONUXPAYLOADDELETED_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONUXPAYLOADDELETED, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
 
     HRESULT ShowMsiFilesInUse(
         __in DWORD cFiles,

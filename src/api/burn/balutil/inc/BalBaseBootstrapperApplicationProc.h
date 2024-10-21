@@ -783,6 +783,15 @@ static HRESULT BalBaseBAProcOnCachePackageNonVitalValidationFailure(
     return pBA->OnCachePackageNonVitalValidationFailure(pArgs->wzPackageId, pArgs->hrStatus, pArgs->recommendation, &pResults->action);
 }
 
+static HRESULT BalBaseBAProcOnUxPayloadDeleted(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONUXPAYLOADDELETED_ARGS* pArgs,
+    __inout BA_ONUXPAYLOADDELETED_RESULTS* pResults
+    )
+{
+    return pBA->OnUxPayloadDeleted(pArgs->wzPayloadId, pArgs->wzPayloadPath, pArgs->recommendation, &pResults->action);
+}
+
 /*******************************************************************
 BalBaseBootstrapperApplicationProc - requires pvContext to be of type IBootstrapperApplication.
                                      Provides a default mapping between the new message based BA interface and
@@ -1059,6 +1068,9 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGENONVITALVALIDATIONFAILURE:
             hr = BalBaseBAProcOnCachePackageNonVitalValidationFailure(pBA, reinterpret_cast<BA_ONCACHEPACKAGENONVITALVALIDATIONFAILURE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEPACKAGENONVITALVALIDATIONFAILURE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONUXPAYLOADDELETED:
+            hr = BalBaseBAProcOnUxPayloadDeleted(pBA, reinterpret_cast<BA_ONUXPAYLOADDELETED_ARGS*>(pvArgs), reinterpret_cast<BA_ONUXPAYLOADDELETED_RESULTS*>(pvResults));
             break;
         }
     }

@@ -289,6 +289,9 @@ namespace WixToolset.Mba.Core
         /// <inheritdoc/>
         public event EventHandler<CachePackageNonVitalValidationFailureEventArgs> CachePackageNonVitalValidationFailure;
 
+        /// <inheritdoc/>
+        public event EventHandler<UxPayloadDeletedEventArgs> UxPayloadDeleted;
+
         /// <summary>
         /// Entry point that is called when the bootstrapper application is ready to run.
         /// </summary>
@@ -1426,6 +1429,19 @@ namespace WixToolset.Mba.Core
             }
         }
 
+        /// <summary>
+        /// Called by the engine, raises the <see cref="UxPayloadDeleted"/> event.
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnUxPayloadDeleted(UxPayloadDeletedEventArgs args)
+        {
+            EventHandler<UxPayloadDeletedEventArgs> handler = this.UxPayloadDeleted;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
         #region IBootstrapperApplication Members
 
         int IBootstrapperApplication.BAProc(int message, IntPtr pvArgs, IntPtr pvResults, IntPtr pvContext)
@@ -2207,6 +2223,15 @@ namespace WixToolset.Mba.Core
         {
             CachePackageNonVitalValidationFailureEventArgs args = new CachePackageNonVitalValidationFailureEventArgs(wzPackageId, hrStatus, recommendation, action);
             this.OnCachePackageNonVitalValidationFailure(args);
+
+            action = args.Action;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnUxPayloadDeleted(string wzPayloadId, string wzPayloadPath, BOOTSTRAPPER_UXPAYLOADDELETED_ACTION recommendation, ref BOOTSTRAPPER_UXPAYLOADDELETED_ACTION action)
+        {
+            UxPayloadDeletedEventArgs args = new UxPayloadDeletedEventArgs(wzPayloadId, wzPayloadPath, recommendation, action);
+            this.OnUxPayloadDeleted(args);
 
             action = args.Action;
             return args.HResult;

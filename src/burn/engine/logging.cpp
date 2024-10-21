@@ -1061,6 +1061,20 @@ extern "C" LPWSTR LoggingStringOrUnknownIfNull(
     return wz ? wz : L"Unknown";
 }
 
+extern "C" LPCWSTR LoggingUxPayloadDeletedAction(
+    __in BOOTSTRAPPER_UXPAYLOADDELETED_ACTION action
+    )
+{
+    switch (action)
+    {
+    case BOOTSTRAPPER_UXPAYLOADDELETED_ACTION_NONE:
+        return L"None";
+    case BOOTSTRAPPER_UXPAYLOADDELETED_ACTION_REACQUIRE:
+        return L"Reacquire";
+    default:
+        return L"Invalid";
+    }
+}
 
 // internal function declarations
 

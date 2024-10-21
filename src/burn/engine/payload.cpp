@@ -294,9 +294,19 @@ extern "C" HRESULT PayloadExtractUXContainer(
         hr = PayloadFindEmbeddedBySourcePath(pPayloads->sdhPayloads, sczStreamName, &pPayload);
         ExitOnFailure(hr, "Failed to find embedded payload: %ls", sczStreamName);
 
+        if (BURN_PAYLOAD_STATE_ACQUIRED == pPayload->state)
+        {
+            hr = ContainerSkipStream(pContainerContext);
+            ExitOnFailure(hr, "Failed to skip an existing payload: %ls", sczStreamName);
+            continue;
+        }
+
         // make file path
-        hr = PathConcatRelativeToFullyQualifiedBase(wzTargetDir, pPayload->sczFilePath, &pPayload->sczLocalFilePath);
-        ExitOnFailure(hr, "Failed to concat file paths.");
+        if (!pPayload->sczLocalFilePath || !*pPayload->sczLocalFilePath)
+        {
+            hr = PathConcatRelativeToFullyQualifiedBase(wzTargetDir, pPayload->sczFilePath, &pPayload->sczLocalFilePath);
+            ExitOnFailure(hr, "Failed to concat file paths.");
+        }
 
         // extract file
         hr = PathGetDirectory(pPayload->sczLocalFilePath, &sczDirectory);

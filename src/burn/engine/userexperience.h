@@ -43,6 +43,12 @@ typedef struct _BURN_USER_EXPERIENCE
                                         // during Detect.
 
     DWORD dwExitCode;                   // Exit code returned by the user experience for the engine overall.
+
+
+    // Monitor changes and re-extract UX container if payloads are deleted
+    HANDLE hUxFolderMonitorThread;
+    HANDLE hUxFolderMonitorStarted;
+    HANDLE hUxFolderStopMonitor;
 } BURN_USER_EXPERIENCE;
 
 // functions
@@ -200,6 +206,12 @@ BAAPI UserExperienceOnCachePackageNonVitalValidationFailure(
     __in_z LPCWSTR wzPackageId,
     __in HRESULT hrStatus,
     __inout BOOTSTRAPPER_CACHEPACKAGENONVITALVALIDATIONFAILURE_ACTION* pAction
+    );
+BAAPI UserExperienceOnUxPayloadDeleted(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPayloadId,
+    __in_z LPCWSTR wzPayloadPath,
+    __inout BOOTSTRAPPER_UXPAYLOADDELETED_ACTION* pAction
     );
 BAAPI UserExperienceOnCachePackageComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,

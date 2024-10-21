@@ -1155,6 +1155,16 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
+    virtual STDMETHODIMP OnUxPayloadDeleted(
+        __in_z LPCWSTR /*wzPayloadId*/,
+        __in_z LPCWSTR /*wzPayloadPath*/,
+        __in BOOTSTRAPPER_UXPAYLOADDELETED_ACTION /*recommendation*/,
+        __inout BOOTSTRAPPER_UXPAYLOADDELETED_ACTION* /*pAction*/
+        )
+    {
+        return S_OK;
+    }
+
 public: //CBalBaseBootstrapperApplication
     virtual STDMETHODIMP Initialize(
         __in const BOOTSTRAPPER_CREATE_ARGS* pCreateArgs

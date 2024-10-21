@@ -487,3 +487,61 @@ extern "C" HRESULT ContainerFindById(
 LExit:
     return hr;
 }
+
+HRESULT ContainerReextractUX(
+    __in BURN_ENGINE_STATE* pEngineState
+    )
+{
+    HRESULT hr = S_OK;
+    BURN_CONTAINER_CONTEXT containerContext = { };
+    LPWSTR sczStreamName = NULL;
+    int nNumReextracted = 0;
+
+    // Check which payloads are missing
+    for (DWORD i = 0; i < pEngineState->userExperience.payloads.cPayloads; ++i)
+    {
+        BURN_PAYLOAD* pPayload = pEngineState->userExperience.payloads.rgPayloads + i;
+
+        if (pPayload->sczLocalFilePath && *pPayload->sczLocalFilePath && (BURN_PAYLOAD_STATE_ACQUIRED == pPayload->state) && !FileExistsEx(pPayload->sczLocalFilePath, NULL))
+        {
+            // Notify and let BA decide whether or not to extract the payload
+            BOOTSTRAPPER_UXPAYLOADDELETED_ACTION action = BOOTSTRAPPER_UXPAYLOADDELETED_ACTION_REACQUIRE;
+
+            hr = UserExperienceOnUxPayloadDeleted(&pEngineState->userExperience, pPayload->sczKey, pPayload->sczFilePath, &action);
+            ExitOnFailure(hr, "Failed to get UX action for deleted payload.");
+
+            LogId(REPORT_WARNING, MSG_UX_PAYLOAD_MISSING, pPayload->sczKey, pPayload->sczFilePath, LoggingUxPayloadDeletedAction(action));
+
+            if (BOOTSTRAPPER_UXPAYLOADDELETED_ACTION_REACQUIRE == action)
+            {
+                pPayload->state = BURN_PAYLOAD_STATE_NONE;
+                ++nNumReextracted;
+            }
+        }
+    }
+
+    if (!nNumReextracted)
+    {
+        ExitFunction();
+    }
+
+    // Open attached UX container.
+    hr = ContainerOpenUX(&pEngineState->section, &containerContext);
+    ExitOnFailure(hr, "Failed to open attached UX container.");
+
+    // Skip manifest.
+    hr = ContainerNextStream(&containerContext, &sczStreamName);
+    ExitOnFailure(hr, "Failed to open manifest stream.");
+
+    hr = ContainerSkipStream(&containerContext);
+    ExitOnFailure(hr, "Failed to skip manifest stream.");
+
+    hr = PayloadExtractUXContainer(&pEngineState->userExperience.payloads, &containerContext, pEngineState->userExperience.sczTempDirectory);
+    ExitOnFailure(hr, "Failed to extract bootstrapper application payloads.");
+
+LExit:
+    ContainerClose(&containerContext);
+    ReleaseStr(sczStreamName);
+
+    return hr;
+}

@@ -765,4 +765,13 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __in BOOTSTRAPPER_CACHEPACKAGENONVITALVALIDATIONFAILURE_ACTION recommendation,
         __inout BOOTSTRAPPER_CACHEPACKAGENONVITALVALIDATIONFAILURE_ACTION* pAction
         ) = 0;
+
+    // OnUxPayloadDeleted - called when the engine detects that a UX payloads was deleted. This may happen for example, when a cleaning tool deletes files from %TEMP% folder.
+    // Note that, the event might be fired multiple times for each missing payload.
+    STDMETHOD(OnUxPayloadDeleted)(
+        __in_z LPCWSTR wzPayloadId,
+        __in_z LPCWSTR wzPayloadPath,
+        __in BOOTSTRAPPER_UXPAYLOADDELETED_ACTION recommendation,
+        __inout BOOTSTRAPPER_UXPAYLOADDELETED_ACTION* pAction
+        ) = 0;
 };

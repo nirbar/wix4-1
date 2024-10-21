@@ -1054,6 +1054,18 @@ namespace WixToolset.Mba.Core
             BOOTSTRAPPER_CACHEPACKAGENONVITALVALIDATIONFAILURE_ACTION recommendation,
             ref BOOTSTRAPPER_CACHEPACKAGENONVITALVALIDATIONFAILURE_ACTION action
             );
+
+        /// <summary>
+        /// See <see cref="IDefaultBootstrapperApplication.UxPayloadDeleted"/>.
+        /// </summary>
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnUxPayloadDeleted(
+            [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId,
+            [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadPath,
+            BOOTSTRAPPER_UXPAYLOADDELETED_ACTION recommendation,
+            ref BOOTSTRAPPER_UXPAYLOADDELETED_ACTION action
+            );
     }
 
     /// <summary>
@@ -1763,6 +1775,22 @@ namespace WixToolset.Mba.Core
         /// Most of the time this is used for installing the package during rollback.
         /// </summary>
         Acquire,
+    }
+
+    /// <summary>
+    /// The available actions for <see cref="IDefaultBootstrapperApplication.CachePackageNonVitalValidationFailure"/>
+    /// </summary>
+    public enum BOOTSTRAPPER_UXPAYLOADDELETED_ACTION
+    {
+        /// <summary>
+        /// Instructs the engine to not take any special action.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// Instructs the engine to try to reacquire the UX payload.
+        /// </summary>
+        Reacquire,
     }
 
     /// <summary>

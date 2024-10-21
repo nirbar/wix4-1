@@ -204,6 +204,10 @@ LPWSTR LoggingStringOrUnknownIfNull(
     __in LPCWSTR wz
     );
 
+LPCWSTR LoggingUxPayloadDeletedAction(
+    __in BOOTSTRAPPER_UXPAYLOADDELETED_ACTION action
+    );
+
 
 #if defined(__cplusplus)
 }

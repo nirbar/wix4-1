@@ -24,3 +24,4 @@ This repository contains the PanelSwWix4: A custom WiX Toolset codebase
 - Not overwriting log files when retrying to execute a package
 - Support sending custom messages on embedded pipe
 - Best effort to log premature termination of companion process
+- Monitor UX folder and re-extract any UX payloads that were deleted for any reason

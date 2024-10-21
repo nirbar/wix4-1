@@ -2831,4 +2831,32 @@ namespace WixToolset.Mba.Core
         /// </summary>
         public string PackageId { get; private set; }
     }
+
+    /// <summary>
+    /// Event arguments for <see cref="IDefaultBootstrapperApplication.UxPayloadDeleted"/>
+    /// </summary>
+    [Serializable]
+    public class UxPayloadDeletedEventArgs : ActionEventArgs<BOOTSTRAPPER_UXPAYLOADDELETED_ACTION>
+    {
+        /// <summary>
+        /// This class is for events raised by the engine.
+        /// It is not intended to be instantiated by user code.
+        /// </summary>
+        public UxPayloadDeletedEventArgs(string wzPayloadId, string wzPayloadPath, BOOTSTRAPPER_UXPAYLOADDELETED_ACTION recommendation, BOOTSTRAPPER_UXPAYLOADDELETED_ACTION action)
+            : base(0, recommendation, action)
+        {
+            this.PayloadId = wzPayloadId;
+            this.PayloadPath = wzPayloadPath;
+        }
+
+        /// <summary>
+        /// Gets the identity of the missing UX payload.
+        /// </summary>
+        public string PayloadId { get; private set; }
+
+        /// <summary>
+        /// Gets the relative path of the missing UX payload.
+        /// </summary>
+        public string PayloadPath { get; private set; }
+    }
 }

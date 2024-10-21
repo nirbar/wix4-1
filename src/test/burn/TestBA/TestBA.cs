@@ -589,6 +589,11 @@ namespace WixToolset.Test.BA
             this.Log("OnUnregisterBegin, default: {0}, requested: {1}", args.RecommendedRegistrationType, args.RegistrationType);
         }
 
+        protected override void OnUxPayloadDeleted(UxPayloadDeletedEventArgs args)
+        {
+            args.Action = BOOTSTRAPPER_UXPAYLOADDELETED_ACTION.None;
+        }
+
         private void TestVariables()
         {
             // First make sure we can check and get standard variables of each type.
