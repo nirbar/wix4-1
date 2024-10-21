@@ -1276,6 +1276,81 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI BACallbackOnUxPayloadDeleted(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPayloadId,
+    __in_z LPCWSTR wzPayloadPath,
+    __inout BOOTSTRAPPER_UXPAYLOADDELETED_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONUXPAYLOADDELETED_ARGS args = { };
+    BA_ONUXPAYLOADDELETED_RESULTS results = { };
+    BUFF_BUFFER bufferArgs = { };
+    BUFF_BUFFER bufferResults = { };
+    PIPE_RPC_RESULT rpc = { };
+    SIZE_T iBuffer = 0;
+
+    args.dwApiVersion = WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION;
+    args.wzPayloadId = wzPayloadId;
+    args.wzPayloadPath = wzPayloadPath;
+    args.recommendation = *pAction;
+
+    results.dwApiVersion = WIX_5_BOOTSTRAPPER_APPLICATION_API_VERSION;
+    results.action = *pAction;
+
+    // Send args.
+    hr = BuffWriteNumberToBuffer(&bufferArgs, args.dwApiVersion);
+    ExitOnFailure(hr, "Failed to write API version of OnUxPayloadDeleted args.");
+
+    hr = BuffWriteStringToBuffer(&bufferArgs, args.wzPayloadId);
+    ExitOnFailure(hr, "Failed to write payload id of OnUxPayloadDeleted args.");
+
+    hr = BuffWriteStringToBuffer(&bufferArgs, args.wzPayloadPath);
+    ExitOnFailure(hr, "Failed to write payload path of OnUxPayloadDeleted args.");
+
+    hr = BuffWriteNumberToBuffer(&bufferArgs, args.recommendation);
+    ExitOnFailure(hr, "Failed to write recommendation of OnUxPayloadDeleted args.");
+
+    // Send results.
+    hr = BuffWriteNumberToBuffer(&bufferResults, results.dwApiVersion);
+    ExitOnFailure(hr, "Failed to write API version of OnUxPayloadDeleted results.");
+
+    hr = BuffWriteNumberToBuffer(&bufferResults, results.action);
+    ExitOnFailure(hr, "Failed to write action of OnUxPayloadDeleted results.");
+
+    // Callback.
+    hr = SendBAMessage(pUserExperience, BOOTSTRAPPER_APPLICATION_MESSAGE_ONUXPAYLOADDELETED, &bufferArgs, &bufferResults, &rpc);
+    ExitOnFailure(hr, "BA OnUxPayloadDeleted failed.");
+
+    if (S_FALSE == hr)
+    {
+        ExitFunction();
+    }
+
+    // Read results.
+    hr = BuffReadNumber(rpc.pbData, rpc.cbData, &iBuffer, &results.dwApiVersion);
+    ExitOnFailure(hr, "Failed to read size of OnUxPayloadDeleted result.");
+
+    hr = BuffReadNumber(rpc.pbData, rpc.cbData, &iBuffer, reinterpret_cast<DWORD*>(&results.action));
+    ExitOnFailure(hr, "Failed to read action of OnUxPayloadDeleted result.");
+
+    switch (results.action)
+    {
+    case BOOTSTRAPPER_UXPAYLOADDELETED_ACTION_NONE: __fallthrough;
+    case BOOTSTRAPPER_UXPAYLOADDELETED_ACTION_REACQUIRE:
+        *pAction = results.action;
+        break;
+    }
+
+LExit:
+    PipeFreeRpcResult(&rpc);
+    ReleaseBuffer(bufferResults);
+    ReleaseBuffer(bufferArgs);
+
+    return hr;
+}
+
 EXTERN_C HRESULT BACallbackOnCachePayloadExtractBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z_opt LPCWSTR wzContainerId,

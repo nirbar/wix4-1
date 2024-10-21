@@ -51,6 +51,11 @@ typedef struct _BURN_USER_EXPERIENCE
                                         // during Detect.
 
     DWORD dwExitCode;                   // Exit code returned by the user experience for the engine overall.
+
+    // Monitor changes and re-extract UX container if payloads are deleted
+    HANDLE hUxFolderMonitorThread;
+    HANDLE hUxFolderMonitorStarted;
+    HANDLE hUxFolderStopMonitor;
 } BURN_USER_EXPERIENCE;
 
 

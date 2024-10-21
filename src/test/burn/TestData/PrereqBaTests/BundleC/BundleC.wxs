@@ -16,12 +16,12 @@
   </Fragment>
 
   <Fragment>
-    <util:FileSearch Variable="GoodConfigPresent" Path="[BARuntimeDirectory]\good.runtimeconfig.json" Result="exists" />
+    <util:FileSearch Variable="BadConfigPresent" Path="[BARuntimeDirectory]\bad.runtimeconfig.json" Result="exists" />
     <Variable Name="CAUSEINFINITELOOP" bal:Overridable="yes" />
 
     <PackageGroup Id="BundlePackages">
       <ExePackage SourceFile="$(var.ReplaceConfig.TargetPath)" bal:PrereqPackage="yes"
-                  Permanent="yes" DetectCondition="NOT GoodConfigPresent OR CAUSEINFINITELOOP = 1"
+                  Permanent="yes" DetectCondition="BadConfigPresent OR CAUSEINFINITELOOP = 1"
                   InstallArguments="&quot;[BARuntimeDirectory]TestBA.runtimeconfig.json&quot; &quot;[BARuntimeDirectory]good.runtimeconfig.json&quot; &quot;[BARuntimeDirectory]bad.runtimeconfig.json&quot;" />
       <MsiPackage Id="PackageA" SourceFile="$(var.PackageA.TargetPath)" bal:PrereqPackage="yes" Permanent="yes" />
       <MsiPackage Id="PackageC" SourceFile="$(var.PackageC.TargetPath)" Cache="force" />

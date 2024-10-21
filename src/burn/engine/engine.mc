@@ -1303,3 +1303,10 @@ SymbolicName=MSG_PLAN_CANCEL_MSI_TRANSACTION
 Language=English
 Canceling planned MSI transaction '%1!ls!' because it contains %2!lu! packages.
 .
+
+MessageId=704
+Severity=Warning
+SymbolicName=MSG_UX_PAYLOAD_MISSING
+Language=English
+UX payload deletion was detected, Id: '%1!ls!', path: '%2!ls!', action: %3!ls!.
+.

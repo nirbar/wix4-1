@@ -111,6 +111,12 @@ HRESULT BACallbackOnCachePackageNonVitalValidationFailure(
     __in HRESULT hrStatus,
     __inout BOOTSTRAPPER_CACHEPACKAGENONVITALVALIDATIONFAILURE_ACTION* pAction
     );
+BAAPI BACallbackOnUxPayloadDeleted(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPayloadId,
+    __in_z LPCWSTR wzPayloadPath,
+    __inout BOOTSTRAPPER_UXPAYLOADDELETED_ACTION* pAction
+    );
 HRESULT BACallbackOnCachePackageComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,

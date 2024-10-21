@@ -275,6 +275,9 @@ namespace WixToolset.BootstrapperApplicationApi
         /// <inheritdoc/>
         public event EventHandler<CachePackageNonVitalValidationFailureEventArgs> CachePackageNonVitalValidationFailure;
 
+        /// <inheritdoc/>
+        public event EventHandler<UxPayloadDeletedEventArgs> UxPayloadDeleted;
+
         /// <summary>
         /// The default constructor.
         /// </summary>
@@ -1425,6 +1428,19 @@ namespace WixToolset.BootstrapperApplicationApi
             }
         }
 
+        /// <summary>
+        /// Called by the engine, raises the <see cref="UxPayloadDeleted"/> event.
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnUxPayloadDeleted(UxPayloadDeletedEventArgs args)
+        {
+            EventHandler<UxPayloadDeletedEventArgs> handler = this.UxPayloadDeleted;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
         #region IBootstrapperApplication Members
 
         int IBootstrapperApplication.BAProc(int message, IntPtr pvArgs, IntPtr pvResults)
@@ -2206,6 +2222,15 @@ namespace WixToolset.BootstrapperApplicationApi
         {
             CachePackageNonVitalValidationFailureEventArgs args = new CachePackageNonVitalValidationFailureEventArgs(wzPackageId, hrStatus, recommendation, action);
             this.OnCachePackageNonVitalValidationFailure(args);
+
+            action = args.Action;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnUxPayloadDeleted(string wzPayloadId, string wzPayloadPath, BOOTSTRAPPER_UXPAYLOADDELETED_ACTION recommendation, ref BOOTSTRAPPER_UXPAYLOADDELETED_ACTION action)
+        {
+            UxPayloadDeletedEventArgs args = new UxPayloadDeletedEventArgs(wzPayloadId, wzPayloadPath, recommendation, action);
+            this.OnUxPayloadDeleted(args);
 
             action = args.Action;
             return args.HResult;

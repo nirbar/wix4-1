@@ -1164,6 +1164,16 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
+    virtual STDMETHODIMP OnUxPayloadDeleted(
+        __in_z LPCWSTR /*wzPayloadId*/,
+        __in_z LPCWSTR /*wzPayloadPath*/,
+        __in BOOTSTRAPPER_UXPAYLOADDELETED_ACTION /*recommendation*/,
+        __inout BOOTSTRAPPER_UXPAYLOADDELETED_ACTION* /*pAction*/
+        )
+    {
+        return S_OK;
+    }
+
 protected:
     //
     // PromptCancel - prompts the user to close (if not forced).

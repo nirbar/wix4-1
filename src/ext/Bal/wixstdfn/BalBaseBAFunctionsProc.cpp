@@ -758,6 +758,15 @@ static HRESULT BalBaseBAFunctionsProcOnCachePackageNonVitalValidationFailure(
     return pBAFunctions->OnCachePackageNonVitalValidationFailure(pArgs->wzPackageId, pArgs->hrStatus, pArgs->recommendation, &pResults->action);
 }
 
+static HRESULT BalBaseBAFunctionsProcOnUxPayloadDeleted(
+    __in IBAFunctions* pBAFunctions,
+    __in BA_ONUXPAYLOADDELETED_ARGS* pArgs,
+    __inout BA_ONUXPAYLOADDELETED_RESULTS* pResults
+    )
+{
+    return pBAFunctions->OnUxPayloadDeleted(pArgs->wzPayloadId, pArgs->wzPayloadPath, pArgs->recommendation, &pResults->action);
+}
+
 static HRESULT BalBaseBAFunctionsProcOnThemeLoaded(
     __in IBAFunctions* pBAFunctions,
     __in BA_FUNCTIONS_ONTHEMELOADED_ARGS* pArgs,
@@ -1085,6 +1094,9 @@ HRESULT WINAPI BalBaseBAFunctionsProc(
             break;
         case BA_FUNCTIONS_MESSAGE_ONCACHEPACKAGENONVITALVALIDATIONFAILURE:
             hr = BalBaseBAFunctionsProcOnCachePackageNonVitalValidationFailure(pBAFunctions, reinterpret_cast<BA_ONCACHEPACKAGENONVITALVALIDATIONFAILURE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEPACKAGENONVITALVALIDATIONFAILURE_RESULTS*>(pvResults));
+            break;
+        case BA_FUNCTIONS_MESSAGE_ONUXPAYLOADDELETED:
+            hr = BalBaseBAFunctionsProcOnUxPayloadDeleted(pBAFunctions, reinterpret_cast<BA_ONUXPAYLOADDELETED_ARGS*>(pvArgs), reinterpret_cast<BA_ONUXPAYLOADDELETED_RESULTS*>(pvResults));
             break;
         case BA_FUNCTIONS_MESSAGE_ONTHEMELOADED:
             hr = BalBaseBAFunctionsProcOnThemeLoaded(pBAFunctions, reinterpret_cast<BA_FUNCTIONS_ONTHEMELOADED_ARGS*>(pvArgs), reinterpret_cast<BA_FUNCTIONS_ONTHEMELOADED_RESULTS*>(pvResults));

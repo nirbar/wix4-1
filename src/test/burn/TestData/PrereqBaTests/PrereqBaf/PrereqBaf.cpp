@@ -42,7 +42,17 @@ public: //IBootstrapperApplication
         return hr;
     }
 
-private:
+    virtual STDMETHODIMP OnUxPayloadDeleted(
+        __in_z LPCWSTR /*wzPayloadId*/,
+        __in_z LPCWSTR /*wzPayloadPath*/,
+        __in BOOTSTRAPPER_UXPAYLOADDELETED_ACTION /*recommendation*/,
+        __inout BOOTSTRAPPER_UXPAYLOADDELETED_ACTION* pAction
+        )
+    {
+        *pAction = BOOTSTRAPPER_UXPAYLOADDELETED_ACTION_NONE;
+
+        return S_OK;
+    }
 
 public:
     //

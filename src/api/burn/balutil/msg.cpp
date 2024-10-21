@@ -1009,6 +1009,66 @@ LExit:
     return hr;
 }
 
+static HRESULT OnUxPayloadDeleted(
+    __in IBootstrapperApplication* pApplication,
+    __in BUFF_READER* pReaderArgs,
+    __in BUFF_READER* pReaderResults,
+    __in BUFF_BUFFER* pBuffer
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONUXPAYLOADDELETED_ARGS args = { };
+    BA_ONUXPAYLOADDELETED_RESULTS results = { };
+    LPWSTR sczPayloadId = NULL;
+    LPWSTR sczPayloadPath = NULL;
+
+    // Read args.
+    hr = BuffReaderReadNumber(pReaderArgs, &args.dwApiVersion);
+    ExitOnFailure(hr, "Failed to read API version of OnUxPayloadDeleted args.");
+
+    hr = BuffReaderReadString(pReaderArgs, &sczPayloadId);
+    ExitOnFailure(hr, "Failed to read payload id of OnUxPayloadDeleted args.");
+
+    hr = BuffReaderReadString(pReaderArgs, &sczPayloadPath);
+    ExitOnFailure(hr, "Failed to read payload path of OnUxPayloadDeleted args.");
+
+    args.wzPayloadId = sczPayloadId;
+    args.wzPayloadPath = sczPayloadPath;
+
+    hr = BuffReaderReadNumber(pReaderArgs, reinterpret_cast<DWORD*>(&args.recommendation));
+    ExitOnFailure(hr, "Failed to read recommendation of OnUxPayloadDeleted args.");
+
+    // Read results.
+    hr = BuffReaderReadNumber(pReaderResults, &results.dwApiVersion);
+    ExitOnFailure(hr, "Failed to read API version of OnUxPayloadDeleted results.");
+
+    hr = BuffReaderReadNumber(pReaderResults, reinterpret_cast<DWORD*>(&results.action));
+    ExitOnFailure(hr, "Failed to read action of OnUxPayloadDeleted results.");
+
+    // Callback.
+    hr = pApplication->BAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONUXPAYLOADDELETED, &args, &results);
+
+    if (E_NOTIMPL == hr)
+    {
+        hr = pApplication->OnUxPayloadDeleted(args.wzPayloadId, args.wzPayloadPath, args.recommendation, &results.action);
+    }
+
+    pApplication->BAProcFallback(BOOTSTRAPPER_APPLICATION_MESSAGE_ONUXPAYLOADDELETED, &args, &results, &hr);
+    BalExitOnFailure(hr, "BA OnUxPayloadDeleted failed.");
+
+    // Write results.
+    hr = BuffWriteNumberToBuffer(pBuffer, sizeof(results));
+    ExitOnFailure(hr, "Failed to write size of OnUxPayloadDeleted struct.");
+
+    hr = BuffWriteNumberToBuffer(pBuffer, results.action);
+    ExitOnFailure(hr, "Failed to write action of OnUxPayloadDeleted struct.");
+
+LExit:
+    ReleaseStr(sczPayloadId);
+    ReleaseStr(sczPayloadPath);
+    return hr;
+}
+
 static HRESULT OnCachePayloadExtractBegin(
     __in IBootstrapperApplication* pApplication,
     __in BUFF_READER* pReaderArgs,
@@ -5342,6 +5402,10 @@ static HRESULT ProcessMessage(
 
             case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGENONVITALVALIDATIONFAILURE:
                 hr = OnCachePackageNonVitalValidationFailure(pApplication, &readerArgs, &readerResults, &bufferResponse);
+                break;
+
+            case BOOTSTRAPPER_APPLICATION_MESSAGE_ONUXPAYLOADDELETED:
+                hr = OnUxPayloadDeleted(pApplication, &readerArgs, &readerResults, &bufferResponse);
                 break;
 
             default:
