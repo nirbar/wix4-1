@@ -1440,7 +1440,6 @@ static HRESULT LayoutBundle(
     BOOL fRetry = FALSE;
     BOOL fRetryAcquire = FALSE;
     BOOL fCanceledBegin = FALSE;
-    BOOL fAllowHardLink = TRUE;
 
     progress.pCacheContext = pContext;
 
@@ -1500,7 +1499,7 @@ static HRESULT LayoutBundle(
             }
             else
             {
-                hr = CopyPayload(&progress, pContext->hSourceEngineFile, sczBundlePath, wzUnverifiedPath, fAllowHardLink);
+                hr = CopyPayload(&progress, pContext->hSourceEngineFile, sczBundlePath, wzUnverifiedPath, FALSE);
                 // Error handling happens after sending complete message to BA.
 
                 // If succeeded, send 100% complete here to make sure progress was sent to the BA.
@@ -1513,7 +1512,6 @@ static HRESULT LayoutBundle(
             UserExperienceOnCacheAcquireComplete(pContext->pUX, NULL, NULL, hr, &fRetryAcquire);
             if (fRetryAcquire)
             {
-                fAllowHardLink = FALSE;
                 continue;
             }
             else if (fCanceledBegin)
@@ -1558,7 +1556,6 @@ static HRESULT LayoutBundle(
 
         if (fRetry)
         {
-            fAllowHardLink = FALSE;
             pContext->qwSuccessfulCacheProgress -= qwBundleSize; // Acquire
         }
     } while (fRetry);
@@ -1637,7 +1634,7 @@ static HRESULT AcquireContainerOrPayload(
     DWORD64 qwFileSize = 0;
     BOOL fMinimumFileSize = FALSE;
     BOOL fEqual = FALSE;
-    BOOL fAllowHardLink = !*pfRetry;
+    BOOL fAllowHardLink = pContainer && !*pfRetry; // Not allowing hard links on payloads to ensure it isn't modified after verification. We don't mind hard links on containers because the extracted files will not be suspectible to modifications
 
     if (pContainer)
     {
