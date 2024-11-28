@@ -1316,3 +1316,10 @@ SymbolicName=MSG_UX_PAYLOAD_MISSING
 Language=English
 UX payload deletion was detected, Id: '%1!ls!', path: '%2!ls!', action: %3!ls!.
 .
+
+MessageId=707
+Severity=Success
+SymbolicName=MSG_REORDERING_PACKAGE
+Language=English
+Moving packages '%1!ls!' to the end of the queue since it is not planned to execute.
+.

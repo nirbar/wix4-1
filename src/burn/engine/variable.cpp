@@ -1827,6 +1827,7 @@ static HRESULT InitializeVariableVersionNT(
     case OS_INFO_VARIABLE_WindowsBuildNumber:
         value.llValue = static_cast<LONGLONG>(ovix.dwBuildNumber);
         value.Type = BURN_VARIANT_TYPE_NUMERIC;
+        break;
     default:
         AssertSz(FALSE, "Unknown OS info type.");
         break;
@@ -1950,13 +1951,13 @@ static HRESULT InitializeVariableNativeMachine(
     )
 {
     UNREFERENCED_PARAMETER(dwpData);
-    
+
     HRESULT hr = S_OK;
     USHORT usNativeMachine = IMAGE_FILE_MACHINE_UNKNOWN;
 
     hr = ProcNativeMachine(::GetCurrentProcess(), &usNativeMachine);
     ExitOnFailure(hr, "Failed to get native machine value.");
-    
+
     if (S_FALSE != hr)
     {
         hr = BVariantSetNumeric(pValue, usNativeMachine);
