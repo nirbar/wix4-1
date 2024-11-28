@@ -1323,3 +1323,10 @@ SymbolicName=MSG_PAYLOAD_HARD_LINK_FAILED
 Language=English
 Creating a hard link to '%1!ls!' failed with error code %2!u!. Resorting to plain copy.
 .
+
+MessageId=707
+Severity=Success
+SymbolicName=MSG_REORDERING_PACKAGE
+Language=English
+Moving packages '%1!ls!' to the end of the queue since it is not planned to execute.
+.

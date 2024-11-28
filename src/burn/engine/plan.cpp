@@ -42,6 +42,14 @@ static HRESULT PlanPackagesHelper(
     __in BURN_LOGGING* pLog,
     __in BURN_VARIABLES* pVariables
     );
+static void PlanReorderPackages(
+    __in BURN_PACKAGE* rgPackages,
+    __in DWORD cPackages
+    );
+static void PlanRestorePackagesOrder(
+    __in BURN_PACKAGE* rgPackages,
+    __in DWORD cPackages
+    );
 static HRESULT InitializePackage(
     __in BURN_PLAN* pPlan,
     __in BURN_USER_EXPERIENCE* pUX,
@@ -287,6 +295,7 @@ extern "C" void PlanReset(
         {
             ResetPlannedPackageState(&pPackages->rgPackages[i]);
         }
+        PlanRestorePackagesOrder(pPackages->rgPackages, pPackages->cPackages);
     }
 
     ResetPlannedPayloadGroupState(pLayoutPayloads);
@@ -868,6 +877,12 @@ static HRESULT PlanPackagesHelper(
             hr = MspEnginePlanInitializePackage(pPackage, pUX);
             ExitOnFailure(hr, "Failed to initialize plan package: %ls", pPackage->sczId);
         }
+    }
+
+    // Best effort to reorder the packages: Executing packages first. This will ensure cache-only packages will not block executing packages until they get cached
+    if (!fReverseOrder)
+    {
+        PlanReorderPackages(rgPackages, cPackages);
     }
 
     // Plan the packages.
@@ -3258,4 +3273,88 @@ extern "C" void PlanDump(
     }
 
     LogStringLine(PlanDumpLevel, "--- End plan dump ---");
+}
+
+// Reorder the packages: Executing packages first. This will ensure cache-only packages will not block executing packages until they get cached
+static void PlanReorderPackages(
+    __in BURN_PACKAGE* rgPackages,
+    __in DWORD cPackages
+)
+{
+    HRESULT hr = S_OK;
+    BURN_PACKAGE* rgOrderedPackages = NULL;
+    DWORD iNextExecutingLocation = 0;
+    DWORD iNextNonExecutingLocation = 0;
+    DWORD cExecutingPackages = 0;
+
+    if (cPackages < 2)
+    {
+        ExitFunction();
+    }
+
+    rgOrderedPackages = (BURN_PACKAGE*)MemAlloc(cPackages * sizeof(BURN_PACKAGE), TRUE);
+    ExitOnNull(rgOrderedPackages, hr, E_OUTOFMEMORY, "Failed to allocate memory to reorder packages");
+
+    // Count the packages that can be moved to the end
+    for (DWORD i = 0; i < cPackages; ++i)
+    {
+        BOOL fExecuting = rgPackages[i].compatiblePackage.fRequested || (BOOTSTRAPPER_REQUEST_STATE_NONE != rgPackages[i].requested && BOOTSTRAPPER_REQUEST_STATE_CACHE != rgPackages[i].requested);
+        if (fExecuting)
+        {
+            ++cExecutingPackages;
+        }
+    }
+    if ((cExecutingPackages == 0) || (cExecutingPackages == cPackages))
+    {
+        ExitFunction();
+    }
+
+    // Reorder the packages on the temporary array
+    iNextExecutingLocation = 0;
+    iNextNonExecutingLocation = cExecutingPackages;
+    for (DWORD i = 0; i < cPackages; ++i)
+    {
+        BOOL fExecuting = rgPackages[i].compatiblePackage.fRequested || (BOOTSTRAPPER_REQUEST_STATE_NONE != rgPackages[i].requested && BOOTSTRAPPER_REQUEST_STATE_CACHE != rgPackages[i].requested);
+        if (fExecuting)
+        {
+            memcpy_s(&rgOrderedPackages[iNextExecutingLocation], sizeof(BURN_PACKAGE), &rgPackages[i], sizeof(BURN_PACKAGE));
+            ++iNextExecutingLocation;
+        }
+        else
+        {
+            LogId(REPORT_STANDARD, MSG_REORDERING_PACKAGE, rgPackages[i].sczId);
+
+            memcpy_s(&rgOrderedPackages[iNextNonExecutingLocation], sizeof(BURN_PACKAGE), &rgPackages[i], sizeof(BURN_PACKAGE));
+            ++iNextNonExecutingLocation;
+        }
+    }
+
+    // Copy temp array to original
+    memcpy_s(rgPackages, cPackages * sizeof(BURN_PACKAGE), rgOrderedPackages, cPackages * sizeof(BURN_PACKAGE));
+
+LExit:
+    ReleaseMem(rgOrderedPackages);
+}
+
+// Unlike PlanReorderPackages, this must succeed. Otherwise a wrong order may be planned on a re-plan
+static void PlanRestorePackagesOrder(
+    __in BURN_PACKAGE* rgPackages,
+    __in DWORD cPackages
+)
+{
+    for (DWORD i = 0; i < cPackages; ++i)
+    {
+        // https://en.wikipedia.org/wiki/100_prisoners_problem
+        // In the worst case scenario, this loop would take cPackages cycles, after which all packages would be in place
+        // In the common case, each time this loop would take just a few cycles which would order some of the packages
+        // The entire for+while loops can take no longer than 2*cPackages cycles
+        while (rgPackages[i].dwPackageIndex != i)
+        {
+            BURN_PACKAGE tmpPackage = {};
+
+            memcpy_s(&tmpPackage, sizeof(BURN_PACKAGE), &rgPackages[i], sizeof(BURN_PACKAGE));
+            memcpy_s(&rgPackages[i], sizeof(BURN_PACKAGE), &rgPackages[tmpPackage.dwPackageIndex], sizeof(BURN_PACKAGE));
+            memcpy_s(&rgPackages[tmpPackage.dwPackageIndex], sizeof(BURN_PACKAGE), &tmpPackage, sizeof(BURN_PACKAGE));
+        }
+    }
 }
