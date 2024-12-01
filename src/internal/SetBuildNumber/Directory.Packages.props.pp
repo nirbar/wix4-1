@@ -87,8 +87,8 @@
 
   <!-- Keep the following versions in sync with internal\WixInternal.TestSupport.Native\packages.config -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-    <PackageVersion Include="GitInfo" Version="2.3.0" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageVersion Include="GitInfo" Version="3.5.0" />
 
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageVersion Include="xunit" Version="2.9.2" />
@@ -97,8 +97,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageVersion Include="Microsoft.NET.Tools.NETCoreCheck.x86" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.NET.Tools.NETCoreCheck.x64" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.NET.Tools.NETCoreCheck.arm64" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.NET.Tools.NETCoreCheck.x86" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.NET.Tools.NETCoreCheck.x64" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.NET.Tools.NETCoreCheck.arm64" Version="7.0.0" />
   </ItemGroup>
 </Project>
