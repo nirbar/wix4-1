@@ -8,6 +8,8 @@
 
 @if "%VCToolsVersion%"=="" call :StartDeveloperCommandPrompt || exit /b
 
+SET NuGetAudit=false
+
 @echo build %_C%
 
 :: Initialize required files/folders
