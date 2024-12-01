@@ -41,21 +41,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="6.0.2" />
-    <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="6.0.2" />
-    <PackageVersion Include="System.DirectoryServices" Version="6.0.2" />
-    <PackageVersion Include="System.DirectoryServices.AccountManagement" Version="6.0.1" />
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="8.0.1" />
+    <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="8.0.1" />
+    <PackageVersion Include="System.DirectoryServices" Version="8.0.0" />
+    <PackageVersion Include="System.DirectoryServices.AccountManagement" Version="8.0.1" />
     <PackageVersion Include="System.IO.Compression" Version="4.3.0" />
-    <PackageVersion Include="System.IO.FileSystem.AccessControl" Version="4.7.0" />
+    <PackageVersion Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <PackageVersion Include="System.Net.NetworkInformation" Version="4.3.0" />
-    <PackageVersion Include="System.Reflection.Metadata" Version="6.0.2" />
+    <PackageVersion Include="System.Reflection.Metadata" Version="8.0.1" />
     <PackageVersion Include="System.Security.Principal.Windows" Version="5.0.0" />
-    <PackageVersion Include="System.Text.Encoding.CodePages" Version="6.0.1" />
-    <PackageVersion Include="System.Text.Json" Version="6.0.11" />
+    <PackageVersion Include="System.Text.Encoding.CodePages" Version="8.0.0" />
+    <PackageVersion Include="System.Text.Json" Version="8.0.5" />
 
-    <PackageVersion Include="Microsoft.AspNetCore.Owin" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Owin" Version="6.0.36" />
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Native" Version="3.11.2177" />
-    <PackageVersion Include="Microsoft.Win32.Registry" Version="4.7.0" />
+    <PackageVersion Include="Microsoft.Win32.Registry" Version="5.0.0" />
   </ItemGroup>
 
   <!--
