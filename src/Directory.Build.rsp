@@ -1,4 +1,4 @@
 -nologo
 -nr:false
 -v:n
-
+-p:NuGetAudit=false

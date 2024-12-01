@@ -3,6 +3,8 @@
 
 <Project>
   <PropertyGroup>
+    <NuGetAudit>false</NuGetAudit>
+
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <EnableSourceLink Condition=" '$(NCrunch)' == '1' ">false</EnableSourceLink>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
