@@ -41,27 +41,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="6.0.1" />
-    <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="4.7.0" />
-    <PackageVersion Include="System.DirectoryServices" Version="4.7.0" />
-    <PackageVersion Include="System.DirectoryServices.AccountManagement" Version="4.7.0" />
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="9.0.0" />
+    <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="9.0.0" />
+    <PackageVersion Include="System.DirectoryServices" Version="9.0.0" />
+    <PackageVersion Include="System.DirectoryServices.AccountManagement" Version="9.0.0" />
     <PackageVersion Include="System.IO.Compression" Version="4.3.0" />
-    <PackageVersion Include="System.IO.FileSystem.AccessControl" Version="4.7.0" />
+    <PackageVersion Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <PackageVersion Include="System.Net.NetworkInformation" Version="4.3.0" />
-    <PackageVersion Include="System.Reflection.Metadata" Version="1.8.1" />
-    <PackageVersion Include="System.Security.Principal.Windows" Version="4.7.0" />
-    <PackageVersion Include="System.Text.Encoding.CodePages" Version="4.7.1" />
-    <PackageVersion Include="System.Text.Json" Version="6.0.10" />
+    <PackageVersion Include="System.Reflection.Metadata" Version="9.0.0" />
+    <PackageVersion Include="System.Security.Principal.Windows" Version="5.0.0" />
+    <PackageVersion Include="System.Text.Encoding.CodePages" Version="9.0.0" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.0" />
 
-    <PackageVersion Include="Microsoft.AspNetCore.Owin" Version="3.1.13" />
+    <PackageVersion Include="Microsoft.AspNetCore.Owin" Version="9.0.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Native" Version="3.10.2154" />
-    <PackageVersion Include="Microsoft.Win32.Registry" Version="4.7.0" />
+    <PackageVersion Include="Microsoft.Win32.Registry" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageVersion Include="NuGet.Credentials" Version="6.10.1" />
-    <PackageVersion Include="NuGet.Protocol" Version="6.10.1" />
-    <PackageVersion Include="NuGet.Versioning" Version="6.10.1" />
+    <PackageVersion Include="NuGet.Credentials" Version="6.12.1" />
+    <PackageVersion Include="NuGet.Protocol" Version="6.12.1" />
+    <PackageVersion Include="NuGet.Versioning" Version="6.12.1" />
   </ItemGroup>
 
   <!--
@@ -76,18 +76,18 @@
 
   <!-- Keep the following versions in sync with internal\WixInternal.TestSupport.Native\packages.config -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-    <PackageVersion Include="GitInfo" Version="2.3.0" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageVersion Include="GitInfo" Version="3.5.0" />
 
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
-    <PackageVersion Include="xunit" Version="2.8.1" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.1" />
-    <PackageVersion Include="xunit.assert" Version="2.8.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageVersion Include="xunit" Version="2.9.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageVersion Include="xunit.assert" Version="2.9.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageVersion Include="Microsoft.NET.Tools.NETCoreCheck.x86" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.NET.Tools.NETCoreCheck.x64" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.NET.Tools.NETCoreCheck.arm64" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.NET.Tools.NETCoreCheck.x86" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.NET.Tools.NETCoreCheck.x64" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.NET.Tools.NETCoreCheck.arm64" Version="7.0.0" />
   </ItemGroup>
 </Project>
