@@ -25,3 +25,4 @@ This repository contains the PanelSwWix4: A custom WiX Toolset codebase
 - Support sending custom messages on embedded pipe
 - Best effort to log premature termination of companion process
 - Monitor UX folder and re-extract any UX payloads that were deleted for any reason
+- Reorder cache actions: moves non-executing package caching to the end of the plan. This optimizes run time as packages that are cached but not executed will not stand in the way of executing packages.
