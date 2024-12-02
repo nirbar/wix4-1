@@ -662,6 +662,10 @@ extern "C" HRESULT ApplyCache(
             }
             break;
 
+        case BURN_CACHE_ACTION_TYPE_DELAYABLE_START:
+        case BURN_CACHE_ACTION_TYPE_DELAYABLE_END:
+            break;
+
         default:
             AssertSz(FALSE, "Unknown cache action.");
             break;
@@ -2398,7 +2402,6 @@ static void DoRollbackCache(
     __in DWORD dwCheckpoint
     )
 {
-    HRESULT hr = S_OK;
     BURN_PACKAGE* pPackage = NULL;
     DWORD dwLastCheckpoint = 0;
 
@@ -2423,7 +2426,7 @@ static void DoRollbackCache(
                 {
                     if (dwLastCheckpoint <= dwCheckpoint) // only rollback when it was attempted to be cached.
                     {
-                        hr = CleanPackage(pPlan->pCache, hPipe, pPackage);
+                        CleanPackage(pPlan->pCache, hPipe, pPackage);
                     }
                 }
                 else if (pPackage->fCanAffectRegistration)

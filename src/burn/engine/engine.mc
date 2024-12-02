@@ -1328,5 +1328,5 @@ MessageId=707
 Severity=Success
 SymbolicName=MSG_REORDERING_PACKAGE
 Language=English
-Moving packages '%1!ls!' to the end of the queue since it is not planned to execute.
+Moving package '%1!ls!' caching to the end of the queue since it is not planned to execute.
 .

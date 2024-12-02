@@ -142,8 +142,6 @@ extern "C" HRESULT PackagesParseFromXml(
     {
         BURN_PACKAGE* pPackage = &pPackages->rgPackages[i];
 
-        pPackage->dwPackageIndex = i;
-
         hr = XmlNextElement(pixnNodes, &pixnNode, &bstrNodeName);
         ExitOnFailure(hr, "Failed to get next node.");
 

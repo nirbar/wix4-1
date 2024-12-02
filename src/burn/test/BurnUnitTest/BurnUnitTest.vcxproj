@@ -91,6 +91,7 @@
     <None Include="TestData\PlanTest\MsuPackageFixture_manifest.xml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="TestData\PlanTest\Slipstream_BundleA_manifest.xml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="TestData\PlanTest\Slipstream_BundleA_modified_manifest.xml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="TestData\PlanTest\CacheReorder_BundleAv1_manifest.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
