@@ -724,6 +724,11 @@ namespace WixToolset.Data
             return Message(sourceLineNumbers, Ids.MissingContainerExtension, "Container '{0}' has BootstrapperExtensionRef set to '{1}', which could not be resolved to a container extension. To extract this container add the missing extension to the extraction command line", containerId, bootstrapperExtensionRef);
         }
 
+        public static Message AlreadyWiX3CompatibleGuid(SourceLineNumber sourceLineNumbers, ComponentKeyPathType keyPathType)
+        {
+            return Message(sourceLineNumbers, Ids.AlreadyWiX3CompatibleGuid, "Components with KeyPath type {0} have WiX3-compatible GUID by default. Attribute WiX3CompatibleGuid is redundant.", keyPathType);
+        }
+
         private static Message Message(SourceLineNumber sourceLineNumber, Ids id, string format, params object[] args)
         {
             return new Message(sourceLineNumber, MessageLevel.Warning, (int)id, format, args);
@@ -867,6 +872,7 @@ namespace WixToolset.Data
             InvalidWixVersion = 1162,
             VBScriptIsDeprecated = 1163,
             MissingContainerExtension = 1164,
+            AlreadyWiX3CompatibleGuid = 1165,
         }
     }
 }
