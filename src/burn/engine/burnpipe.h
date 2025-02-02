@@ -21,6 +21,7 @@ typedef struct _BURN_PIPE_CONNECTION
     LPWSTR sczSecret;
     DWORD dwProcessId;
     BURN_PIPE_CAPABILITIES dwCapabilities; // Capabilities of the engine that created the pipe
+    BOOL fStrLen64; // Does the other size read/write string size in SIZE_T or DWORD? (WiX3, WiX5+: DWORD; WiX4: SIZE_T)
 
     HANDLE hProcess;
     HANDLE hPipe;

@@ -9,6 +9,7 @@ struct BURN_EMBEDDED_CALLBACK_CONTEXT
 {
     PFN_GENERICMESSAGEHANDLER pfnGenericMessageHandler;
     LPVOID pvContext;
+    BOOL fStrLen64; // Does the other size read/write string size in SIZE_T or DWORD? (WiX3, WiX5+: DWORD; WiX4: SIZE_T)
 };
 
 // internal function declarations
@@ -20,6 +21,7 @@ static HRESULT ProcessEmbeddedMessages(
     );
 static HRESULT OnEmbeddedErrorMessage(
     __in PFN_GENERICMESSAGEHANDLER pfnMessageHandler,
+    __in BOOL fStrLen64,
     __in LPVOID pvContext,
     __in_bcount(cbData) BYTE* pbData,
     __in SIZE_T cbData,
@@ -34,6 +36,7 @@ static HRESULT OnEmbeddedProgress(
     );
 static HRESULT OnEmbeddedCustomMessage(
     __in PFN_GENERICMESSAGEHANDLER pfnMessageHandler,
+    __in BOOL fStrLen64,
     __in LPVOID pvContext,
     __in_bcount(cbData) BYTE* pbData,
     __in SIZE_T cbData,
@@ -46,7 +49,7 @@ static HRESULT OnEmbeddedCustomMessage(
 
 *******************************************************************/
 extern "C" HRESULT EmbeddedRunBundle(
-    __in BURN_PIPE_CONNECTION* pConnection,
+    __in BOOL fPipeStrLen64,
     __in_z LPCWSTR wzExecutablePath,
     __in_z LPWSTR sczBaseCommand,
     __in_z_opt LPCWSTR wzUserArgs,
@@ -56,24 +59,27 @@ extern "C" HRESULT EmbeddedRunBundle(
     )
 {
     HRESULT hr = S_OK;
+    BURN_PIPE_CONNECTION connection = {};
     DWORD dwCurrentProcessId = ::GetCurrentProcessId();
     LPWSTR sczCommand = NULL;
     PROCESS_INFORMATION pi = { };
     BURN_PIPE_RESULT result = { };
 
-    BurnPipeConnectionInitialize(pConnection);
+    BurnPipeConnectionInitialize(&connection);
+    connection.fStrLen64 = fPipeStrLen64;
 
     BURN_EMBEDDED_CALLBACK_CONTEXT context = { };
     context.pfnGenericMessageHandler = pfnGenericMessageHandler;
     context.pvContext = pvContext;
+    context.fStrLen64 = connection.fStrLen64;
 
-    hr = BurnPipeCreateNameAndSecret(&pConnection->sczName, &pConnection->sczSecret);
+    hr = BurnPipeCreateNameAndSecret(&connection.sczName, &connection.sczSecret);
     ExitOnFailure(hr, "Failed to create embedded pipe name and client token.");
 
-    hr = BurnPipeCreatePipes(pConnection, FALSE);
+    hr = BurnPipeCreatePipes(&connection, FALSE);
     ExitOnFailure(hr, "Failed to create embedded pipe.");
 
-    hr = StrAllocFormatted(&sczCommand, L"%ls -%ls %ls %ls %u -%ls %u", sczBaseCommand, BURN_COMMANDLINE_SWITCH_EMBEDDED, pConnection->sczName, pConnection->sczSecret, dwCurrentProcessId, BURN_COMMANDLINE_SWITCH_EMBEDDED_CAPABILITIES, BURN_PIPE_CAPABILITIES_ALL);
+    hr = StrAllocFormatted(&sczCommand, L"%ls -%ls %ls %ls %u -%ls %u", sczBaseCommand, BURN_COMMANDLINE_SWITCH_EMBEDDED, connection.sczName, connection.sczSecret, dwCurrentProcessId, BURN_COMMANDLINE_SWITCH_EMBEDDED_CAPABILITIES, BURN_PIPE_CAPABILITIES_ALL);
     ExitOnFailure(hr, "Failed to append embedded args.");
 
     // Always add user supplied arguments last.
@@ -86,18 +92,18 @@ extern "C" HRESULT EmbeddedRunBundle(
     hr = CoreCreateProcess(wzExecutablePath, sczCommand, TRUE, CREATE_NO_WINDOW, NULL, 0, &pi);
     ExitOnFailure(hr, "Failed to create embedded process at path: %ls", wzExecutablePath);
 
-    pConnection->dwProcessId = ::GetProcessId(pi.hProcess);
-    pConnection->hProcess = pi.hProcess;
+    connection.dwProcessId = ::GetProcessId(pi.hProcess);
+    connection.hProcess = pi.hProcess;
     pi.hProcess = NULL;
 
-    hr = BurnPipeWaitForChildConnect(pConnection);
+    hr = BurnPipeWaitForChildConnect(&connection);
     ExitOnFailure(hr, "Failed to wait for embedded process to connect to pipe.");
 
-    hr = BurnPipePumpMessages(pConnection->hPipe, ProcessEmbeddedMessages, &context, &result);
+    hr = BurnPipePumpMessages(connection.hPipe, ProcessEmbeddedMessages, &context, &result);
     ExitOnFailure(hr, "Failed to process messages from embedded message.");
 
     // Get the return code from the embedded process.
-    hr = CoreWaitForProcCompletion(pConnection->hProcess, INFINITE, pdwExitCode);
+    hr = CoreWaitForProcCompletion(connection.hProcess, INFINITE, pdwExitCode);
     ExitOnFailure(hr, "Failed to wait for embedded executable: %ls", wzExecutablePath);
 
 LExit:
@@ -105,7 +111,7 @@ LExit:
     ReleaseHandle(pi.hProcess);
 
     StrSecureZeroFreeString(sczCommand);
-    BurnPipeConnectionUninitialize(pConnection);
+    BurnPipeConnectionUninitialize(&connection);
 
     return hr;
 }
@@ -127,7 +133,7 @@ static HRESULT ProcessEmbeddedMessages(
     switch (pMsg->dwMessageType)
     {
     case BURN_EMBEDDED_MESSAGE_TYPE_ERROR:
-        hr = OnEmbeddedErrorMessage(pContext->pfnGenericMessageHandler, pContext->pvContext, static_cast<BYTE*>(pMsg->pvData), pMsg->cbData, &dwResult);
+        hr = OnEmbeddedErrorMessage(pContext->pfnGenericMessageHandler, pContext->fStrLen64, pContext->pvContext, static_cast<BYTE*>(pMsg->pvData), pMsg->cbData, &dwResult);
         ExitOnFailure(hr, "Failed to process embedded error message.");
         break;
 
@@ -137,7 +143,7 @@ static HRESULT ProcessEmbeddedMessages(
         break;
 
     case BURN_EMBEDDED_MESSAGE_TYPE_CUSTOM_MESSAGE:
-        hr = OnEmbeddedCustomMessage(pContext->pfnGenericMessageHandler, pContext->pvContext, static_cast<BYTE*>(pMsg->pvData), pMsg->cbData, &dwResult);
+        hr = OnEmbeddedCustomMessage(pContext->pfnGenericMessageHandler, pContext->fStrLen64, pContext->pvContext, static_cast<BYTE*>(pMsg->pvData), pMsg->cbData, &dwResult);
         ExitOnFailure(hr, "Failed to process embedded custom message.");
         break;
 
@@ -154,6 +160,7 @@ LExit:
 
 static HRESULT OnEmbeddedErrorMessage(
     __in PFN_GENERICMESSAGEHANDLER pfnMessageHandler,
+    __in BOOL fStrLen64,
     __in LPVOID pvContext,
     __in_bcount(cbData) BYTE* pbData,
     __in SIZE_T cbData,
@@ -170,7 +177,14 @@ static HRESULT OnEmbeddedErrorMessage(
     hr = BuffReadNumber(pbData, cbData, &iData, &message.error.dwErrorCode);
     ExitOnFailure(hr, "Failed to read error code from buffer.");
 
-    hr = BuffReadString(pbData, cbData, &iData, &sczMessage);
+    if (fStrLen64)
+    {
+        hr = BuffReadStringSize64(pbData, cbData, &iData, &sczMessage);
+    }
+    else
+    {
+        hr = BuffReadString(pbData, cbData, &iData, &sczMessage);
+    }
     ExitOnFailure(hr, "Failed to read error message from buffer.");
 
     message.error.wzMessage = sczMessage;
@@ -188,6 +202,7 @@ LExit:
 
 static HRESULT OnEmbeddedCustomMessage(
     __in PFN_GENERICMESSAGEHANDLER pfnMessageHandler,
+    __in BOOL fStrLen64,
     __in LPVOID pvContext,
     __in_bcount(cbData) BYTE* pbData,
     __in SIZE_T cbData,
@@ -204,7 +219,14 @@ static HRESULT OnEmbeddedCustomMessage(
     hr = BuffReadNumber(pbData, cbData, &iData, &message.custom.dwCode);
     ExitOnFailure(hr, "Failed to read custom code from buffer.");
 
-    hr = BuffReadString(pbData, cbData, &iData, &sczMessage);
+    if (fStrLen64)
+    {
+        hr = BuffReadStringSize64(pbData, cbData, &iData, &sczMessage);
+    }
+    else
+    {
+        hr = BuffReadString(pbData, cbData, &iData, &sczMessage);
+    }
     ExitOnFailure(hr, "Failed to read custom message from buffer.");
 
     message.custom.wzMessage = sczMessage;

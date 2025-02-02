@@ -429,6 +429,10 @@ namespace WixToolset.Core.Burn.Bundles
                         writer.WriteAttributeString("RepairArguments", bundlePackage.RepairCommand);
                         writer.WriteAttributeString("SupportsBurnProtocol", bundlePackage.SupportsBurnProtocol ? "yes" : "no");
                         writer.WriteAttributeString("Win64", package.PackageSymbol.Win64 ? "yes" : "no");
+                        if (!string.IsNullOrEmpty(bundlePackage.EngineVersion))
+                        {
+                            writer.WriteAttributeString("EngineVersion", bundlePackage.EngineVersion);
+                        }
 
                         if (!package.PackageSymbol.Visible)
                         {

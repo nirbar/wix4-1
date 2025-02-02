@@ -188,6 +188,63 @@ LExit:
     return hr;
 }
 
+extern "C" HRESULT BuffReadStringSize64(
+    __in_bcount(cbBuffer) const BYTE* pbBuffer,
+    __in SIZE_T cbBuffer,
+    __inout SIZE_T* piBuffer,
+    __deref_out_z LPWSTR* pscz
+    )
+{
+    Assert(pbBuffer);
+    Assert(piBuffer);
+    Assert(pscz);
+
+    HRESULT hr = S_OK;
+    SIZE_T cch = 0;
+    SIZE_T cb = 0;
+    SIZE_T cbAvailable = 0;
+
+    // get available data size
+    hr = ::SIZETSub(cbBuffer, *piBuffer, &cbAvailable);
+    BuffExitOnRootFailure(hr, "Failed to calculate available data size for character count.");
+
+    // verify buffer size
+    if (sizeof(SIZE_T) > cbAvailable)
+    {
+        hr = E_INVALIDARG;
+        BuffExitOnRootFailure(hr, "Buffer too small.");
+    }
+
+    // read character count
+    cch = *(const SIZE_T*)(pbBuffer + *piBuffer);
+
+    hr = ::SIZETMult(cch, sizeof(WCHAR), &cb);
+    BuffExitOnRootFailure(hr, "Overflow while multiplying to calculate buffer size");
+
+    hr = ::SIZETAdd(*piBuffer, sizeof(SIZE_T), piBuffer);
+    BuffExitOnRootFailure(hr, "Overflow while adding to calculate buffer size");
+
+    // get availiable data size
+    hr = ::SIZETSub(cbBuffer, *piBuffer, &cbAvailable);
+    BuffExitOnRootFailure(hr, "Failed to calculate available data size for character buffer.");
+
+    // verify buffer size
+    if (cb > cbAvailable)
+    {
+        hr = E_INVALIDARG;
+        BuffExitOnRootFailure(hr, "Buffer too small to hold character data.");
+    }
+
+    // copy character data
+    hr = StrAllocString(pscz, cch ? (LPCWSTR)(pbBuffer + *piBuffer) : L"", cch);
+    BuffExitOnFailure(hr, "Failed to copy character data.");
+
+    *piBuffer += cb;
+
+LExit:
+    return hr;
+}
+
 extern "C" HRESULT BuffReadStringAnsi(
     __in_bcount(cbBuffer) const BYTE* pbBuffer,
     __in SIZE_T cbBuffer,

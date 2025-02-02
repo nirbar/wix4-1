@@ -66,6 +66,12 @@ HRESULT BuffReadString(
     __inout SIZE_T* piBuffer,
     __deref_out_z LPWSTR* pscz
     );
+HRESULT BuffReadStringSize64(
+    __in_bcount(cbBuffer) const BYTE* pbBuffer,
+    __in SIZE_T cbBuffer,
+    __inout SIZE_T* piBuffer,
+    __deref_out_z LPWSTR* pscz
+    );
 HRESULT BuffReadStringAnsi(
     __in_bcount(cbBuffer) const BYTE* pbBuffer,
     __in SIZE_T cbBuffer,

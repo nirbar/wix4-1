@@ -482,7 +482,6 @@ extern "C" HRESULT ExeEngineExecutePackage(
     LPWSTR* argvArp = NULL;
     BOOTSTRAPPER_PACKAGE_STATE applyState = BOOTSTRAPPER_PACKAGE_STATE_UNKNOWN;
     HANDLE hExecutableFile = INVALID_HANDLE_VALUE;
-    BURN_PIPE_CONNECTION connection = { };
     DWORD dwExitCode = 0;
     BURN_PACKAGE* pPackage = pExecuteAction->exePackage.pPackage;
     BURN_PAYLOAD* pPackagePayload = pPackage->payloads.rgItems[0].pPayload;
@@ -688,7 +687,7 @@ extern "C" HRESULT ExeEngineExecutePackage(
 
     if (!pPackage->Exe.fFireAndForget && BURN_EXE_PROTOCOL_TYPE_BURN == pPackage->Exe.protocol)
     {
-        hr = EmbeddedRunBundle(&connection, sczExecutablePath, sczBaseCommand, sczUserArgs, pfnGenericMessageHandler, pvContext, &dwExitCode);
+        hr = EmbeddedRunBundle(FALSE, sczExecutablePath, sczBaseCommand, sczUserArgs, pfnGenericMessageHandler, pvContext, &dwExitCode);
         ExitOnFailure(hr, "Failed to run exe with Burn protocol from path: %ls", sczExecutablePath);
     }
     else if (!pPackage->Exe.fFireAndForget && BURN_EXE_PROTOCOL_TYPE_NETFX4 == pPackage->Exe.protocol)

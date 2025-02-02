@@ -150,6 +150,69 @@ LExit:
     return hr;
 }
 
+HRESULT DAPI VerCompareToString(
+    __in_opt VERUTIL_VERSION* pVersion1,
+    __in_z LPCWSTR wzVersion2,
+    __in BOOL fStrict,
+    __out int* pnResult
+    )
+{
+    HRESULT hr = S_OK;
+    VERUTIL_VERSION* pVersion2 = NULL;
+    int nResult = 0;
+
+    hr = VerParseVersion(wzVersion2, 0, fStrict, &pVersion2);
+    VerExitOnFailure(hr, "Failed to parse Verutil version '%ls'", wzVersion2);
+
+    hr = VerCompareParsedVersions(pVersion1, pVersion2, &nResult);
+    VerExitOnFailure(hr, "Failed to compare parsed Verutil versions '%ls' and '%ls'.", pVersion1 ? pVersion1->sczVersion : L"(null)", wzVersion2);
+
+LExit:
+    *pnResult = nResult;
+
+    ReleaseVerutilVersion(pVersion2);
+
+    return hr;
+}
+
+HRESULT DAPI VerCompareIsInRange(
+    __in_opt VERUTIL_VERSION* pVersion1,
+    __in_z LPCWSTR wzMinVersion,
+    __in_z LPCWSTR wzMaxVersion,
+    __in BOOL fStrict,
+    __in BOOL fIncludeMin,
+    __in BOOL fIncludeMax,
+    __out BOOL* pfResult
+    )
+{
+    HRESULT hr = S_OK;
+    int nResult = 0;
+
+    hr = VerCompareToString(pVersion1, wzMinVersion, fStrict, &nResult);
+    VerExitOnFailure(hr, "Failed to compare to minimal version '%ls'", wzMinVersion);
+
+    if ((nResult < 0) || (!fIncludeMin && (nResult == 0)))
+    {
+        *pfResult = FALSE;
+        ExitFunction();
+    }
+
+    hr = VerCompareToString(pVersion1, wzMaxVersion, fStrict, &nResult);
+    VerExitOnFailure(hr, "Failed to compare to maximal version '%ls'", wzMaxVersion);
+
+    if ((nResult > 0) || (!fIncludeMax && (nResult == 0)))
+    {
+        *pfResult = FALSE;
+        ExitFunction();
+    }
+
+    *pfResult = TRUE;
+
+LExit:
+
+    return hr;
+}
+
 DAPI_(HRESULT) VerCompareStringVersions(
     __in_z LPCWSTR wzVersion1,
     __in_z LPCWSTR wzVersion2,

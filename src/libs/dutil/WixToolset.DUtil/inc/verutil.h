@@ -45,6 +45,33 @@ HRESULT DAPI VerCompareParsedVersions(
     );
 
 /*******************************************************************
+ VerCompareToString - parses the string with VerParseVersion and then
+                       compares the Verutil versions with VerCompareParsedVersions.
+
+*******************************************************************/
+HRESULT DAPI VerCompareToString(
+    __in_opt VERUTIL_VERSION* pVersion1,
+    __in_z LPCWSTR wzVersion2,
+    __in BOOL fStrict,
+    __out int* pnResult
+    );
+
+/*******************************************************************
+ VerCompareIsInRange - parses the min/max strings with VerParseVersion and then
+                        compares the Verutil versions with VerCompareParsedVersions.
+
+*******************************************************************/
+HRESULT DAPI VerCompareIsInRange(
+    __in_opt VERUTIL_VERSION* pVersion1,
+    __in_z LPCWSTR wzMinVersion,
+    __in_z LPCWSTR wzMaxVersion,
+    __in BOOL fStrict,
+    __in BOOL fIncludeMin,
+    __in BOOL fIncludeMax,
+    __out BOOL* pfResult
+    );
+
+/*******************************************************************
  VerCompareStringVersions - parses the strings with VerParseVersion and then
                             compares the Verutil versions with VerCompareParsedVersions.
 

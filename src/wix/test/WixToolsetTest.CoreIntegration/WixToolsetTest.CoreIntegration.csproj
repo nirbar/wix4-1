@@ -6,6 +6,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <RequiresNativeWixAssets>true</RequiresNativeWixAssets>
     <IsWixTestProject>true</IsWixTestProject>
+    <IncludeThisAssembly>true</IncludeThisAssembly>
   </PropertyGroup>
 
   <ItemGroup>

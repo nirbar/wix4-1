@@ -67,6 +67,16 @@ extern "C" HRESULT BundlePackageEngineParsePackageFromXml(
         LogId(REPORT_WARNING, MSG_MANIFEST_INVALID_VERSION, scz);
     }
 
+    // @EngineVersion
+    hr = XmlGetAttributeEx(pixnBundlePackage, L"EngineVersion", &scz);
+    ExitOnOptionalXmlQueryFailure(hr, fFoundXml, "Failed to get @EngineVersion.");
+
+    if (fFoundXml && scz && *scz)
+    {
+        hr = VerParseVersion(scz, 0, FALSE, &pPackage->Bundle.pEngineVersion);
+        ExitOnFailure(hr, "Failed to parse @Version: %ls", scz);
+    }
+
     // @InstallArguments
     hr = XmlGetAttributeEx(pixnBundlePackage, L"InstallArguments", &pPackage->Bundle.sczInstallArguments);
     ExitOnOptionalXmlQueryFailure(hr, fFoundXml, "Failed to get @InstallArguments.");
@@ -205,6 +215,7 @@ extern "C" void BundlePackageEnginePackageUninitialize(
     ReleaseStr(pPackage->Bundle.sczBundleId);
     ReleaseStr(pPackage->Bundle.sczArpKeyPath);
     ReleaseVerutilVersion(pPackage->Bundle.pVersion);
+    ReleaseVerutilVersion(pPackage->Bundle.pEngineVersion);
     ReleaseStr(pPackage->Bundle.sczRegistrationKey);
     ReleaseStr(pPackage->Bundle.sczInstallArguments);
     ReleaseStr(pPackage->Bundle.sczRepairArguments);
@@ -763,7 +774,7 @@ static HRESULT ExecuteBundle(
     LPWSTR* argvArp = NULL;
     BOOL fRegistered = FALSE;
     HANDLE hExecutableFile = INVALID_HANDLE_VALUE;
-    BURN_PIPE_CONNECTION connection = { };
+    BOOL fPipeStrLen64 = FALSE;
     DWORD dwExitCode = 0;
     GENERIC_EXECUTE_MESSAGE message = { };
     BURN_PAYLOAD* pPackagePayload = pPackage->payloads.rgItems[0].pPayload;
@@ -1008,7 +1019,13 @@ static HRESULT ExecuteBundle(
 
     if (fRunEmbedded)
     {
-        hr = EmbeddedRunBundle(&connection, sczExecutablePath, sczBaseCommand, sczUserArgs, pfnGenericMessageHandler, pvContext, &dwExitCode);
+        // Best effort to detect bundles that send strlen with SIZE_T instead of DWORD
+        if (pPackage->Bundle.pEngineVersion)
+        {
+            VerCompareIsInRange(pPackage->Bundle.pEngineVersion, L"4.0.0.0", L"5.0.0.0", TRUE, TRUE, FALSE, &fPipeStrLen64);
+        }
+
+        hr = EmbeddedRunBundle(fPipeStrLen64, sczExecutablePath, sczBaseCommand, sczUserArgs, pfnGenericMessageHandler, pvContext, &dwExitCode);
         ExitOnFailure(hr, "Failed to run bundle as embedded from path: %ls", sczExecutablePath);
     }
     else

@@ -334,6 +334,7 @@ typedef struct _BURN_PACKAGE
             LPWSTR sczBundleId;
             LPWSTR sczArpKeyPath;
             VERUTIL_VERSION* pVersion;
+            VERUTIL_VERSION* pEngineVersion;
             LPWSTR sczRegistrationKey;
             LPWSTR sczInstallArguments;
             LPWSTR sczRepairArguments;

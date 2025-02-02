@@ -9,7 +9,6 @@ const DWORD TEST_EXIT_CODE = 666;
 struct BUNDLE_RUNNER_CONTEXT
 {
     DWORD dwResult;
-    BURN_PIPE_CONNECTION connection;
 };
 
 
@@ -69,7 +68,7 @@ namespace Bootstrapper
                 //
                 // bundle runner setup
                 //
-                hr = EmbeddedRunBundle(&bundleRunnerContext.connection, L"C:\\ignored\\target.exe", L"\"C:\\ignored\\target.exe\"", NULL, EmbeddedTest_GenericMessageHandler, &bundleRunnerContext, &dwExitCode);
+                hr = EmbeddedRunBundle(FALSE, L"C:\\ignored\\target.exe", L"\"C:\\ignored\\target.exe\"", NULL, EmbeddedTest_GenericMessageHandler, &bundleRunnerContext, &dwExitCode);
                 TestThrowOnFailure(hr, L"Failed to run embedded bundle.");
 
                 // check results
@@ -177,19 +176,9 @@ static int EmbeddedTest_GenericMessageHandler(
 
     if (GENERIC_EXECUTE_MESSAGE_ERROR == pMessage->type)
     {
-        // post unknown message
-        HRESULT hr = BurnPipeSendMessage(pContext->connection.hPipe, TEST_UNKNOWN_MESSAGE_ID, NULL, 0, NULL, NULL, &dwResult);
-        ExitOnFailure(hr, "Failed to post unknown message to embedded bundle.");
-
-        if (E_NOTIMPL != dwResult)
-        {
-            ExitWithRootFailure(hr, E_UNEXPECTED, "Unexpected result from unknown message: %d", dwResult);
-        }
-
         pContext->dwResult = pMessage->error.dwErrorCode;
         dwResult = TEST_EXIT_CODE;
     }
 
-LExit:
     return dwResult;
 }

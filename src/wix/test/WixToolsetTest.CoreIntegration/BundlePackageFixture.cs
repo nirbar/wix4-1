@@ -81,7 +81,7 @@ namespace WixToolsetTest.CoreIntegration
                 var bundlePackages = extractResult.GetManifestTestXmlLines("/burn:BurnManifest/burn:Chain/burn:BundlePackage", ignoreAttributesByElementName);
                 WixAssert.CompareLineByLine(new[]
                 {
-                    $"<BundlePackage Id='chain.exe' Cache='keep' CacheId='{chainBundleId}v1.0.0.0' InstallSize='34' Size='*' PerMachine='yes' Permanent='yes' Vital='yes' RollbackBoundaryForward='WixDefaultBoundary' RollbackBoundaryBackward='WixDefaultBoundary' LogPathVariable='WixBundleLog_chain.exe' RollbackLogPathVariable='WixBundleRollbackLog_chain.exe' BundleId='{chainBundleId}' Version='1.0.0.0' InstallArguments='' UninstallArguments='' RepairArguments='' SupportsBurnProtocol='yes' Win64='no' HideARP='yes'>" +
+                    $"<BundlePackage Id='chain.exe' Cache='keep' CacheId='{chainBundleId}v1.0.0.0' InstallSize='34' Size='*' PerMachine='yes' Permanent='yes' Vital='yes' RollbackBoundaryForward='WixDefaultBoundary' RollbackBoundaryBackward='WixDefaultBoundary' LogPathVariable='WixBundleLog_chain.exe' RollbackLogPathVariable='WixBundleRollbackLog_chain.exe' BundleId='{chainBundleId}' Version='1.0.0.0' InstallArguments='' UninstallArguments='' RepairArguments='' SupportsBurnProtocol='yes' Win64='no' EngineVersion='{ThisAssembly.Git.BaseVersion.Major}.{ThisAssembly.Git.BaseVersion.Minor}.{ThisAssembly.Git.BaseVersion.Patch}.{ThisAssembly.Git.Commits}' HideARP='yes'>" +
                     "<Provides Key='MyProviderKey,v1.0' Version='1.0.0.0' DisplayName='BurnBundle' Imported='yes' />" +
                     "<RelatedBundle Id='{B94478B1-E1F3-4700-9CE8-6AA090854AEC}' Action='Upgrade' />" +
                     "<PayloadRef Id='chain.exe' />" +
@@ -134,7 +134,7 @@ namespace WixToolsetTest.CoreIntegration
                 bundlePackages = grandparentExtractResult.GetManifestTestXmlLines("/burn:BurnManifest/burn:Chain/burn:BundlePackage", ignoreAttributesByElementName);
                 WixAssert.CompareLineByLine(new[]
                 {
-                    $"<BundlePackage Id='parent.exe' Cache='keep' CacheId='{parentBundleId}v1.0.1.0' InstallSize='34' Size='*' PerMachine='yes' Permanent='yes' Vital='yes' RollbackBoundaryForward='WixDefaultBoundary' RollbackBoundaryBackward='WixDefaultBoundary' LogPathVariable='WixBundleLog_parent.exe' RollbackLogPathVariable='WixBundleRollbackLog_parent.exe' BundleId='{parentBundleId}' Version='1.0.1.0' InstallArguments='' UninstallArguments='' RepairArguments='' SupportsBurnProtocol='yes' Win64='no'>" +
+                    $"<BundlePackage Id='parent.exe' Cache='keep' CacheId='{parentBundleId}v1.0.1.0' InstallSize='34' Size='*' PerMachine='yes' Permanent='yes' Vital='yes' RollbackBoundaryForward='WixDefaultBoundary' RollbackBoundaryBackward='WixDefaultBoundary' LogPathVariable='WixBundleLog_parent.exe' RollbackLogPathVariable='WixBundleRollbackLog_parent.exe' BundleId='{parentBundleId}' Version='1.0.1.0' InstallArguments='' UninstallArguments='' RepairArguments='' SupportsBurnProtocol='yes' Win64='no' EngineVersion='{ThisAssembly.Git.BaseVersion.Major}.{ThisAssembly.Git.BaseVersion.Minor}.{ThisAssembly.Git.BaseVersion.Patch}.{ThisAssembly.Git.Commits}'>" +
                     $"<Provides Key='{parentBundleId}' Version='1.0.1.0' DisplayName='BundlePackageBundle' Imported='yes' />" +
                     "<RelatedBundle Id='{4BE34BEE-CA23-488E-96A0-B15878E3654B}' Action='Upgrade' />" +
                     "<PayloadRef Id='parent.exe' />" +
