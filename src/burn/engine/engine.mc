@@ -1330,3 +1330,10 @@ SymbolicName=MSG_REORDERING_PACKAGE
 Language=English
 Moving package '%1!ls!' caching to the end of the queue since it is not planned to execute.
 .
+
+MessageId=708
+Severity=Warning
+SymbolicName=MSG_DEPENDENCY_PACKAGE_DEPENDENTS_OVERRIDDEN
+Language=English
+BA requested to uninstall package: %1!ls!, despite dependents:
+.
