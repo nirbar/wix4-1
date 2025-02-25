@@ -24,7 +24,7 @@ namespace WixToolsetTest.Netfx
                 var extensionResult = WixRunner.Execute(new[]
                 {
                     "extension", "add",
-                    "WixToolset.BootstrapperApplications.wixext"
+                    "PanelSwWix4.BootstrapperApplications.wixext"
                 });
 
                 var compileResult = WixRunner.Execute(new[]
@@ -33,7 +33,7 @@ namespace WixToolsetTest.Netfx
                     Path.Combine(bundleSourceFolder, "BundleLatest.wxs"),
                     Path.Combine(bundleSourceFolder, "NetCore3.1.12_x86.wxs"),
                     Path.Combine(bundleSourceFolder, "NetCore3.1.12_x64.wxs"),
-                    "-ext", "WixToolset.BootstrapperApplications.wixext",
+                    "-ext", "PanelSwWix4.BootstrapperApplications.wixext",
                     "-ext", TestData.Get(@"WixToolset.Netfx.wixext.dll"),
                     "-intermediateFolder", intermediateFolder,
                     "-o", bundleFile,
@@ -57,7 +57,7 @@ namespace WixToolsetTest.Netfx
                 var extensionResult = WixRunner.Execute(new[]
                 {
                     "extension", "add",
-                    "WixToolset.BootstrapperApplications.wixext"
+                    "PanelSwWix4.BootstrapperApplications.wixext"
                 });
 
                 var compileResult = WixRunner.Execute(new[]
@@ -65,7 +65,7 @@ namespace WixToolsetTest.Netfx
                     "build",
                     Path.Combine(bundleSourceFolder, "BundleLatest_x64.wxs"),
                     Path.Combine(bundleSourceFolder, "NetCore3.1.12_x64.wxs"),
-                    "-ext", "WixToolset.BootstrapperApplications.wixext",
+                    "-ext", "PanelSwWix4.BootstrapperApplications.wixext",
                     "-ext", TestData.Get(@"WixToolset.Netfx.wixext.dll"),
                     "-intermediateFolder", intermediateFolder,
                     "-o", bundleFile,
@@ -89,14 +89,14 @@ namespace WixToolsetTest.Netfx
                 var extensionResult = WixRunner.Execute(new[]
                 {
                     "extension", "add",
-                    "WixToolset.BootstrapperApplications.wixext"
+                    "PanelSwWix4.BootstrapperApplications.wixext"
                 });
 
                 var compileResult = WixRunner.Execute(new[]
                 {
                     "build",
                     Path.Combine(bundleSourceFolder, "BundleLatest.wxs"),
-                    "-ext", "WixToolset.BootstrapperApplications.wixext",
+                    "-ext", "PanelSwWix4.BootstrapperApplications.wixext",
                     "-ext", TestData.Get(@"WixToolset.Netfx.wixext.dll"),
                     "-intermediateFolder", intermediateFolder,
                     "-o", bundleFile,
@@ -121,17 +121,17 @@ namespace WixToolsetTest.Netfx
                 var extensionResult = WixRunner.Execute(warningsAsErrors: true, new[]
                 {
                     "extension", "add",
-                    "WixToolset.BootstrapperApplications.wixext",
+                    "PanelSwWix4.BootstrapperApplications.wixext",
                     "extension", "add",
-                    "WixToolset.Util.wixext",
+                    "PanelSwWix4.Util.wixext",
                 });
 
                 var compileResult = WixRunner.Execute(new[]
                 {
                     "build",
                     Path.Combine(bundleSourceFolder, "BundleLatest.wxs"),
-                    "-ext", "WixToolset.BootstrapperApplications.wixext",
-                    "-ext", "WixToolset.Util.wixext",
+                    "-ext", "PanelSwWix4.BootstrapperApplications.wixext",
+                    "-ext", "PanelSwWix4.Util.wixext",
                     "-ext", TestData.Get(@"WixToolset.Netfx.wixext.dll"),
                     "-intermediateFolder", intermediateFolder,
                     "-o", bundleFile,

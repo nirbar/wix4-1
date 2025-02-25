@@ -73,7 +73,13 @@ namespace WixToolset.Core.ExtensibilityServices
                                 continue;
                             }
 
-                            checkPath = Path.Combine(extensionFolder, versionFolder, WixToolsetExtensionPackageFolder, extensionId + ".dll");
+                            string extensionFileName = extensionId + ".dll";
+                            if (extensionFileName.StartsWith("PanelSwWix4.", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                extensionFileName = "WixToolset." + extensionFileName.Substring("PanelSwWix4.".Length);
+                            }
+
+                            checkPath = Path.Combine(extensionFolder, versionFolder, WixToolsetExtensionPackageFolder, extensionFileName);
                             checkedPaths.Add(checkPath);
 
                             if (TryLoadFromPath(checkPath, out assembly))
